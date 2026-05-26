@@ -1,0 +1,32 @@
+{
+  "source": "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/COSMIC NOMAD: ECHOES/ContentView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Every world remembers. Every silence speaks.",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 106
+        }
+      },
+      {
+        "comment": "",
+        "key": "COSMIC NOMAD",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 84
+        }
+      },
+      {
+        "comment": "",
+        "key": "ECHOES",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 96
+        }
+      }
+    ]
+  },
+  "version": 1
+}

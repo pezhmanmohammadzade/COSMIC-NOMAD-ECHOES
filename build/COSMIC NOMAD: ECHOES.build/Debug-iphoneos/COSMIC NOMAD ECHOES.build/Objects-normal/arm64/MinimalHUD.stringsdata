@@ -1,0 +1,48 @@
+{
+  "source": "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/COSMIC NOMAD: ECHOES/UI/MinimalHUD.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "%lld FPS",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 68
+        }
+      },
+      {
+        "comment": "",
+        "key": "Chunks: %lld",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 71
+        }
+      },
+      {
+        "comment": "",
+        "key": "Weather: %@",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 74
+        }
+      },
+      {
+        "comment": "",
+        "key": "Memory: %@",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 77
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld%%",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 160
+        }
+      }
+    ]
+  },
+  "version": 1
+}

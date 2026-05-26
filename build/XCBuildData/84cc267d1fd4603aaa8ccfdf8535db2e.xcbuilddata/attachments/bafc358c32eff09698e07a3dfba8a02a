@@ -1,0 +1,229 @@
+{
+  "" : {
+    "diagnostics" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/COSMIC NOMAD ECHOES-primary.dia",
+    "emit-module-dependencies" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/COSMIC NOMAD ECHOES-primary-emit-module.d",
+    "emit-module-diagnostics" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/COSMIC NOMAD ECHOES-primary-emit-module.dia",
+    "pch" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/COSMIC NOMAD ECHOES-primary-Bridging-header.pch",
+    "swift-dependencies" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/COSMIC NOMAD ECHOES-primary.swiftdeps"
+  },
+  "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/COSMIC NOMAD: ECHOES/COSMIC_NOMAD__ECHOESApp.swift" : {
+    "const-values" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/COSMIC_NOMAD__ECHOESApp.swiftconstvalues",
+    "dependencies" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/COSMIC_NOMAD__ECHOESApp.d",
+    "diagnostics" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/COSMIC_NOMAD__ECHOESApp.dia",
+    "index-unit-output-path" : "/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/COSMIC_NOMAD__ECHOESApp.o",
+    "llvm-bc" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/COSMIC_NOMAD__ECHOESApp.bc",
+    "object" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/COSMIC_NOMAD__ECHOESApp.o",
+    "swift-dependencies" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/COSMIC_NOMAD__ECHOESApp.swiftdeps",
+    "swiftmodule" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/COSMIC_NOMAD__ECHOESApp~partial.swiftmodule"
+  },
+  "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/COSMIC NOMAD: ECHOES/ContentView.swift" : {
+    "const-values" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/ContentView.swiftconstvalues",
+    "dependencies" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/ContentView.d",
+    "diagnostics" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/ContentView.dia",
+    "index-unit-output-path" : "/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/ContentView.o",
+    "llvm-bc" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/ContentView.bc",
+    "object" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/ContentView.o",
+    "swift-dependencies" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/ContentView.swiftdeps",
+    "swiftmodule" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/ContentView~partial.swiftmodule"
+  },
+  "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/COSMIC NOMAD: ECHOES/Engine/CameraSystem.swift" : {
+    "const-values" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/CameraSystem.swiftconstvalues",
+    "dependencies" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/CameraSystem.d",
+    "diagnostics" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/CameraSystem.dia",
+    "index-unit-output-path" : "/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/CameraSystem.o",
+    "llvm-bc" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/CameraSystem.bc",
+    "object" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/CameraSystem.o",
+    "swift-dependencies" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/CameraSystem.swiftdeps",
+    "swiftmodule" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/CameraSystem~partial.swiftmodule"
+  },
+  "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/COSMIC NOMAD: ECHOES/Engine/GameEngine.swift" : {
+    "const-values" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/GameEngine.swiftconstvalues",
+    "dependencies" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/GameEngine.d",
+    "diagnostics" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/GameEngine.dia",
+    "index-unit-output-path" : "/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/GameEngine.o",
+    "llvm-bc" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/GameEngine.bc",
+    "object" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/GameEngine.o",
+    "swift-dependencies" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/GameEngine.swiftdeps",
+    "swiftmodule" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/GameEngine~partial.swiftmodule"
+  },
+  "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/COSMIC NOMAD: ECHOES/Engine/MathUtilities.swift" : {
+    "const-values" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/MathUtilities.swiftconstvalues",
+    "dependencies" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/MathUtilities.d",
+    "diagnostics" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/MathUtilities.dia",
+    "index-unit-output-path" : "/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/MathUtilities.o",
+    "llvm-bc" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/MathUtilities.bc",
+    "object" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/MathUtilities.o",
+    "swift-dependencies" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/MathUtilities.swiftdeps",
+    "swiftmodule" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/MathUtilities~partial.swiftmodule"
+  },
+  "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/COSMIC NOMAD: ECHOES/Engine/MetalRenderer.swift" : {
+    "const-values" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/MetalRenderer.swiftconstvalues",
+    "dependencies" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/MetalRenderer.d",
+    "diagnostics" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/MetalRenderer.dia",
+    "index-unit-output-path" : "/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/MetalRenderer.o",
+    "llvm-bc" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/MetalRenderer.bc",
+    "object" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/MetalRenderer.o",
+    "swift-dependencies" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/MetalRenderer.swiftdeps",
+    "swiftmodule" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/MetalRenderer~partial.swiftmodule"
+  },
+  "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/COSMIC NOMAD: ECHOES/Engine/RenderPipeline.swift" : {
+    "const-values" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/RenderPipeline.swiftconstvalues",
+    "dependencies" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/RenderPipeline.d",
+    "diagnostics" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/RenderPipeline.dia",
+    "index-unit-output-path" : "/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/RenderPipeline.o",
+    "llvm-bc" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/RenderPipeline.bc",
+    "object" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/RenderPipeline.o",
+    "swift-dependencies" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/RenderPipeline.swiftdeps",
+    "swiftmodule" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/RenderPipeline~partial.swiftmodule"
+  },
+  "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/COSMIC NOMAD: ECHOES/Engine/ResourceManager.swift" : {
+    "const-values" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/ResourceManager.swiftconstvalues",
+    "dependencies" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/ResourceManager.d",
+    "diagnostics" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/ResourceManager.dia",
+    "index-unit-output-path" : "/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/ResourceManager.o",
+    "llvm-bc" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/ResourceManager.bc",
+    "object" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/ResourceManager.o",
+    "swift-dependencies" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/ResourceManager.swiftdeps",
+    "swiftmodule" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/ResourceManager~partial.swiftmodule"
+  },
+  "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/COSMIC NOMAD: ECHOES/Engine/ShaderTypes.swift" : {
+    "const-values" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/ShaderTypes.swiftconstvalues",
+    "dependencies" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/ShaderTypes.d",
+    "diagnostics" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/ShaderTypes.dia",
+    "index-unit-output-path" : "/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/ShaderTypes.o",
+    "llvm-bc" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/ShaderTypes.bc",
+    "object" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/ShaderTypes.o",
+    "swift-dependencies" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/ShaderTypes.swiftdeps",
+    "swiftmodule" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/ShaderTypes~partial.swiftmodule"
+  },
+  "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/COSMIC NOMAD: ECHOES/Gameplay/InputManager.swift" : {
+    "const-values" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/InputManager.swiftconstvalues",
+    "dependencies" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/InputManager.d",
+    "diagnostics" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/InputManager.dia",
+    "index-unit-output-path" : "/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/InputManager.o",
+    "llvm-bc" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/InputManager.bc",
+    "object" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/InputManager.o",
+    "swift-dependencies" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/InputManager.swiftdeps",
+    "swiftmodule" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/InputManager~partial.swiftmodule"
+  },
+  "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/COSMIC NOMAD: ECHOES/Gameplay/PlayerController.swift" : {
+    "const-values" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/PlayerController.swiftconstvalues",
+    "dependencies" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/PlayerController.d",
+    "diagnostics" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/PlayerController.dia",
+    "index-unit-output-path" : "/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/PlayerController.o",
+    "llvm-bc" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/PlayerController.bc",
+    "object" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/PlayerController.o",
+    "swift-dependencies" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/PlayerController.swiftdeps",
+    "swiftmodule" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/PlayerController~partial.swiftmodule"
+  },
+  "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/COSMIC NOMAD: ECHOES/Gameplay/ScannerSystem.swift" : {
+    "const-values" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/ScannerSystem.swiftconstvalues",
+    "dependencies" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/ScannerSystem.d",
+    "diagnostics" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/ScannerSystem.dia",
+    "index-unit-output-path" : "/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/ScannerSystem.o",
+    "llvm-bc" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/ScannerSystem.bc",
+    "object" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/ScannerSystem.o",
+    "swift-dependencies" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/ScannerSystem.swiftdeps",
+    "swiftmodule" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/ScannerSystem~partial.swiftmodule"
+  },
+  "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/COSMIC NOMAD: ECHOES/UI/MetalView.swift" : {
+    "const-values" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/MetalView.swiftconstvalues",
+    "dependencies" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/MetalView.d",
+    "diagnostics" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/MetalView.dia",
+    "index-unit-output-path" : "/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/MetalView.o",
+    "llvm-bc" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/MetalView.bc",
+    "object" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/MetalView.o",
+    "swift-dependencies" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/MetalView.swiftdeps",
+    "swiftmodule" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/MetalView~partial.swiftmodule"
+  },
+  "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/COSMIC NOMAD: ECHOES/UI/MinimalHUD.swift" : {
+    "const-values" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/MinimalHUD.swiftconstvalues",
+    "dependencies" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/MinimalHUD.d",
+    "diagnostics" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/MinimalHUD.dia",
+    "index-unit-output-path" : "/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/MinimalHUD.o",
+    "llvm-bc" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/MinimalHUD.bc",
+    "object" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/MinimalHUD.o",
+    "swift-dependencies" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/MinimalHUD.swiftdeps",
+    "swiftmodule" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/MinimalHUD~partial.swiftmodule"
+  },
+  "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/COSMIC NOMAD: ECHOES/World/AtmosphereSystem.swift" : {
+    "const-values" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/AtmosphereSystem.swiftconstvalues",
+    "dependencies" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/AtmosphereSystem.d",
+    "diagnostics" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/AtmosphereSystem.dia",
+    "index-unit-output-path" : "/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/AtmosphereSystem.o",
+    "llvm-bc" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/AtmosphereSystem.bc",
+    "object" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/AtmosphereSystem.o",
+    "swift-dependencies" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/AtmosphereSystem.swiftdeps",
+    "swiftmodule" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/AtmosphereSystem~partial.swiftmodule"
+  },
+  "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/COSMIC NOMAD: ECHOES/World/ChunkStreamer.swift" : {
+    "const-values" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/ChunkStreamer.swiftconstvalues",
+    "dependencies" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/ChunkStreamer.d",
+    "diagnostics" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/ChunkStreamer.dia",
+    "index-unit-output-path" : "/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/ChunkStreamer.o",
+    "llvm-bc" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/ChunkStreamer.bc",
+    "object" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/ChunkStreamer.o",
+    "swift-dependencies" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/ChunkStreamer.swiftdeps",
+    "swiftmodule" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/ChunkStreamer~partial.swiftmodule"
+  },
+  "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/COSMIC NOMAD: ECHOES/World/PlanetConfig.swift" : {
+    "const-values" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/PlanetConfig.swiftconstvalues",
+    "dependencies" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/PlanetConfig.d",
+    "diagnostics" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/PlanetConfig.dia",
+    "index-unit-output-path" : "/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/PlanetConfig.o",
+    "llvm-bc" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/PlanetConfig.bc",
+    "object" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/PlanetConfig.o",
+    "swift-dependencies" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/PlanetConfig.swiftdeps",
+    "swiftmodule" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/PlanetConfig~partial.swiftmodule"
+  },
+  "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/COSMIC NOMAD: ECHOES/World/TerrainChunk.swift" : {
+    "const-values" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/TerrainChunk.swiftconstvalues",
+    "dependencies" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/TerrainChunk.d",
+    "diagnostics" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/TerrainChunk.dia",
+    "index-unit-output-path" : "/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/TerrainChunk.o",
+    "llvm-bc" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/TerrainChunk.bc",
+    "object" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/TerrainChunk.o",
+    "swift-dependencies" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/TerrainChunk.swiftdeps",
+    "swiftmodule" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/TerrainChunk~partial.swiftmodule"
+  },
+  "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/COSMIC NOMAD: ECHOES/World/TerrainGenerator.swift" : {
+    "const-values" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/TerrainGenerator.swiftconstvalues",
+    "dependencies" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/TerrainGenerator.d",
+    "diagnostics" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/TerrainGenerator.dia",
+    "index-unit-output-path" : "/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/TerrainGenerator.o",
+    "llvm-bc" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/TerrainGenerator.bc",
+    "object" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/TerrainGenerator.o",
+    "swift-dependencies" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/TerrainGenerator.swiftdeps",
+    "swiftmodule" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/TerrainGenerator~partial.swiftmodule"
+  },
+  "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/COSMIC NOMAD: ECHOES/World/WeatherSystem.swift" : {
+    "const-values" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/WeatherSystem.swiftconstvalues",
+    "dependencies" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/WeatherSystem.d",
+    "diagnostics" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/WeatherSystem.dia",
+    "index-unit-output-path" : "/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/WeatherSystem.o",
+    "llvm-bc" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/WeatherSystem.bc",
+    "object" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/WeatherSystem.o",
+    "swift-dependencies" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/WeatherSystem.swiftdeps",
+    "swiftmodule" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/WeatherSystem~partial.swiftmodule"
+  },
+  "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/COSMIC NOMAD: ECHOES/World/WorldGenerator.swift" : {
+    "const-values" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/WorldGenerator.swiftconstvalues",
+    "dependencies" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/WorldGenerator.d",
+    "diagnostics" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/WorldGenerator.dia",
+    "index-unit-output-path" : "/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/WorldGenerator.o",
+    "llvm-bc" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/WorldGenerator.bc",
+    "object" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/WorldGenerator.o",
+    "swift-dependencies" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/WorldGenerator.swiftdeps",
+    "swiftmodule" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/WorldGenerator~partial.swiftmodule"
+  },
+  "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/DerivedSources/GeneratedAssetSymbols.swift" : {
+    "const-values" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/GeneratedAssetSymbols.swiftconstvalues",
+    "dependencies" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/GeneratedAssetSymbols.d",
+    "diagnostics" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/GeneratedAssetSymbols.dia",
+    "index-unit-output-path" : "/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/GeneratedAssetSymbols.o",
+    "llvm-bc" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/GeneratedAssetSymbols.bc",
+    "object" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/GeneratedAssetSymbols.o",
+    "swift-dependencies" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/GeneratedAssetSymbols.swiftdeps",
+    "swiftmodule" : "/Users/pezhmanmohammadzadehkordestani/Desktop/COSMIC NOMAD ECHOES/COSMIC NOMAD: ECHOES/build/COSMIC NOMAD: ECHOES.build/Debug-iphoneos/COSMIC NOMAD ECHOES.build/Objects-normal/arm64/GeneratedAssetSymbols~partial.swiftmodule"
+  }
+}
