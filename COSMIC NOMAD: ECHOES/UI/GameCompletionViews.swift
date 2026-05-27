@@ -4,6 +4,7 @@
 //
 //  Planet Decoded cinematic screen and Final Revelation endgame screen.
 //  These are the key reward moments in the game loop.
+//  Pastel matte color aesthetic.
 //
 
 import SwiftUI
@@ -35,17 +36,17 @@ struct PlanetDecodedView: View {
     var body: some View {
         ZStack {
             // Dark overlay
-            Color.black.opacity(0.92)
+            Pastel.bg.opacity(0.95)
                 .ignoresSafeArea()
             
             // Animated ring
             Circle()
-                .stroke(moodColor.opacity(ringOpacity), lineWidth: 2)
+                .stroke(moodColor.opacity(ringOpacity * 0.7), lineWidth: 2)
                 .frame(width: 200, height: 200)
                 .scaleEffect(ringScale)
             
             Circle()
-                .stroke(moodColor.opacity(ringOpacity * 0.5), lineWidth: 1)
+                .stroke(moodColor.opacity(ringOpacity * 0.35), lineWidth: 1)
                 .frame(width: 260, height: 260)
                 .scaleEffect(ringScale * 0.9)
             
@@ -64,7 +65,7 @@ struct PlanetDecodedView: View {
                         // Planet name
                         Text(planetName.uppercased())
                             .font(.system(size: 28, weight: .ultraLight, design: .serif))
-                            .foregroundColor(.white)
+                            .foregroundColor(Pastel.textPrimary)
                             .tracking(6)
                             .minimumScaleFactor(0.5)
                             .opacity(textOpacity)
@@ -75,21 +76,21 @@ struct PlanetDecodedView: View {
                             .foregroundColor(moodColor.opacity(0.8))
                             .padding(.horizontal, 16)
                             .padding(.vertical, 6)
-                            .background(moodColor.opacity(0.1))
+                            .background(moodColor.opacity(0.08))
                             .clipShape(Capsule())
-                            .overlay(Capsule().stroke(moodColor.opacity(0.3), lineWidth: 0.5))
+                            .overlay(Capsule().stroke(moodColor.opacity(0.2), lineWidth: 0.5))
                             .opacity(textOpacity)
                         
                         // Divider
                         Rectangle()
-                            .fill(moodColor.opacity(0.3))
+                            .fill(moodColor.opacity(0.25))
                             .frame(width: 100, height: 0.5)
                             .opacity(summaryOpacity)
                         
                         // Planet-specific summary (unique per level!)
                         Text(LoreLibrary.planetSummary(forLevel: planetsCompleted))
                             .font(.system(size: 14, weight: .regular, design: .serif))
-                            .foregroundColor(.white.opacity(0.8))
+                            .foregroundColor(Pastel.textPrimary.opacity(0.8))
                             .multilineTextAlignment(.center)
                             .lineSpacing(6)
                             .padding(.horizontal, 40)
@@ -99,13 +100,13 @@ struct PlanetDecodedView: View {
                         // Unique inspirational quote per level
                         VStack(spacing: 8) {
                             Rectangle()
-                                .fill(moodColor.opacity(0.15))
+                                .fill(moodColor.opacity(0.12))
                                 .frame(width: 30, height: 0.5)
                             
                             Text(levelQuote.quote)
                                 .font(.system(size: 13, weight: .light, design: .serif))
                                 .italic()
-                                .foregroundColor(moodColor.opacity(0.9))
+                                .foregroundColor(moodColor.opacity(0.85))
                                 .multilineTextAlignment(.center)
                                 .lineSpacing(5)
                                 .padding(.horizontal, 36)
@@ -113,7 +114,7 @@ struct PlanetDecodedView: View {
                             
                             Text(levelQuote.author)
                                 .font(.system(size: 10, weight: .medium, design: .monospaced))
-                                .foregroundColor(.white.opacity(0.4))
+                                .foregroundColor(Pastel.textMuted)
                                 .tracking(1)
                         }
                         .padding(.vertical, 8)
@@ -122,7 +123,7 @@ struct PlanetDecodedView: View {
                         // Signals collected
                         Text("ALL SIGNALS RECONSTRUCTED")
                             .font(.system(size: 10, weight: .medium, design: .monospaced))
-                            .foregroundColor(.white.opacity(0.4))
+                            .foregroundColor(Pastel.textMuted)
                             .opacity(quoteOpacity)
                         
                         Spacer(minLength: 40)
@@ -131,11 +132,11 @@ struct PlanetDecodedView: View {
                         HStack(spacing: 12) {
                             ForEach(0..<totalPlanets, id: \.self) { i in
                                 Circle()
-                                    .fill(i < planetsCompleted ? moodColor : Color.white.opacity(0.2))
+                                    .fill(i < planetsCompleted ? moodColor : Pastel.cardStroke)
                                     .frame(width: 10, height: 10)
                                     .overlay(
                                         Circle()
-                                            .stroke(Color.white.opacity(0.3), lineWidth: 0.5)
+                                            .stroke(Pastel.textMuted, lineWidth: 0.5)
                                     )
                             }
                         }
@@ -146,11 +147,11 @@ struct PlanetDecodedView: View {
                             HStack(spacing: 10) {
                                 Text(planetsCompleted < totalPlanets ? "TRAVEL TO NEXT WORLD" : "FINAL REVELATION")
                                     .font(.system(size: 13, weight: .bold, design: .monospaced))
-                                    .foregroundColor(.black)
+                                    .foregroundColor(Pastel.bg)
                                 
                                 Image(systemName: "arrow.right")
                                     .font(.system(size: 12, weight: .bold))
-                                    .foregroundColor(.black)
+                                    .foregroundColor(Pastel.bg)
                             }
                             .padding(.horizontal, 32)
                             .padding(.vertical, 14)
@@ -189,13 +190,7 @@ struct PlanetDecodedView: View {
     }
     
     private var moodColor: Color {
-        switch planetMood {
-        case .lonely:  return Color(red: 0.3, green: 0.5, blue: 0.9)
-        case .decayed: return Color(red: 0.9, green: 0.7, blue: 0.3)
-        case .serene:  return Color(red: 0.3, green: 0.9, blue: 0.6)
-        case .hostile: return Color(red: 0.9, green: 0.3, blue: 0.2)
-        case .surreal: return Color(red: 0.7, green: 0.3, blue: 0.9)
-        }
+        Pastel.moodColor(planetMood)
     }
 }
 
@@ -211,15 +206,15 @@ struct FinalRevelationView: View {
     
     var body: some View {
         ZStack {
-            // Deep black
-            Color.black
+            // Deep matte background
+            Pastel.bg
                 .ignoresSafeArea()
             
             // Subtle starfield
             GeometryReader { geo in
                 ForEach(0..<60, id: \.self) { i in
                     Circle()
-                        .fill(Color.white.opacity(Double.random(in: 0.1...0.6)))
+                        .fill(Pastel.textPrimary.opacity(Double.random(in: 0.06...0.35)))
                         .frame(width: CGFloat.random(in: 1...2.5))
                         .position(
                             x: CGFloat.random(in: 0...geo.size.width),
@@ -238,12 +233,12 @@ struct FinalRevelationView: View {
                         VStack(spacing: 12) {
                             Text("THE FINAL ECHO")
                                 .font(.system(size: 11, weight: .bold, design: .monospaced))
-                                .foregroundColor(.cyan)
+                                .foregroundColor(Pastel.primary)
                                 .tracking(10)
                                 .opacity(phase1)
                             
                             Rectangle()
-                                .fill(Color.cyan.opacity(0.3))
+                                .fill(Pastel.primary.opacity(0.25))
                                 .frame(width: 60, height: 0.5)
                                 .opacity(phase1)
                         }
@@ -251,7 +246,7 @@ struct FinalRevelationView: View {
                         // Revelation text
                         Text(LoreLibrary.finalRevelation)
                             .font(.system(size: 16, weight: .regular, design: .serif))
-                            .foregroundColor(.white.opacity(0.9))
+                            .foregroundColor(Pastel.textPrimary.opacity(0.9))
                             .multilineTextAlignment(.center)
                             .lineSpacing(8)
                             .padding(.horizontal, 36)
@@ -264,18 +259,18 @@ struct FinalRevelationView: View {
                         VStack(spacing: 8) {
                             Text("JOURNEY COMPLETE")
                                 .font(.system(size: 10, weight: .bold, design: .monospaced))
-                                .foregroundColor(.white.opacity(0.4))
+                                .foregroundColor(Pastel.textMuted)
                                 .tracking(4)
                             
                             Text("5 worlds explored  •  100 signals decoded")
                                 .font(.system(size: 11, weight: .regular, design: .monospaced))
-                                .foregroundColor(.white.opacity(0.3))
+                                .foregroundColor(Pastel.textMuted.opacity(0.8))
                             
                             // 5 filled dots
                             HStack(spacing: 8) {
                                 ForEach(0..<5, id: \.self) { _ in
                                     Circle()
-                                        .fill(Color.cyan)
+                                        .fill(Pastel.primary)
                                         .frame(width: 8, height: 8)
                                 }
                             }
@@ -291,12 +286,12 @@ struct FinalRevelationView: View {
                                 Text("BEGIN AGAIN")
                                     .font(.system(size: 13, weight: .bold, design: .monospaced))
                             }
-                            .foregroundColor(.white)
+                            .foregroundColor(Pastel.textPrimary)
                             .padding(.horizontal, 32)
                             .padding(.vertical, 14)
-                            .background(Color.white.opacity(0.1))
+                            .background(Pastel.cardFill)
                             .clipShape(Capsule())
-                            .overlay(Capsule().stroke(Color.cyan.opacity(0.5), lineWidth: 1))
+                            .overlay(Capsule().stroke(Pastel.primary.opacity(0.4), lineWidth: 1))
                         }
                         .opacity(phase4)
                         .padding(.bottom, 60)

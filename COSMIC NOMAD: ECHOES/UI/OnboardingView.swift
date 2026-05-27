@@ -3,6 +3,7 @@
 //  COSMIC NOMAD: ECHOES
 //
 //  Modern, graphical onboarding shown once upon install.
+//  Pastel matte color aesthetic.
 //
 
 import SwiftUI
@@ -15,7 +16,7 @@ struct OnboardingView: View {
     
     var body: some View {
         ZStack {
-            Color.black.ignoresSafeArea()
+            Pastel.bg.ignoresSafeArea()
             
             // Subtle animated background
             AnimatedStarfield()
@@ -27,7 +28,7 @@ struct OnboardingView: View {
                     subtitle: "A universe of silence awaits.",
                     description: "You are the last listener, drifting through forgotten worlds to uncover the echoes of what was lost.",
                     icon: "sparkles",
-                    color: .cyan
+                    color: Pastel.primary
                 )
                 .tag(0)
                 
@@ -37,7 +38,7 @@ struct OnboardingView: View {
                     subtitle: "Navigate the unknown.",
                     description: "Use the virtual joystick on the left to move across procedurally generated planets. Every world is unique.",
                     icon: "location.circle",
-                    color: .orange
+                    color: Pastel.secondary
                 )
                 .tag(1)
                 
@@ -47,7 +48,7 @@ struct OnboardingView: View {
                     subtitle: "Manage your suit resources.",
                     description: "Your oxygen depletes over time. Hostile planets drain it faster. Find signals to refill O₂ and earn Data Cores for upgrades.",
                     icon: "lungs",
-                    color: .red
+                    color: Pastel.danger
                 )
                 .tag(2)
                 
@@ -57,7 +58,7 @@ struct OnboardingView: View {
                     subtitle: "Evolve your suit.",
                     description: "Use the jetpack to reach high terrain. Spend Data Cores in the Upgrade Shop to boost oxygen, power, speed, and scanner range.",
                     icon: "arrow.up.to.line",
-                    color: .yellow
+                    color: Pastel.gold
                 )
                 .tag(3)
                 
@@ -67,7 +68,7 @@ struct OnboardingView: View {
                     subtitle: "Danger and reward.",
                     description: "Watch for geysers, radiation zones, and energy vortexes. Some drain your suit; others reward you with bonus Data Cores.",
                     icon: "tornado",
-                    color: .purple
+                    color: Pastel.tertiary
                 )
                 .tag(4)
                 
@@ -77,7 +78,7 @@ struct OnboardingView: View {
                     subtitle: "Listen to the echoes.",
                     description: "Follow the scanner to locate memory fragments. Stand near them to reconstruct the history of the world.",
                     icon: "antenna.radiowaves.left.and.right",
-                    color: .green
+                    color: Pastel.success
                 )
                 .tag(5)
                 
@@ -88,17 +89,17 @@ struct OnboardingView: View {
                     VStack(spacing: 16) {
                         Image(systemName: "globe.americas")
                             .font(.system(size: 60, weight: .ultraLight))
-                            .foregroundStyle(.cyan)
-                            .shadow(color: .cyan.opacity(0.6), radius: 20)
+                            .foregroundStyle(Pastel.primary)
+                            .shadow(color: Pastel.primary.opacity(0.4), radius: 20)
                         
                         Text("YOUR JOURNEY BEGINS")
                             .font(.system(size: 24, weight: .ultraLight, design: .serif))
-                            .foregroundStyle(.white)
+                            .foregroundStyle(Pastel.textPrimary)
                             .tracking(8)
                         
                         Text("Decode \(GameEngine.totalPlanetsForEnding) planets to reach the final revelation.")
                             .font(.system(size: 14, weight: .regular, design: .serif))
-                            .foregroundStyle(.white.opacity(0.7))
+                            .foregroundStyle(Pastel.textSecondary)
                             .multilineTextAlignment(.center)
                             .padding(.horizontal, 40)
                     }
@@ -116,12 +117,12 @@ struct OnboardingView: View {
                                 .font(.system(size: 14, weight: .bold, design: .monospaced))
                             Image(systemName: "arrow.right")
                         }
-                        .foregroundColor(.black)
+                        .foregroundColor(Pastel.bg)
                         .padding(.horizontal, 40)
                         .padding(.vertical, 16)
-                        .background(Color.cyan)
+                        .background(Pastel.primary)
                         .clipShape(Capsule())
-                        .shadow(color: .cyan.opacity(0.5), radius: 10)
+                        .shadow(color: Pastel.primary.opacity(0.3), radius: 10)
                     }
                     .padding(.bottom, 80)
                 }
@@ -152,30 +153,30 @@ struct OnboardingPage: View {
             Image(systemName: icon)
                 .font(.system(size: 80, weight: .ultraLight))
                 .foregroundStyle(color)
-                .shadow(color: color.opacity(0.6), radius: 20)
+                .shadow(color: color.opacity(0.35), radius: 20)
                 .scaleEffect(iconScale)
                 .opacity(opacity)
             
             VStack(spacing: 16) {
                 Text(title)
                     .font(.system(size: 28, weight: .ultraLight, design: .serif))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(Pastel.textPrimary)
                     .tracking(6)
                     .opacity(opacity)
                 
                 Rectangle()
-                    .fill(color.opacity(0.5))
+                    .fill(color.opacity(0.4))
                     .frame(width: 40, height: 1)
                     .opacity(opacity)
                 
                 Text(subtitle)
                     .font(.system(size: 16, weight: .medium, design: .monospaced))
-                    .foregroundStyle(color.opacity(0.8))
+                    .foregroundStyle(color.opacity(0.75))
                     .opacity(opacity)
                 
                 Text(description)
                     .font(.system(size: 15, weight: .regular, design: .serif))
-                    .foregroundStyle(.white.opacity(0.7))
+                    .foregroundStyle(Pastel.textSecondary)
                     .multilineTextAlignment(.center)
                     .lineSpacing(6)
                     .padding(.horizontal, 40)
@@ -201,7 +202,7 @@ struct AnimatedStarfield: View {
         GeometryReader { geo in
             ForEach(0..<50, id: \.self) { i in
                 Circle()
-                    .fill(Color.white.opacity(Double.random(in: 0.1...0.4)))
+                    .fill(Pastel.textPrimary.opacity(Double.random(in: 0.06...0.28)))
                     .frame(width: CGFloat.random(in: 1...3))
                     .position(
                         x: CGFloat.random(in: 0...geo.size.width),

@@ -4,6 +4,7 @@
 //
 //  Cinematic hyperspace jump animation shown during planet transitions.
 //  Streaking stars, planet name reveal, and immersive sound design.
+//  Pastel matte color aesthetic.
 //
 
 import SwiftUI
@@ -21,7 +22,7 @@ struct HyperspaceView: View {
     @State private var nameOpacity: Double = 0
     @State private var subOpacity: Double = 0
     @State private var flashOpacity: Double = 0
-    @State private var backgroundHue: Double = 0.55
+    @State private var backgroundHue: Double = 0.62
     
     enum HyperspacePhase {
         case charging, jumping, arriving
@@ -30,7 +31,7 @@ struct HyperspaceView: View {
     var body: some View {
         ZStack {
             // Deep space background
-            Color.black.ignoresSafeArea()
+            Pastel.bg.ignoresSafeArea()
             
             // Star field
             GeometryReader { geo in
@@ -40,10 +41,10 @@ struct HyperspaceView: View {
                         let seed = Double(i) * 137.508
                         let x = CGFloat((seed.truncatingRemainder(dividingBy: 1.0) + Double(i) * 0.017).truncatingRemainder(dividingBy: 1.0)) * geo.size.width
                         let y = CGFloat((seed * 0.618).truncatingRemainder(dividingBy: 1.0)) * geo.size.height
-                        let brightness = (seed * 0.3).truncatingRemainder(dividingBy: 0.6) + 0.2
+                        let brightness = (seed * 0.3).truncatingRemainder(dividingBy: 0.6) + 0.15
                         
                         RoundedRectangle(cornerRadius: 1)
-                            .fill(Color.white.opacity(brightness))
+                            .fill(Pastel.textPrimary.opacity(brightness))
                             .frame(width: 2, height: 2 + starStreakLength * CGFloat(0.5 + brightness))
                             .position(x: x, y: y)
                             .blur(radius: starStreakLength > 20 ? 1 : 0)
@@ -61,8 +62,8 @@ struct HyperspaceView: View {
                     for i in 0..<ringCount {
                         let progress = Double(i) / Double(ringCount)
                         let radius = maxRadius * CGFloat(progress) * CGFloat(warpIntensity)
-                        let hue = (backgroundHue + progress * 0.2).truncatingRemainder(dividingBy: 1.0)
-                        let alpha = (1.0 - progress) * warpIntensity * 0.3
+                        let hue = (backgroundHue + progress * 0.15).truncatingRemainder(dividingBy: 1.0)
+                        let alpha = (1.0 - progress) * warpIntensity * 0.25
                         
                         let rect = CGRect(
                             x: center.x - radius,
@@ -73,7 +74,7 @@ struct HyperspaceView: View {
                         
                         context.stroke(
                             Path(ellipseIn: rect),
-                            with: .color(Color(hue: hue, saturation: 0.7, brightness: 0.8).opacity(alpha)),
+                            with: .color(Color(hue: hue, saturation: 0.35, brightness: 0.75).opacity(alpha)),
                             lineWidth: 2 + CGFloat(warpIntensity) * 3
                         )
                     }
@@ -81,10 +82,10 @@ struct HyperspaceView: View {
                 .ignoresSafeArea()
                 .blur(radius: 8)
                 
-                // Color tunnel gradient
+                // Color tunnel gradient — softer, pastel matte
                 RadialGradient(
                     colors: [
-                        Color(hue: backgroundHue, saturation: 0.8, brightness: 0.4).opacity(warpIntensity * 0.5),
+                        Color(hue: backgroundHue, saturation: 0.35, brightness: 0.55).opacity(warpIntensity * 0.4),
                         Color.clear
                     ],
                     center: .center,
@@ -99,19 +100,19 @@ struct HyperspaceView: View {
             if phase == .arriving {
                 VStack {
                     Rectangle()
-                        .fill(Color.black)
+                        .fill(Pastel.bg)
                         .frame(height: 50)
                     Spacer()
                     Rectangle()
-                        .fill(Color.black)
+                        .fill(Pastel.bg)
                         .frame(height: 50)
                 }
                 .ignoresSafeArea()
                 .transition(.opacity)
             }
             
-            // White flash on arrival
-            Color.white
+            // White flash on arrival — softer
+            Pastel.textPrimary
                 .opacity(flashOpacity)
                 .ignoresSafeArea()
             
@@ -120,27 +121,27 @@ struct HyperspaceView: View {
                 VStack(spacing: 16) {
                     Text("ENTERING ORBIT")
                         .font(.system(size: 11, weight: .bold, design: .monospaced))
-                        .foregroundColor(.cyan.opacity(subOpacity * 0.6))
+                        .foregroundColor(Pastel.primary.opacity(subOpacity * 0.6))
                         .tracking(6)
                     
                     Text(destinationName)
                         .font(.system(size: 28, weight: .ultraLight, design: .serif))
-                        .foregroundColor(.white)
+                        .foregroundColor(Pastel.textPrimary)
                         .opacity(nameOpacity)
                         .tracking(8)
                     
                     Rectangle()
-                        .fill(Color.white.opacity(nameOpacity * 0.3))
+                        .fill(Pastel.textPrimary.opacity(nameOpacity * 0.25))
                         .frame(width: 40, height: 0.5)
                     
                     Text(destinationMood.uppercased())
                         .font(.system(size: 10, weight: .light, design: .monospaced))
-                        .foregroundColor(.white.opacity(subOpacity * 0.5))
+                        .foregroundColor(Pastel.textSecondary.opacity(subOpacity * 0.6))
                         .tracking(4)
                     
                     Text("PLANET \(planetNumber)/\(totalPlanets)")
                         .font(.system(size: 9, weight: .bold, design: .monospaced))
-                        .foregroundColor(.cyan.opacity(subOpacity * 0.4))
+                        .foregroundColor(Pastel.primary.opacity(subOpacity * 0.4))
                         .padding(.top, 8)
                 }
             }
@@ -150,11 +151,11 @@ struct HyperspaceView: View {
                 VStack(spacing: 8) {
                     Text("INITIATING WARP DRIVE")
                         .font(.system(size: 11, weight: .bold, design: .monospaced))
-                        .foregroundColor(.cyan.opacity(0.6))
+                        .foregroundColor(Pastel.primary.opacity(0.6))
                         .tracking(4)
                     
                     ProgressView()
-                        .tint(.cyan)
+                        .tint(Pastel.primary)
                         .scaleEffect(0.8)
                 }
                 .transition(.opacity)

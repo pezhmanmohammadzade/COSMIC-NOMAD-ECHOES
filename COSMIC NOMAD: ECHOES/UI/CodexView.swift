@@ -4,6 +4,7 @@
 //
 //  Full gallery of all memory fragments discovered across the journey.
 //  Organized by planet. Undiscovered fragments show as [CORRUPTED].
+//  Pastel matte color aesthetic.
 //
 
 import SwiftUI
@@ -17,7 +18,7 @@ struct CodexView: View {
     var body: some View {
         ZStack {
             // Background
-            Color.black.opacity(0.95).ignoresSafeArea()
+            Pastel.overlay.opacity(0.98).ignoresSafeArea()
             
             VStack(spacing: 0) {
                 // Header
@@ -25,12 +26,12 @@ struct CodexView: View {
                     VStack(alignment: .leading, spacing: 4) {
                         Text("CODEX")
                             .font(.system(size: 20, weight: .bold, design: .monospaced))
-                            .foregroundColor(.white)
+                            .foregroundColor(Pastel.textPrimary)
                             .tracking(6)
                         
                         Text("\(fragments.count) FRAGMENTS RECOVERED")
                             .font(.system(size: 11, weight: .medium, design: .monospaced))
-                            .foregroundColor(.cyan.opacity(0.6))
+                            .foregroundColor(Pastel.primary.opacity(0.6))
                     }
                     
                     Spacer()
@@ -38,7 +39,7 @@ struct CodexView: View {
                     Button(action: onClose) {
                         Image(systemName: "xmark.circle.fill")
                             .font(.system(size: 24))
-                            .foregroundColor(.white.opacity(0.5))
+                            .foregroundColor(Pastel.textSecondary)
                     }
                 }
                 .padding(.horizontal, 24)
@@ -64,7 +65,7 @@ struct CodexView: View {
                 
                 // Divider
                 Rectangle()
-                    .fill(Color.cyan.opacity(0.15))
+                    .fill(Pastel.primary.opacity(0.12))
                     .frame(height: 1)
                 
                 // Fragment list
@@ -122,10 +123,10 @@ struct PlanetTabButton: View {
         Button(action: action) {
             Text(name.uppercased())
                 .font(.system(size: 10, weight: .bold, design: .monospaced))
-                .foregroundColor(isSelected ? .black : .white.opacity(0.5))
+                .foregroundColor(isSelected ? Pastel.bg : Pastel.textSecondary)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 6)
-                .background(isSelected ? Color.cyan : Color.white.opacity(0.08))
+                .background(isSelected ? Pastel.primary : Pastel.cardFill)
                 .clipShape(Capsule())
         }
     }
@@ -143,10 +144,10 @@ struct CodexFragmentCard: View {
                 // Type badge
                 Text((fragment["type"] ?? "UNKNOWN").uppercased())
                     .font(.system(size: 8, weight: .bold, design: .monospaced))
-                    .foregroundColor(.orange)
+                    .foregroundColor(Pastel.secondary)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 3)
-                    .background(Color.orange.opacity(0.15))
+                    .background(Pastel.secondary.opacity(0.10))
                     .clipShape(Capsule())
                 
                 Spacer()
@@ -154,17 +155,17 @@ struct CodexFragmentCard: View {
                 // Planet name
                 Text(fragment["planet"] ?? "")
                     .font(.system(size: 9, weight: .medium, design: .monospaced))
-                    .foregroundColor(.cyan.opacity(0.5))
+                    .foregroundColor(Pastel.primary.opacity(0.5))
             }
             
             Text(fragment["title"] ?? "Unknown Signal")
                 .font(.system(size: 13, weight: .bold, design: .monospaced))
-                .foregroundColor(.white)
+                .foregroundColor(Pastel.textPrimary)
             
             if isExpanded {
                 Text(fragment["content"] ?? "")
                     .font(.system(size: 12, weight: .regular, design: .serif))
-                    .foregroundColor(.white.opacity(0.75))
+                    .foregroundColor(Pastel.textPrimary.opacity(0.75))
                     .lineSpacing(4)
                     .transition(.opacity)
             }
@@ -172,10 +173,10 @@ struct CodexFragmentCard: View {
         .padding(14)
         .background(
             RoundedRectangle(cornerRadius: 10)
-                .fill(Color.white.opacity(0.04))
+                .fill(Pastel.cardFill)
                 .overlay(
                     RoundedRectangle(cornerRadius: 10)
-                        .stroke(Color.cyan.opacity(0.1), lineWidth: 1)
+                        .stroke(Pastel.primary.opacity(0.08), lineWidth: 1)
                 )
         )
         .onTapGesture {
@@ -195,25 +196,25 @@ struct CorruptedFragmentCard: View {
         HStack {
             Image(systemName: "exclamationmark.triangle")
                 .font(.system(size: 12))
-                .foregroundColor(.red.opacity(0.4))
+                .foregroundColor(Pastel.danger.opacity(0.4))
             
             Text("[CORRUPTED DATA]")
                 .font(.system(size: 11, weight: .bold, design: .monospaced))
-                .foregroundColor(.red.opacity(0.3))
+                .foregroundColor(Pastel.danger.opacity(0.3))
             
             Spacer()
             
             Text("SIGNAL LOST")
                 .font(.system(size: 8, weight: .medium, design: .monospaced))
-                .foregroundColor(.white.opacity(0.15))
+                .foregroundColor(Pastel.textMuted.opacity(0.5))
         }
         .padding(14)
         .background(
             RoundedRectangle(cornerRadius: 10)
-                .fill(Color.red.opacity(flicker ? 0.04 : 0.02))
+                .fill(Pastel.danger.opacity(flicker ? 0.03 : 0.015))
                 .overlay(
                     RoundedRectangle(cornerRadius: 10)
-                        .stroke(Color.red.opacity(0.1), lineWidth: 1)
+                        .stroke(Pastel.danger.opacity(0.08), lineWidth: 1)
                 )
         )
         .onAppear {

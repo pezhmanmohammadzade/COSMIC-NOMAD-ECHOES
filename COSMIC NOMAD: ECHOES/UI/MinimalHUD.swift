@@ -4,6 +4,7 @@
 //
 //  Transparent overlay HUD: minimal, atmospheric, no quest markers.
 //  Scanner ring, memory fragments, discovery notifications.
+//  Pastel matte color scheme.
 //
 
 import SwiftUI
@@ -50,19 +51,18 @@ struct MinimalHUD: View {
         ZStack {
             // --- Hazard Zone Warning ---
             if let engine = engine, let warning = engine.hazardSystem.warningText {
-                // Red/green edge tint
                 let hazardColor: Color = {
                     switch engine.hazardSystem.activeHazardType {
-                    case .toxic: return .green
-                    case .radiation: return .yellow
-                    case .lava: return .red
-                    case .unstable: return .orange
+                    case .toxic: return Pastel.hazardToxic
+                    case .radiation: return Pastel.hazardRadiation
+                    case .lava: return Pastel.hazardLava
+                    case .unstable: return Pastel.hazardUnstable
                     case .none: return .clear
                     }
                 }()
                 
                 RoundedRectangle(cornerRadius: 0)
-                    .stroke(hazardColor.opacity(Double(engine.hazardSystem.activeIntensity) * 0.4), lineWidth: 8)
+                    .stroke(hazardColor.opacity(Double(engine.hazardSystem.activeIntensity) * 0.35), lineWidth: 8)
                     .ignoresSafeArea()
                     .allowsHitTesting(false)
                 
@@ -73,7 +73,7 @@ struct MinimalHUD: View {
                         .foregroundColor(hazardColor)
                         .padding(.horizontal, 16)
                         .padding(.vertical, 6)
-                        .background(Color.black.opacity(0.7))
+                        .background(Pastel.surface.opacity(0.85))
                         .cornerRadius(6)
                         .padding(.top, 100)
                     Spacer()
@@ -99,11 +99,11 @@ struct MinimalHUD: View {
                             HStack(spacing: 6) {
                                 Image(systemName: "antenna.radiowaves.left.and.right")
                                     .font(.system(size: 12))
-                                    .foregroundColor(.cyan)
+                                    .foregroundColor(Pastel.primary)
                                 
                                 Text("SIGNAL ACQUIRED")
                                     .font(.system(size: 11, weight: .bold, design: .monospaced))
-                                    .foregroundColor(.cyan)
+                                    .foregroundColor(Pastel.primary)
                             }
                             
                             HStack {
@@ -115,7 +115,7 @@ struct MinimalHUD: View {
                                 }) {
                                     Image(systemName: "xmark.circle.fill")
                                         .font(.system(size: 16))
-                                        .foregroundColor(.white.opacity(0.5))
+                                        .foregroundColor(Pastel.textSecondary)
                                 }
                             }
                         }
@@ -123,22 +123,22 @@ struct MinimalHUD: View {
                         // Type badge
                         Text(discoveryType.uppercased())
                             .font(.system(size: 8, weight: .medium, design: .monospaced))
-                            .foregroundColor(.orange)
+                            .foregroundColor(Pastel.secondary)
                             .padding(.horizontal, 8)
                             .padding(.vertical, 3)
-                            .background(Color.orange.opacity(0.15))
+                            .background(Pastel.secondary.opacity(0.12))
                             .clipShape(Capsule())
                         
                         // Divider
                         Rectangle()
-                            .fill(Color.cyan.opacity(0.2))
+                            .fill(Pastel.primary.opacity(0.2))
                             .frame(height: 0.5)
                             .padding(.horizontal, 12)
                         
                         // Lore text
                         Text(discoveryText)
                             .font(.system(size: 11, weight: .regular, design: .serif))
-                            .foregroundColor(.white.opacity(0.85))
+                            .foregroundColor(Pastel.textPrimary.opacity(0.85))
                             .multilineTextAlignment(.center)
                             .lineSpacing(3)
                             .padding(.horizontal, 10)
@@ -148,16 +148,16 @@ struct MinimalHUD: View {
                             let remaining = engine.world.memoryFragmentSystem.fragments.count - engine.world.memoryFragmentSystem.discoveredCount
                             Text("\(remaining) signals remaining")
                                 .font(.system(size: 8, weight: .medium, design: .monospaced))
-                                .foregroundColor(.white.opacity(0.4))
+                                .foregroundColor(Pastel.textMuted)
                         }
                     }
                     .padding(14)
                     .background(
                         RoundedRectangle(cornerRadius: 12)
-                            .fill(Color.black.opacity(0.85))
+                            .fill(Pastel.surface.opacity(0.92))
                             .overlay(
                                 RoundedRectangle(cornerRadius: 12)
-                                    .stroke(Color.cyan.opacity(0.4), lineWidth: 1)
+                                    .stroke(Pastel.primary.opacity(0.3), lineWidth: 1)
                             )
                     )
                     .frame(maxWidth: 260)
@@ -180,14 +180,14 @@ struct MinimalHUD: View {
                             }) {
                                 ZStack {
                                     Circle()
-                                        .fill(.black.opacity(0.6))
+                                        .fill(Pastel.surface.opacity(0.7))
                                         .frame(width: 40, height: 40)
                                     Circle()
-                                        .stroke(.red.opacity(0.6), lineWidth: 1)
+                                        .stroke(Pastel.danger.opacity(0.5), lineWidth: 1)
                                         .frame(width: 40, height: 40)
                                     Image(systemName: "door.left.hand.open")
                                         .font(.system(size: 16))
-                                        .foregroundStyle(.red)
+                                        .foregroundStyle(Pastel.danger)
                                 }
                             }
                             
@@ -195,31 +195,31 @@ struct MinimalHUD: View {
                                 HStack(spacing: 8) {
                                 Text(engine.world.planetConfig.name)
                                     .font(.system(size: 13, weight: .bold, design: .monospaced))
-                                    .foregroundStyle(.white.opacity(0.7))
+                                    .foregroundStyle(Pastel.textPrimary.opacity(0.8))
                                 
                                 Text("PLANET \(engine.planetsCompleted + 1)/\(GameEngine.totalPlanetsForEnding)")
                                     .font(.system(size: 9, weight: .bold, design: .monospaced))
-                                    .foregroundStyle(.cyan.opacity(0.5))
+                                    .foregroundStyle(Pastel.primary.opacity(0.6))
                                     .padding(.horizontal, 6)
                                     .padding(.vertical, 2)
-                                    .background(Color.cyan.opacity(0.1))
+                                    .background(Pastel.primary.opacity(0.08))
                                     .clipShape(Capsule())
                             }
                             
                             Text(engine.world.planetConfig.mood.rawValue.uppercased())
                                 .font(.system(size: 9, weight: .light, design: .monospaced))
-                                .foregroundStyle(.white.opacity(0.35))
+                                .foregroundStyle(Pastel.textMuted)
                             
                             // Objective
                             HStack(spacing: 4) {
                                 Image(systemName: "antenna.radiowaves.left.and.right")
                                     .font(.system(size: 10))
-                                    .foregroundStyle(.orange)
+                                    .foregroundStyle(Pastel.secondary)
                                 
                                 let remaining = engine.world.memoryFragmentSystem.fragments.count - engine.world.memoryFragmentSystem.discoveredCount
                                 Text("SIGNALS: \(remaining) remaining")
                                     .font(.system(size: 10, weight: .medium, design: .monospaced))
-                                    .foregroundStyle(.orange.opacity(0.9))
+                                    .foregroundStyle(Pastel.secondary.opacity(0.9))
                             }
                             .padding(.top, 4)
                             
@@ -229,12 +229,12 @@ struct MinimalHUD: View {
                                 HStack(spacing: 4) {
                                     Image(systemName: "arrow.up.circle.fill")
                                         .font(.system(size: 10))
-                                        .foregroundStyle(.cyan.opacity(0.7))
+                                        .foregroundStyle(Pastel.primary.opacity(0.6))
                                         .rotationEffect(.degrees(bearingTo(from: engine.player, to: nearest.worldPosition)))
                                     
                                     Text("\(Int(dist))m to nearest signal")
                                         .font(.system(size: 9, weight: .regular, design: .monospaced))
-                                        .foregroundStyle(.cyan.opacity(0.6))
+                                        .foregroundStyle(Pastel.primary.opacity(0.5))
                                 }
                             }
                         }
@@ -251,17 +251,17 @@ struct MinimalHUD: View {
                         HStack(spacing: 4) {
                             Image(systemName: "diamond.fill")
                                 .font(.system(size: 10))
-                                .foregroundColor(.yellow)
+                                .foregroundColor(Pastel.gold)
                             Text("\(dataCores)")
                                 .font(.system(size: 12, weight: .bold, design: .monospaced))
-                                .foregroundColor(.yellow)
+                                .foregroundColor(Pastel.gold)
                         }
                         
                         // Oxygen bar
-                        SurvivalBarView(label: "O₂", value: oxygen, maxValue: engine?.survivalSystem.maxOxygen ?? 100, color: .cyan, icon: "lungs")
+                        SurvivalBarView(label: "O₂", value: oxygen, maxValue: engine?.survivalSystem.maxOxygen ?? 100, color: Pastel.primary, icon: "lungs")
                         
                         // Suit Power bar
-                        SurvivalBarView(label: "PWR", value: suitPower, maxValue: engine?.survivalSystem.maxSuitPower ?? 100, color: .yellow, icon: "bolt.fill")
+                        SurvivalBarView(label: "PWR", value: suitPower, maxValue: engine?.survivalSystem.maxSuitPower ?? 100, color: Pastel.gold, icon: "bolt.fill")
                         
                         // Temperature
                         HStack(spacing: 4) {
@@ -284,21 +284,21 @@ struct MinimalHUD: View {
                                 Text("LOG")
                                     .font(.system(size: 9, weight: .bold, design: .monospaced))
                             }
-                            .foregroundColor(.orange.opacity(0.8))
+                            .foregroundColor(Pastel.secondary.opacity(0.8))
                             .padding(.horizontal, 10)
                             .padding(.vertical, 6)
-                            .background(Color.orange.opacity(0.15))
+                            .background(Pastel.secondary.opacity(0.10))
                             .clipShape(Capsule())
                         }
                         
                         if showDebugOverlay, let engine = engine {
                             VStack(alignment: .trailing, spacing: 2) {
                                 Text("\(engine.fps) FPS")
-                                    .foregroundStyle(engine.fps >= 55 ? .green.opacity(0.6) : .red.opacity(0.6))
+                                    .foregroundStyle(engine.fps >= 55 ? Pastel.success.opacity(0.6) : Pastel.danger.opacity(0.6))
                                 Text("Chunks: \(engine.world.readyChunks.count)")
-                                    .foregroundStyle(.white.opacity(0.4))
+                                    .foregroundStyle(Pastel.textMuted)
                                 Text("Weather: \(engine.world.weatherSystem.weatherDescription)")
-                                    .foregroundStyle(.white.opacity(0.4))
+                                    .foregroundStyle(Pastel.textMuted)
                             }
                             .font(.system(size: 9, weight: .regular, design: .monospaced))
                         }
@@ -324,7 +324,7 @@ struct MinimalHUD: View {
                     ZStack {
                         // Outer ring — always show
                         Circle()
-                            .stroke(.white.opacity(0.25), lineWidth: 1.5)
+                            .stroke(Pastel.textPrimary.opacity(0.18), lineWidth: 1.5)
                             .frame(width: 110, height: 110)
                         
                         // Crosshair lines
@@ -334,16 +334,16 @@ struct MinimalHUD: View {
                             path.move(to: CGPoint(x: 25, y: 55))
                             path.addLine(to: CGPoint(x: 85, y: 55))
                         }
-                        .stroke(.white.opacity(0.08), lineWidth: 0.5)
+                        .stroke(Pastel.textPrimary.opacity(0.06), lineWidth: 0.5)
                         .frame(width: 110, height: 110)
                         
                         // Inner thumbstick
                         Circle()
-                            .fill(.white.opacity(joystickActive ? 0.4 : 0.15))
+                            .fill(Pastel.textPrimary.opacity(joystickActive ? 0.3 : 0.10))
                             .frame(width: 44, height: 44)
                             .overlay(
                                 Circle()
-                                    .stroke(.cyan.opacity(joystickActive ? 0.6 : 0.0), lineWidth: 1.5)
+                                    .stroke(Pastel.primary.opacity(joystickActive ? 0.5 : 0.0), lineWidth: 1.5)
                             )
                             .offset(x: CGFloat(joystickOffset.x * 50.0), y: CGFloat(joystickOffset.y * 50.0))
                     }
@@ -361,18 +361,18 @@ struct MinimalHUD: View {
                         }) {
                             ZStack {
                                 Circle()
-                                    .fill(isJetpacking ? Color.cyan.opacity(0.3) : .black.opacity(0.4))
+                                    .fill(isJetpacking ? Pastel.primary.opacity(0.25) : Pastel.surface.opacity(0.5))
                                     .frame(width: 54, height: 54)
                                 Circle()
-                                    .stroke(isJetpacking ? Color.cyan : .white.opacity(0.3), lineWidth: isJetpacking ? 2 : 1)
+                                    .stroke(isJetpacking ? Pastel.primary : Pastel.textPrimary.opacity(0.2), lineWidth: isJetpacking ? 2 : 1)
                                     .frame(width: 54, height: 54)
                                 VStack(spacing: 2) {
                                     Image(systemName: "flame.fill")
                                         .font(.system(size: 20, weight: .bold))
-                                        .foregroundStyle(isJetpacking ? .cyan : .white.opacity(0.6))
+                                        .foregroundStyle(isJetpacking ? Pastel.primary : Pastel.textSecondary)
                                     Text("JET")
                                         .font(.system(size: 7, weight: .bold, design: .monospaced))
-                                        .foregroundStyle(isJetpacking ? .cyan : .white.opacity(0.4))
+                                        .foregroundStyle(isJetpacking ? Pastel.primary : Pastel.textMuted)
                                 }
                             }
                         }
@@ -388,20 +388,20 @@ struct MinimalHUD: View {
                         // Jetpack height indicator
                         Text("\(Int(selectedJetpackHeight))m")
                             .font(.system(size: 8, weight: .bold, design: .monospaced))
-                            .foregroundColor(.cyan.opacity(0.6))
+                            .foregroundColor(Pastel.primary.opacity(0.5))
                         
                         // Upgrade Shop
                         Button(action: { showUpgradeShop = true }) {
                             ZStack {
                                 Circle()
-                                    .fill(.black.opacity(0.4))
+                                    .fill(Pastel.surface.opacity(0.5))
                                     .frame(width: 48, height: 48)
                                 Circle()
-                                    .stroke(.yellow.opacity(0.5), lineWidth: 1)
+                                    .stroke(Pastel.gold.opacity(0.4), lineWidth: 1)
                                     .frame(width: 48, height: 48)
                                 Image(systemName: "wrench.and.screwdriver")
                                     .font(.system(size: 18))
-                                    .foregroundStyle(.yellow.opacity(0.8))
+                                    .foregroundStyle(Pastel.gold.opacity(0.7))
                             }
                         }
                     }
@@ -457,18 +457,18 @@ struct MinimalHUD: View {
             // === BLACKOUT OVERLAY ===
             if showBlackout {
                 ZStack {
-                    Color.black.ignoresSafeArea()
+                    Pastel.bg.ignoresSafeArea()
                     VStack(spacing: 16) {
                         Image(systemName: "exclamationmark.triangle.fill")
                             .font(.system(size: 40))
-                            .foregroundColor(.red)
+                            .foregroundColor(Pastel.danger)
                         Text("SUIT FAILURE")
                             .font(.system(size: 20, weight: .bold, design: .monospaced))
-                            .foregroundColor(.red)
+                            .foregroundColor(Pastel.danger)
                             .tracking(6)
                         Text("EMERGENCY RESPAWN")
                             .font(.system(size: 12, weight: .medium, design: .monospaced))
-                            .foregroundColor(.white.opacity(0.5))
+                            .foregroundColor(Pastel.textSecondary)
                     }
                 }
                 .transition(.opacity)
@@ -477,7 +477,7 @@ struct MinimalHUD: View {
             // === JETPACK HEIGHT PICKER ===
             if showJetpackPicker {
                 ZStack {
-                    Color.black.opacity(0.7).ignoresSafeArea()
+                    Pastel.overlay.opacity(0.85).ignoresSafeArea()
                         .onTapGesture {
                             withAnimation(.spring(response: 0.3)) {
                                 showJetpackPicker = false
@@ -488,16 +488,16 @@ struct MinimalHUD: View {
                         HStack(spacing: 6) {
                             Image(systemName: "flame.fill")
                                 .font(.system(size: 16))
-                                .foregroundColor(.cyan)
+                                .foregroundColor(Pastel.primary)
                             Text("JETPACK ALTITUDE")
                                 .font(.system(size: 15, weight: .bold, design: .monospaced))
-                                .foregroundColor(.white)
+                                .foregroundColor(Pastel.textPrimary)
                                 .tracking(3)
                         }
                         
                         Text("Select flight height")
                             .font(.system(size: 11, weight: .regular, design: .monospaced))
-                            .foregroundColor(.white.opacity(0.5))
+                            .foregroundColor(Pastel.textSecondary)
                         
                         HStack(spacing: 16) {
                             jetpackHeightButton(height: 20, label: "20m", subtitle: "Low")
@@ -508,10 +508,10 @@ struct MinimalHUD: View {
                     .padding(24)
                     .background(
                         RoundedRectangle(cornerRadius: 16)
-                            .fill(Color.black.opacity(0.9))
+                            .fill(Pastel.surface)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 16)
-                                    .stroke(Color.cyan.opacity(0.4), lineWidth: 1)
+                                    .stroke(Pastel.primary.opacity(0.3), lineWidth: 1)
                             )
                     )
                 }
@@ -621,11 +621,11 @@ struct MinimalHUD: View {
     
     private var temperatureColor: Color {
         switch temperatureState {
-        case .freezing:    return .blue
-        case .cold:        return .cyan
-        case .comfortable: return .green
-        case .hot:         return .orange
-        case .scorching:   return .red
+        case .freezing:    return Pastel.tempFreezing
+        case .cold:        return Pastel.tempCold
+        case .comfortable: return Pastel.tempComfort
+        case .hot:         return Pastel.tempHot
+        case .scorching:   return Pastel.tempScorch
         }
     }
     
@@ -645,25 +645,25 @@ struct MinimalHUD: View {
             VStack(spacing: 8) {
                 ZStack {
                     Circle()
-                        .fill(isSelected ? Color.cyan.opacity(0.3) : Color.white.opacity(0.08))
+                        .fill(isSelected ? Pastel.primary.opacity(0.25) : Pastel.cardFill)
                         .frame(width: 60, height: 60)
                     Circle()
-                        .stroke(isSelected ? Color.cyan : Color.white.opacity(0.2), lineWidth: isSelected ? 2 : 1)
+                        .stroke(isSelected ? Pastel.primary : Pastel.cardStroke, lineWidth: isSelected ? 2 : 1)
                         .frame(width: 60, height: 60)
                     
                     VStack(spacing: 2) {
                         Image(systemName: "flame.fill")
                             .font(.system(size: 16))
-                            .foregroundColor(isSelected ? .cyan : .white.opacity(0.5))
+                            .foregroundColor(isSelected ? Pastel.primary : Pastel.textSecondary)
                         Text(label)
                             .font(.system(size: 12, weight: .bold, design: .monospaced))
-                            .foregroundColor(isSelected ? .cyan : .white.opacity(0.7))
+                            .foregroundColor(isSelected ? Pastel.primary : Pastel.textSecondary)
                     }
                 }
                 
                 Text(subtitle.uppercased())
                     .font(.system(size: 9, weight: .medium, design: .monospaced))
-                    .foregroundColor(isSelected ? .cyan.opacity(0.8) : .white.opacity(0.4))
+                    .foregroundColor(isSelected ? Pastel.primary.opacity(0.8) : Pastel.textMuted)
             }
         }
     }
@@ -687,7 +687,7 @@ struct SurvivalBarView: View {
             
             ZStack(alignment: .leading) {
                 RoundedRectangle(cornerRadius: 3)
-                    .fill(Color.white.opacity(0.1))
+                    .fill(Pastel.cardFill)
                     .frame(width: 80, height: 6)
                 
                 RoundedRectangle(cornerRadius: 3)
@@ -706,9 +706,9 @@ struct SurvivalBarView: View {
     private var barGradient: LinearGradient {
         let ratio = value / maxValue
         if ratio < 0.25 {
-            return LinearGradient(colors: [.red, color.opacity(0.5)], startPoint: .leading, endPoint: .trailing)
+            return LinearGradient(colors: [Pastel.danger, color.opacity(0.5)], startPoint: .leading, endPoint: .trailing)
         }
-        return LinearGradient(colors: [color.opacity(0.6), color], startPoint: .leading, endPoint: .trailing)
+        return LinearGradient(colors: [color.opacity(0.5), color], startPoint: .leading, endPoint: .trailing)
     }
 }
 
@@ -727,7 +727,7 @@ struct ScannerRingView: View {
             let rotationAngle = Double(progress) * 45.0
             
             Circle()
-                .stroke(.white.opacity(0.1), lineWidth: 1.5)
+                .stroke(Pastel.textPrimary.opacity(0.08), lineWidth: 1.5)
                 .rotation3DEffect(.degrees(rotationAngle), axis: (x: 1, y: 0.5, z: 0))
             
             Circle()
@@ -735,9 +735,9 @@ struct ScannerRingView: View {
                 .stroke(
                     AngularGradient(
                         colors: [
-                            .cyan.opacity(0.3),
-                            .cyan.opacity(0.8),
-                            .white.opacity(0.9)
+                            Pastel.primary.opacity(0.3),
+                            Pastel.primary.opacity(0.7),
+                            Pastel.textPrimary.opacity(0.8)
                         ],
                         center: .center
                     ),
@@ -748,21 +748,21 @@ struct ScannerRingView: View {
             
             if progress > 0.5 {
                 Circle()
-                    .stroke(.cyan.opacity(0.4), lineWidth: 1)
+                    .stroke(Pastel.primary.opacity(0.3), lineWidth: 1)
                     .frame(width: 80 - CGFloat((progress - 0.5) * 40))
                     .opacity(Double(1.0 - progress))
             }
             
             Circle()
-                .fill(.white.opacity(Double(progress) * 0.8))
+                .fill(Pastel.textPrimary.opacity(Double(progress) * 0.7))
                 .frame(width: 4 + CGFloat(progress * 4.0), height: 4 + CGFloat(progress * 4.0))
-                .shadow(color: .cyan, radius: CGFloat(progress * 10.0))
+                .shadow(color: Pastel.primary.opacity(0.6), radius: CGFloat(progress * 8.0))
             
             if progress > 0.1 {
                 Text("\(Int(progress * 100))%")
                     .font(.system(size: 12, weight: .bold, design: .monospaced))
-                    .foregroundStyle(.white.opacity(Double(progress) * 0.9))
-                    .shadow(color: .cyan.opacity(0.5), radius: 4)
+                    .foregroundStyle(Pastel.textPrimary.opacity(Double(progress) * 0.8))
+                    .shadow(color: Pastel.primary.opacity(0.4), radius: 4)
                     .offset(y: 24)
             }
         }
@@ -788,4 +788,3 @@ struct ScannerRingView: View {
         }
     }
 }
-

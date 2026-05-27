@@ -4,6 +4,7 @@
 //
 //  Planet identity and configuration: emotional tone, atmosphere,
 //  terrain parameters, color palettes, and weather tables.
+//  All palettes use a pastel matte aesthetic for AAA-quality visuals.
 //
 
 import simd
@@ -30,7 +31,7 @@ enum WeatherType: String, CaseIterable {
     case electricStorm
 }
 
-// MARK: - Planet Color Palette
+// MARK: - Planet Color Palette (Pastel Matte)
 
 struct PlanetPalette {
     var skyZenith: SIMD3<Float>
@@ -41,60 +42,65 @@ struct PlanetPalette {
     var terrainTint: SIMD3<Float>
     var accentColor: SIMD3<Float>  // For glows, particles, UI hints
     
-    /// Generate a mood-appropriate palette from seed
+    /// Generate a mood-appropriate pastel matte palette from seed
     static func generate(mood: PlanetMood, seed: UInt64) -> PlanetPalette {
         var rng = SeededRNG(seed: seed)
         
         switch mood {
         case .lonely:
+            // Dusty periwinkle — vast, quiet, soft blue-gray skies
             return PlanetPalette(
-                skyZenith: SIMD3<Float>(0.02 + rng.nextFloat() * 0.05, 0.03 + rng.nextFloat() * 0.05, 0.08 + rng.nextFloat() * 0.1),
-                skyHorizon: SIMD3<Float>(0.4 + rng.nextFloat() * 0.2, 0.25 + rng.nextFloat() * 0.15, 0.15 + rng.nextFloat() * 0.1),
-                fogColor: SIMD3<Float>(0.3, 0.35, 0.4),
-                sunColor: SIMD3<Float>(1.0, 0.85, 0.7),
-                ambientColor: SIMD3<Float>(0.15, 0.18, 0.25),
-                terrainTint: SIMD3<Float>(0.7, 0.65, 0.6),
-                accentColor: SIMD3<Float>(0.3, 0.5, 0.8)
+                skyZenith: SIMD3<Float>(0.10 + rng.nextFloat() * 0.04, 0.12 + rng.nextFloat() * 0.04, 0.22 + rng.nextFloat() * 0.06),
+                skyHorizon: SIMD3<Float>(0.52 + rng.nextFloat() * 0.10, 0.50 + rng.nextFloat() * 0.08, 0.62 + rng.nextFloat() * 0.08),
+                fogColor: SIMD3<Float>(0.55, 0.55, 0.65),
+                sunColor: SIMD3<Float>(1.0, 0.95, 0.88),
+                ambientColor: SIMD3<Float>(0.25, 0.26, 0.35),
+                terrainTint: SIMD3<Float>(0.72, 0.70, 0.75),
+                accentColor: SIMD3<Float>(0.58, 0.68, 0.88)
             )
         case .decayed:
+            // Warm sand & peach — ancient, sun-bleached, soft amber
             return PlanetPalette(
-                skyZenith: SIMD3<Float>(0.05, 0.08 + rng.nextFloat() * 0.05, 0.03),
-                skyHorizon: SIMD3<Float>(0.6 + rng.nextFloat() * 0.2, 0.35 + rng.nextFloat() * 0.1, 0.15),
-                fogColor: SIMD3<Float>(0.45, 0.38, 0.28),
-                sunColor: SIMD3<Float>(1.0, 0.75, 0.5),
-                ambientColor: SIMD3<Float>(0.2, 0.18, 0.12),
-                terrainTint: SIMD3<Float>(0.6, 0.55, 0.4),
-                accentColor: SIMD3<Float>(0.8, 0.5, 0.2)
+                skyZenith: SIMD3<Float>(0.12 + rng.nextFloat() * 0.04, 0.10 + rng.nextFloat() * 0.03, 0.08),
+                skyHorizon: SIMD3<Float>(0.72 + rng.nextFloat() * 0.10, 0.55 + rng.nextFloat() * 0.08, 0.45 + rng.nextFloat() * 0.06),
+                fogColor: SIMD3<Float>(0.62, 0.55, 0.48),
+                sunColor: SIMD3<Float>(1.0, 0.92, 0.78),
+                ambientColor: SIMD3<Float>(0.28, 0.24, 0.20),
+                terrainTint: SIMD3<Float>(0.72, 0.65, 0.55),
+                accentColor: SIMD3<Float>(0.88, 0.72, 0.52)
             )
         case .serene:
+            // Soft seafoam & mint — tranquil, gentle, dreamy greens
             return PlanetPalette(
-                skyZenith: SIMD3<Float>(0.05, 0.1 + rng.nextFloat() * 0.1, 0.2 + rng.nextFloat() * 0.15),
-                skyHorizon: SIMD3<Float>(0.5, 0.55 + rng.nextFloat() * 0.2, 0.6 + rng.nextFloat() * 0.15),
-                fogColor: SIMD3<Float>(0.6, 0.65, 0.7),
+                skyZenith: SIMD3<Float>(0.08, 0.14 + rng.nextFloat() * 0.06, 0.20 + rng.nextFloat() * 0.08),
+                skyHorizon: SIMD3<Float>(0.58 + rng.nextFloat() * 0.10, 0.70 + rng.nextFloat() * 0.08, 0.68 + rng.nextFloat() * 0.08),
+                fogColor: SIMD3<Float>(0.68, 0.75, 0.72),
                 sunColor: SIMD3<Float>(1.0, 0.98, 0.95),
-                ambientColor: SIMD3<Float>(0.25, 0.28, 0.35),
-                terrainTint: SIMD3<Float>(0.65, 0.7, 0.65),
-                accentColor: SIMD3<Float>(0.4, 0.7, 0.9)
+                ambientColor: SIMD3<Float>(0.28, 0.32, 0.30),
+                terrainTint: SIMD3<Float>(0.68, 0.75, 0.68),
+                accentColor: SIMD3<Float>(0.55, 0.82, 0.72)
             )
         case .hostile:
+            // Dusty rose & terracotta — warm danger, soft coral glow
             return PlanetPalette(
-                skyZenith: SIMD3<Float>(0.15 + rng.nextFloat() * 0.05, 0.05, 0.05),
-                skyHorizon: SIMD3<Float>(0.8 + rng.nextFloat() * 0.2, 0.3, 0.2),
-                fogColor: SIMD3<Float>(0.6, 0.3, 0.25),
-                sunColor: SIMD3<Float>(1.0, 0.7, 0.5),
-                ambientColor: SIMD3<Float>(0.3, 0.15, 0.1),
-                terrainTint: SIMD3<Float>(0.7, 0.45, 0.4),
-                accentColor: SIMD3<Float>(1.0, 0.4, 0.3)
+                skyZenith: SIMD3<Float>(0.18 + rng.nextFloat() * 0.04, 0.10, 0.10),
+                skyHorizon: SIMD3<Float>(0.78 + rng.nextFloat() * 0.10, 0.50 + rng.nextFloat() * 0.06, 0.45),
+                fogColor: SIMD3<Float>(0.65, 0.48, 0.45),
+                sunColor: SIMD3<Float>(1.0, 0.85, 0.70),
+                ambientColor: SIMD3<Float>(0.30, 0.20, 0.18),
+                terrainTint: SIMD3<Float>(0.72, 0.58, 0.52),
+                accentColor: SIMD3<Float>(0.88, 0.60, 0.55)
             )
         case .surreal:
+            // Lavender & wisteria — otherworldly, soft violet dreamscape
             return PlanetPalette(
-                skyZenith: SIMD3<Float>(0.1 + rng.nextFloat() * 0.15, 0.02, 0.15 + rng.nextFloat() * 0.2),
-                skyHorizon: SIMD3<Float>(0.3, 0.6 + rng.nextFloat() * 0.3, 0.5 + rng.nextFloat() * 0.3),
-                fogColor: SIMD3<Float>(0.4, 0.5, 0.55),
-                sunColor: SIMD3<Float>(0.9, 0.85, 1.0),
-                ambientColor: SIMD3<Float>(0.2, 0.15, 0.25),
-                terrainTint: SIMD3<Float>(0.55, 0.5, 0.65),
-                accentColor: SIMD3<Float>(0.6, 0.2, 0.9)
+                skyZenith: SIMD3<Float>(0.14 + rng.nextFloat() * 0.06, 0.08, 0.22 + rng.nextFloat() * 0.10),
+                skyHorizon: SIMD3<Float>(0.55 + rng.nextFloat() * 0.10, 0.52 + rng.nextFloat() * 0.12, 0.70 + rng.nextFloat() * 0.10),
+                fogColor: SIMD3<Float>(0.58, 0.55, 0.65),
+                sunColor: SIMD3<Float>(0.95, 0.92, 1.0),
+                ambientColor: SIMD3<Float>(0.24, 0.20, 0.30),
+                terrainTint: SIMD3<Float>(0.65, 0.58, 0.72),
+                accentColor: SIMD3<Float>(0.75, 0.55, 0.85)
             )
         }
     }

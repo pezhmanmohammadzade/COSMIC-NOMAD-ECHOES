@@ -4,6 +4,7 @@
 //
 //  A UI overlay showing all discovered space facts,
 //  grouped by the planet/level they were found on.
+//  Pastel matte color aesthetic.
 //
 
 import SwiftUI
@@ -25,7 +26,7 @@ struct AchievementsView: View {
     var body: some View {
         ZStack {
             // Background blur
-            Color.black.opacity(0.85)
+            Pastel.overlay.opacity(0.95)
                 .ignoresSafeArea()
                 .onTapGesture {
                     onClose()
@@ -37,11 +38,11 @@ struct AchievementsView: View {
                     VStack(alignment: .leading, spacing: 4) {
                         Text("ARCHIVE")
                             .font(.system(size: 24, weight: .bold, design: .monospaced))
-                            .foregroundStyle(.cyan)
+                            .foregroundStyle(Pastel.primary)
                         
                         Text("\(discoveredFacts.count) SIGNALS DISCOVERED")
                             .font(.system(size: 12, weight: .medium, design: .monospaced))
-                            .foregroundStyle(.orange.opacity(0.8))
+                            .foregroundStyle(Pastel.secondary.opacity(0.8))
                     }
                     
                     Spacer()
@@ -49,7 +50,7 @@ struct AchievementsView: View {
                     Button(action: onClose) {
                         Image(systemName: "xmark.circle.fill")
                             .font(.system(size: 28))
-                            .foregroundStyle(.white.opacity(0.5))
+                            .foregroundStyle(Pastel.textSecondary)
                     }
                 }
                 .padding(.horizontal, 30)
@@ -59,7 +60,7 @@ struct AchievementsView: View {
                 // Divider
                 Rectangle()
                     .fill(
-                        LinearGradient(colors: [.cyan.opacity(0.5), .clear], startPoint: .leading, endPoint: .trailing)
+                        LinearGradient(colors: [Pastel.primary.opacity(0.4), .clear], startPoint: .leading, endPoint: .trailing)
                     )
                     .frame(height: 1)
                     .padding(.bottom, 20)
@@ -70,10 +71,10 @@ struct AchievementsView: View {
                         Spacer()
                         Image(systemName: "antenna.radiowaves.left.and.right.slash")
                             .font(.system(size: 40))
-                            .foregroundStyle(.white.opacity(0.2))
+                            .foregroundStyle(Pastel.textMuted)
                         Text("No signals discovered yet.")
                             .font(.system(size: 14, weight: .regular, design: .monospaced))
-                            .foregroundStyle(.white.opacity(0.4))
+                            .foregroundStyle(Pastel.textMuted)
                         Spacer()
                     }
                 } else {
@@ -85,10 +86,10 @@ struct AchievementsView: View {
                                     HStack {
                                         Text(group.uppercased())
                                             .font(.system(size: 14, weight: .bold, design: .monospaced))
-                                            .foregroundStyle(.white.opacity(0.5))
+                                            .foregroundStyle(Pastel.textSecondary)
                                         
                                         Rectangle()
-                                            .fill(Color.white.opacity(0.1))
+                                            .fill(Pastel.cardStroke)
                                             .frame(height: 1)
                                     }
                                     
@@ -133,31 +134,31 @@ struct FactCard: View {
             HStack {
                 Image(systemName: "sparkles")
                     .font(.system(size: 12))
-                    .foregroundStyle(.cyan)
+                    .foregroundStyle(Pastel.primary)
                 
                 Text(fact.title)
                     .font(.system(size: 14, weight: .bold, design: .monospaced))
-                    .foregroundStyle(.cyan.opacity(0.9))
+                    .foregroundStyle(Pastel.primary.opacity(0.9))
                 
                 Spacer()
                 
                 Text("#\(fact.id)")
                     .font(.system(size: 10, weight: .regular, design: .monospaced))
-                    .foregroundStyle(.white.opacity(0.2))
+                    .foregroundStyle(Pastel.textMuted)
             }
             
             Text(fact.fact)
                 .font(.system(size: 13, weight: .regular, design: .serif))
-                .foregroundStyle(.white.opacity(0.8))
+                .foregroundStyle(Pastel.textPrimary.opacity(0.8))
                 .lineSpacing(4)
         }
         .padding(16)
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .fill(Color.white.opacity(0.05))
+                .fill(Pastel.cardFill)
                 .overlay(
                     RoundedRectangle(cornerRadius: 12)
-                        .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                        .stroke(Pastel.cardStroke, lineWidth: 1)
                 )
         )
     }

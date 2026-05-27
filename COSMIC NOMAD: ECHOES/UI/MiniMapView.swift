@@ -4,6 +4,7 @@
 //
 //  Always-visible mini-map showing player position, facing direction,
 //  and nearby signal markers.
+//  Pastel matte color aesthetic.
 //
 
 import SwiftUI
@@ -21,17 +22,17 @@ struct MiniMapView: View {
         ZStack {
             // Background circle
             Circle()
-                .fill(Color.black.opacity(0.6))
+                .fill(Pastel.surface.opacity(0.7))
                 .frame(width: size, height: size)
             
             Circle()
-                .stroke(Color.cyan.opacity(0.3), lineWidth: 1)
+                .stroke(Pastel.primary.opacity(0.2), lineWidth: 1)
                 .frame(width: size, height: size)
             
             // Compass directions
             Text("N")
                 .font(.system(size: 7, weight: .bold, design: .monospaced))
-                .foregroundColor(.cyan.opacity(0.5))
+                .foregroundColor(Pastel.primary.opacity(0.5))
                 .offset(y: -size / 2 + 8)
                 .rotationEffect(.radians(Double(playerYaw)))
             
@@ -60,9 +61,9 @@ struct MiniMapView: View {
                         let finalZ = sin(angle) * clampDist
                         
                         Circle()
-                            .fill(Color.orange)
+                            .fill(Pastel.secondary)
                             .frame(width: 4, height: 4)
-                            .shadow(color: .orange, radius: 3)
+                            .shadow(color: Pastel.secondary.opacity(0.6), radius: 3)
                             .offset(x: finalX, y: finalZ)
                     }
                 }
@@ -70,13 +71,13 @@ struct MiniMapView: View {
             
             // Player indicator (center triangle)
             Triangle()
-                .fill(Color.cyan)
+                .fill(Pastel.primary)
                 .frame(width: 8, height: 10)
-                .shadow(color: .cyan, radius: 4)
+                .shadow(color: Pastel.primary.opacity(0.5), radius: 4)
             
             // Range ring
             Circle()
-                .stroke(Color.white.opacity(0.08), lineWidth: 0.5)
+                .stroke(Pastel.textPrimary.opacity(0.06), lineWidth: 0.5)
                 .frame(width: size * 0.6, height: size * 0.6)
         }
         .frame(width: size, height: size)

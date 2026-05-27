@@ -95,14 +95,14 @@ struct LaunchScreenView: View {
     
     var body: some View {
         ZStack {
-            // Background
-            Color.black
+            // Background — warm dark navy
+            Pastel.bg
             
             // Subtle star particles (simulated with dots)
             GeometryReader { geo in
                 ForEach(0..<40, id: \.self) { i in
                     Circle()
-                        .fill(.white.opacity(Double.random(in: 0.1...0.5)))
+                        .fill(Pastel.textPrimary.opacity(Double.random(in: 0.08...0.35)))
                         .frame(width: CGFloat.random(in: 1...3))
                         .position(
                             x: CGFloat.random(in: 0...geo.size.width),
@@ -118,19 +118,19 @@ struct LaunchScreenView: View {
                 VStack(spacing: 8) {
                     Text("COSMIC NOMAD")
                         .font(.system(size: 32, weight: .ultraLight, design: .serif))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(Pastel.textPrimary)
                         .tracking(12)
                         .opacity(titleOpacity)
                     
                     // Thin divider line
                     Rectangle()
-                        .fill(.white.opacity(0.3))
+                        .fill(Pastel.primary.opacity(0.4))
                         .frame(width: 60, height: 0.5)
                         .opacity(subtitleOpacity)
                     
                     Text("ECHOES")
                         .font(.system(size: 18, weight: .thin, design: .serif))
-                        .foregroundStyle(.white.opacity(0.7))
+                        .foregroundStyle(Pastel.primary.opacity(0.7))
                         .tracking(20)
                         .opacity(subtitleOpacity)
                 }
@@ -140,7 +140,7 @@ struct LaunchScreenView: View {
                 // Tagline
                 Text("Every world remembers. Every silence speaks.")
                     .font(.system(size: 12, weight: .light, design: .serif))
-                    .foregroundStyle(.white.opacity(0.4))
+                    .foregroundStyle(Pastel.textMuted)
                     .italic()
                     .opacity(taglineOpacity)
                     .padding(.bottom, 60)

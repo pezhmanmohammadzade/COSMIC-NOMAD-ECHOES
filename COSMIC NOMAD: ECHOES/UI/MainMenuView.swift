@@ -2,7 +2,7 @@
 //  MainMenuView.swift
 //  COSMIC NOMAD: ECHOES
 //
-//  Home page for the game.
+//  Home page for the game — pastel matte aesthetic.
 //
 
 import SwiftUI
@@ -24,7 +24,7 @@ struct MainMenuView: View {
     var body: some View {
         ZStack {
             // Background
-            Color.black.ignoresSafeArea()
+            Pastel.bg.ignoresSafeArea()
             AnimatedStarfield()
             
             VStack(spacing: 0) {
@@ -34,16 +34,16 @@ struct MainMenuView: View {
                 VStack(spacing: 6) {
                     Text("COSMIC NOMAD")
                         .font(.system(size: 26, weight: .ultraLight, design: .serif))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(Pastel.textPrimary)
                         .tracking(10)
                     
                     Rectangle()
-                        .fill(.cyan.opacity(0.4))
+                        .fill(Pastel.primary.opacity(0.4))
                         .frame(width: 60, height: 0.5)
                     
                     Text("ECHOES")
                         .font(.system(size: 15, weight: .thin, design: .serif))
-                        .foregroundStyle(.white.opacity(0.7))
+                        .foregroundStyle(Pastel.primary.opacity(0.6))
                         .tracking(16)
                 }
                 .opacity(titleOpacity)
@@ -54,28 +54,28 @@ struct MainMenuView: View {
                 // Menu Buttons
                 VStack(spacing: 14) {
                     if hasSavedProgress {
-                        MenuButton(title: "RESUME JOURNEY", icon: "play.fill", color: .cyan) {
+                        MenuButton(title: "RESUME JOURNEY", icon: "play.fill", color: Pastel.primary) {
                             startGame(reset: false)
                         }
                         
-                        MenuButton(title: "NEW JOURNEY", icon: "plus.circle", color: .orange) {
+                        MenuButton(title: "NEW JOURNEY", icon: "plus.circle", color: Pastel.secondary) {
                             showWipeConfirm = true
                         }
                     } else {
-                        MenuButton(title: "BEGIN JOURNEY", icon: "play.fill", color: .cyan) {
+                        MenuButton(title: "BEGIN JOURNEY", icon: "play.fill", color: Pastel.primary) {
                             startGame(reset: true)
                         }
                     }
                     
-                    MenuButton(title: "SETTINGS", icon: "gearshape", color: .white.opacity(0.6)) {
+                    MenuButton(title: "SETTINGS", icon: "gearshape", color: Pastel.textSecondary) {
                         withAnimation { showSettings = true }
                     }
                     
-                    MenuButton(title: "STAR CHART", icon: "globe.americas.fill", color: .purple.opacity(0.7)) {
+                    MenuButton(title: "STAR CHART", icon: "globe.americas.fill", color: Pastel.tertiary) {
                         withAnimation { showPlanets = true }
                     }
                     
-                    MenuButton(title: "CODEX", icon: "book.closed.fill", color: .cyan.opacity(0.5)) {
+                    MenuButton(title: "CODEX", icon: "book.closed.fill", color: Pastel.primary.opacity(0.7)) {
                         withAnimation { showCodex = true }
                     }
                 }
@@ -113,15 +113,15 @@ struct MainMenuView: View {
             
             // Wipe Confirmation Overlay
             if showWipeConfirm {
-                Color.black.opacity(0.8).ignoresSafeArea()
+                Pastel.overlay.opacity(0.9).ignoresSafeArea()
                 VStack(spacing: 24) {
                     Text("WARNING")
                         .font(.system(size: 18, weight: .bold, design: .monospaced))
-                        .foregroundColor(.orange)
+                        .foregroundColor(Pastel.secondary)
                     
                     Text("Starting a new journey will erase all your current progress.")
                         .font(.system(size: 14, weight: .regular, design: .serif))
-                        .foregroundColor(.white)
+                        .foregroundColor(Pastel.textPrimary)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 40)
                     
@@ -130,7 +130,7 @@ struct MainMenuView: View {
                             withAnimation { showWipeConfirm = false }
                         }
                         .font(.system(size: 12, weight: .bold, design: .monospaced))
-                        .foregroundColor(.white.opacity(0.6))
+                        .foregroundColor(Pastel.textSecondary)
                         .padding(.horizontal, 20)
                         .padding(.vertical, 10)
                         
@@ -141,16 +141,16 @@ struct MainMenuView: View {
                             }
                         }
                         .font(.system(size: 12, weight: .bold, design: .monospaced))
-                        .foregroundColor(.black)
+                        .foregroundColor(Pastel.bg)
                         .padding(.horizontal, 20)
                         .padding(.vertical, 10)
-                        .background(Color.orange)
+                        .background(Pastel.secondary)
                         .clipShape(Capsule())
                     }
                 }
                 .padding(30)
-                .background(Color.black.opacity(0.9))
-                .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.orange.opacity(0.5), lineWidth: 1))
+                .background(Pastel.surface)
+                .overlay(RoundedRectangle(cornerRadius: 16).stroke(Pastel.secondary.opacity(0.3), lineWidth: 1))
                 .cornerRadius(16)
                 .padding(40)
                 .transition(.scale.combined(with: .opacity))
@@ -204,9 +204,9 @@ struct MenuButton: View {
             .foregroundColor(color)
             .frame(width: 220)
             .padding(.vertical, 14)
-            .background(color.opacity(0.1))
+            .background(color.opacity(0.08))
             .overlay(
-                Capsule().stroke(color.opacity(0.3), lineWidth: 1)
+                Capsule().stroke(color.opacity(0.2), lineWidth: 1)
             )
             .clipShape(Capsule())
         }
@@ -220,57 +220,57 @@ struct SettingsOverlayView: View {
     
     var body: some View {
         ZStack {
-            Color.black.opacity(0.85).ignoresSafeArea()
+            Pastel.overlay.opacity(0.95).ignoresSafeArea()
             
             ScrollView {
                 VStack(spacing: 24) {
                     Text("SETTINGS")
                         .font(.system(size: 16, weight: .bold, design: .monospaced))
-                        .foregroundColor(.white)
+                        .foregroundColor(Pastel.textPrimary)
                         .tracking(4)
                     
                     // === AUDIO ===
-                    SettingsSection(title: "AUDIO", icon: "speaker.wave.3.fill", color: .cyan) {
-                        SettingsSlider(label: "MASTER VOLUME", value: $settings.masterVolume, color: .cyan)
-                        SettingsSlider(label: "MUSIC", value: $settings.musicVolume, color: .cyan)
-                        SettingsSlider(label: "SFX", value: $settings.sfxVolume, color: .cyan)
+                    SettingsSection(title: "AUDIO", icon: "speaker.wave.3.fill", color: Pastel.primary) {
+                        SettingsSlider(label: "MASTER VOLUME", value: $settings.masterVolume, color: Pastel.primary)
+                        SettingsSlider(label: "MUSIC", value: $settings.musicVolume, color: Pastel.primary)
+                        SettingsSlider(label: "SFX", value: $settings.sfxVolume, color: Pastel.primary)
                     }
                     
                     // === CONTROLS ===
-                    SettingsSection(title: "CONTROLS", icon: "hand.draw.fill", color: .orange) {
-                        SettingsSlider(label: "CAMERA SENSITIVITY", value: $settings.cameraSensitivity, range: 0.2...3.0, color: .orange)
+                    SettingsSection(title: "CONTROLS", icon: "hand.draw.fill", color: Pastel.secondary) {
+                        SettingsSlider(label: "CAMERA SENSITIVITY", value: $settings.cameraSensitivity, range: 0.2...3.0, color: Pastel.secondary)
                         
                         Toggle(isOn: $settings.invertYAxis) {
                             Text("INVERT Y-AXIS")
                                 .font(.system(size: 11, weight: .regular, design: .monospaced))
-                                .foregroundColor(.white.opacity(0.7))
+                                .foregroundColor(Pastel.textSecondary)
                         }
-                        .tint(.orange)
+                        .tint(Pastel.secondary)
                         
                         Toggle(isOn: $settings.hapticsEnabled) {
                             Text("HAPTICS")
                                 .font(.system(size: 11, weight: .regular, design: .monospaced))
-                                .foregroundColor(.white.opacity(0.7))
+                                .foregroundColor(Pastel.textSecondary)
                         }
-                        .tint(.orange)
+                        .tint(Pastel.secondary)
                     }
                     
                     // === GRAPHICS ===
-                    SettingsSection(title: "GRAPHICS", icon: "paintbrush.fill", color: .purple) {
+                    SettingsSection(title: "GRAPHICS", icon: "paintbrush.fill", color: Pastel.tertiary) {
                         VStack(alignment: .leading, spacing: 8) {
                             Text("QUALITY")
                                 .font(.system(size: 11, weight: .regular, design: .monospaced))
-                                .foregroundColor(.white.opacity(0.7))
+                                .foregroundColor(Pastel.textSecondary)
                             
                             HStack(spacing: 8) {
                                 ForEach(GraphicsQuality.allCases, id: \.rawValue) { quality in
                                     Button(action: { settings.graphicsQuality = quality }) {
                                         Text(quality.rawValue.uppercased())
                                             .font(.system(size: 10, weight: .bold, design: .monospaced))
-                                            .foregroundColor(settings.graphicsQuality == quality ? .black : .white.opacity(0.6))
+                                            .foregroundColor(settings.graphicsQuality == quality ? Pastel.bg : Pastel.textSecondary)
                                             .frame(maxWidth: .infinity)
                                             .padding(.vertical, 8)
-                                            .background(settings.graphicsQuality == quality ? Color.purple : Color.white.opacity(0.1))
+                                            .background(settings.graphicsQuality == quality ? Pastel.tertiary : Pastel.cardFill)
                                             .cornerRadius(6)
                                     }
                                 }
@@ -278,27 +278,27 @@ struct SettingsOverlayView: View {
                             
                             Text(qualityDescription)
                                 .font(.system(size: 9, weight: .regular, design: .monospaced))
-                                .foregroundColor(.white.opacity(0.4))
+                                .foregroundColor(Pastel.textMuted)
                         }
                     }
                     
                     // === DISPLAY ===
-                    SettingsSection(title: "DISPLAY", icon: "map.fill", color: .green) {
+                    SettingsSection(title: "DISPLAY", icon: "map.fill", color: Pastel.success) {
                         Toggle(isOn: $settings.showMiniMap) {
                             Text("MINI-MAP")
                                 .font(.system(size: 11, weight: .regular, design: .monospaced))
-                                .foregroundColor(.white.opacity(0.7))
+                                .foregroundColor(Pastel.textSecondary)
                         }
-                        .tint(.green)
+                        .tint(Pastel.success)
                     }
                     
                     Button(action: onClose) {
                         Text("CLOSE")
                             .font(.system(size: 12, weight: .bold, design: .monospaced))
-                            .foregroundColor(.black)
+                            .foregroundColor(Pastel.bg)
                             .padding(.horizontal, 40)
                             .padding(.vertical, 14)
-                            .background(Color.white)
+                            .background(Pastel.textPrimary)
                             .clipShape(Capsule())
                     }
                     .padding(.top, 8)
@@ -306,10 +306,10 @@ struct SettingsOverlayView: View {
                 .padding(30)
             }
             .frame(maxWidth: 340, maxHeight: 580)
-            .background(Color.black)
+            .background(Pastel.surface)
             .overlay(
                 RoundedRectangle(cornerRadius: 16)
-                    .stroke(Color.white.opacity(0.2), lineWidth: 1)
+                    .stroke(Pastel.cardStroke, lineWidth: 1)
             )
             .cornerRadius(16)
         }
@@ -347,7 +347,7 @@ struct SettingsSection<Content: View>: View {
             content
         }
         .padding(16)
-        .background(Color.white.opacity(0.05))
+        .background(Pastel.cardFill)
         .cornerRadius(12)
     }
 }
@@ -364,7 +364,7 @@ struct SettingsSlider: View {
             HStack {
                 Text(label)
                     .font(.system(size: 11, weight: .regular, design: .monospaced))
-                    .foregroundColor(.white.opacity(0.7))
+                    .foregroundColor(Pastel.textSecondary)
                 Spacer()
                 Text("\(Int(((value - range.lowerBound) / (range.upperBound - range.lowerBound)) * 100))%")
                     .font(.system(size: 11, weight: .bold, design: .monospaced))
@@ -375,4 +375,3 @@ struct SettingsSlider: View {
         }
     }
 }
-

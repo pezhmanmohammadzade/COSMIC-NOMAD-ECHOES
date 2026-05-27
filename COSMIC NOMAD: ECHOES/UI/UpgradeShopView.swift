@@ -3,6 +3,7 @@
 //  COSMIC NOMAD: ECHOES
 //
 //  Full-screen overlay for purchasing suit upgrades with Data Cores.
+//  Pastel matte color aesthetic.
 //
 
 import SwiftUI
@@ -15,7 +16,7 @@ struct UpgradeShopView: View {
     var body: some View {
         ZStack {
             // Background
-            Color.black.opacity(0.92).ignoresSafeArea()
+            Pastel.overlay.opacity(0.96).ignoresSafeArea()
             
             VStack(spacing: 20) {
                 // Header
@@ -23,16 +24,16 @@ struct UpgradeShopView: View {
                     VStack(alignment: .leading, spacing: 4) {
                         Text("SUIT UPGRADES")
                             .font(.system(size: 18, weight: .bold, design: .monospaced))
-                            .foregroundColor(.white)
+                            .foregroundColor(Pastel.textPrimary)
                             .tracking(4)
                         
                         HStack(spacing: 6) {
                             Image(systemName: "diamond.fill")
                                 .font(.system(size: 12))
-                                .foregroundColor(.yellow)
+                                .foregroundColor(Pastel.gold)
                             Text("\(dataCores) DATA CORES")
                                 .font(.system(size: 13, weight: .bold, design: .monospaced))
-                                .foregroundColor(.yellow)
+                                .foregroundColor(Pastel.gold)
                         }
                     }
                     
@@ -41,7 +42,7 @@ struct UpgradeShopView: View {
                     Button(action: onClose) {
                         Image(systemName: "xmark.circle.fill")
                             .font(.system(size: 24))
-                            .foregroundColor(.white.opacity(0.5))
+                            .foregroundColor(Pastel.textSecondary)
                     }
                 }
                 .padding(.horizontal, 24)
@@ -100,38 +101,38 @@ struct UpgradeCardView: View {
             // Icon
             ZStack {
                 Circle()
-                    .fill(maxed ? Color.cyan.opacity(0.2) : Color.white.opacity(0.08))
+                    .fill(maxed ? Pastel.primary.opacity(0.15) : Pastel.cardFill)
                     .frame(width: 50, height: 50)
                 
                 Image(systemName: type.icon)
                     .font(.system(size: 20))
-                    .foregroundColor(maxed ? .cyan : .white.opacity(0.7))
+                    .foregroundColor(maxed ? Pastel.primary : Pastel.textSecondary)
             }
             
             // Info
             VStack(alignment: .leading, spacing: 4) {
                 Text(type.rawValue.uppercased())
                     .font(.system(size: 12, weight: .bold, design: .monospaced))
-                    .foregroundColor(.white)
+                    .foregroundColor(Pastel.textPrimary)
                 
                 Text(type.description)
                     .font(.system(size: 10, weight: .regular, design: .monospaced))
-                    .foregroundColor(.white.opacity(0.5))
+                    .foregroundColor(Pastel.textSecondary)
                 
                 // Tier dots
                 HStack(spacing: 6) {
                     ForEach(0..<UpgradeSystem.UpgradeType.maxTier, id: \.self) { i in
                         Circle()
-                            .fill(i < tier ? Color.cyan : Color.white.opacity(0.15))
+                            .fill(i < tier ? Pastel.primary : Pastel.cardStroke)
                             .frame(width: 8, height: 8)
                             .overlay(
-                                Circle().stroke(Color.white.opacity(0.2), lineWidth: 0.5)
+                                Circle().stroke(Pastel.cardStroke, lineWidth: 0.5)
                             )
                     }
                     
                     Text("TIER \(tier)/\(UpgradeSystem.UpgradeType.maxTier)")
                         .font(.system(size: 9, weight: .medium, design: .monospaced))
-                        .foregroundColor(.white.opacity(0.3))
+                        .foregroundColor(Pastel.textMuted)
                 }
             }
             
@@ -141,10 +142,10 @@ struct UpgradeCardView: View {
             if maxed {
                 Text("MAX")
                     .font(.system(size: 11, weight: .bold, design: .monospaced))
-                    .foregroundColor(.cyan)
+                    .foregroundColor(Pastel.primary)
                     .padding(.horizontal, 14)
                     .padding(.vertical, 8)
-                    .background(Color.cyan.opacity(0.15))
+                    .background(Pastel.primary.opacity(0.10))
                     .clipShape(Capsule())
             } else {
                 Button(action: onPurchase) {
@@ -154,10 +155,10 @@ struct UpgradeCardView: View {
                         Text("\(nextCost)")
                             .font(.system(size: 12, weight: .bold, design: .monospaced))
                     }
-                    .foregroundColor(canBuy ? .black : .white.opacity(0.3))
+                    .foregroundColor(canBuy ? Pastel.bg : Pastel.textMuted)
                     .padding(.horizontal, 14)
                     .padding(.vertical, 8)
-                    .background(canBuy ? Color.yellow : Color.white.opacity(0.1))
+                    .background(canBuy ? Pastel.gold : Pastel.cardFill)
                     .clipShape(Capsule())
                 }
                 .disabled(!canBuy)
@@ -166,10 +167,10 @@ struct UpgradeCardView: View {
         .padding(16)
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .fill(isFlashing ? Color.cyan.opacity(0.15) : Color.white.opacity(0.05))
+                .fill(isFlashing ? Pastel.primary.opacity(0.10) : Pastel.cardFill)
                 .overlay(
                     RoundedRectangle(cornerRadius: 12)
-                        .stroke(isFlashing ? Color.cyan.opacity(0.5) : Color.white.opacity(0.1), lineWidth: 1)
+                        .stroke(isFlashing ? Pastel.primary.opacity(0.4) : Pastel.cardStroke, lineWidth: 1)
                 )
         )
     }

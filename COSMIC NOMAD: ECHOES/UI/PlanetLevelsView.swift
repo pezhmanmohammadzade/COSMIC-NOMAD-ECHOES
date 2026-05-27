@@ -5,6 +5,7 @@
 //  Galaxy-scatter planet levels map showing all 10 planets as a visual
 //  progression system. Completed planets are full-color and tappable
 //  to travel to. Locked planets are greyed out until unlocked.
+//  Pastel matte color aesthetic.
 //
 
 import SwiftUI
@@ -26,7 +27,7 @@ struct PlanetLevelsView: View {
     var body: some View {
         ZStack {
             // Deep space background
-            Color.black.ignoresSafeArea()
+            Pastel.bg.ignoresSafeArea()
             
             // Animated starfield background
             Canvas { context, size in
@@ -34,12 +35,12 @@ struct PlanetLevelsView: View {
                     let seed = Double(i) * 137.508
                     let x = ((sin(seed * 0.7) + 1) / 2) * size.width
                     let y = ((cos(seed * 1.3) + 1) / 2) * size.height
-                    let brightness = (sin(starPhase + seed) + 1) / 2 * 0.5 + 0.1
+                    let brightness = (sin(starPhase + seed) + 1) / 2 * 0.35 + 0.06
                     let starSize = CGFloat(1 + (sin(seed * 2.1) + 1) * 1.2)
                     
                     context.fill(
                         Path(ellipseIn: CGRect(x: x, y: y, width: starSize, height: starSize)),
-                        with: .color(.white.opacity(brightness))
+                        with: .color(Pastel.textPrimary.opacity(brightness))
                     )
                 }
             }
@@ -60,7 +61,7 @@ struct PlanetLevelsView: View {
                                 Text("BACK")
                                     .font(.system(size: 10, weight: .bold, design: .monospaced))
                             }
-                            .foregroundColor(.white.opacity(0.6))
+                            .foregroundColor(Pastel.textSecondary)
                         }
                         Spacer()
                     }
@@ -68,12 +69,12 @@ struct PlanetLevelsView: View {
                     VStack(spacing: 4) {
                         Text("STAR CHART")
                             .font(.system(size: 14, weight: .bold, design: .monospaced))
-                            .foregroundColor(.white)
+                            .foregroundColor(Pastel.textPrimary)
                             .tracking(4)
                         
                         Text("\(planetsCompleted) / \(planets.count) DECODED")
                             .font(.system(size: 9, weight: .medium, design: .monospaced))
-                            .foregroundColor(.cyan.opacity(0.6))
+                            .foregroundColor(Pastel.primary.opacity(0.6))
                     }
                 }
                 .padding(.horizontal, 20)
@@ -101,7 +102,7 @@ struct PlanetLevelsView: View {
                                 
                                 context.stroke(
                                     path,
-                                    with: .color(isCompleted ? .cyan.opacity(0.3) : .white.opacity(0.08)),
+                                    with: .color(isCompleted ? Pastel.primary.opacity(0.25) : Pastel.textPrimary.opacity(0.06)),
                                     style: StrokeStyle(lineWidth: isCompleted ? 1.5 : 0.5, dash: isCompleted ? [] : [4, 4])
                                 )
                             }
@@ -164,7 +165,7 @@ struct PlanetLevelsView: View {
             // === TRAVEL CONFIRMATION OVERLAY ===
             if showTravelConfirm {
                 ZStack {
-                    Color.black.opacity(0.85).ignoresSafeArea()
+                    Pastel.overlay.opacity(0.92).ignoresSafeArea()
                         .onTapGesture {
                             withAnimation(.spring(response: 0.3)) {
                                 showTravelConfirm = false
@@ -183,18 +184,18 @@ struct PlanetLevelsView: View {
                                 )
                             )
                             .frame(width: 70, height: 70)
-                            .overlay(Circle().stroke(planets[travelTargetIndex].accentColor.opacity(0.6), lineWidth: 2))
-                            .shadow(color: planets[travelTargetIndex].accentColor.opacity(0.4), radius: 15)
+                            .overlay(Circle().stroke(planets[travelTargetIndex].accentColor.opacity(0.4), lineWidth: 2))
+                            .shadow(color: planets[travelTargetIndex].accentColor.opacity(0.25), radius: 15)
                         
                         VStack(spacing: 6) {
                             Text("TRAVEL TO")
                                 .font(.system(size: 10, weight: .medium, design: .monospaced))
-                                .foregroundColor(.white.opacity(0.5))
+                                .foregroundColor(Pastel.textSecondary)
                                 .tracking(3)
                             
                             Text(planets[travelTargetIndex].name)
                                 .font(.system(size: 18, weight: .bold, design: .monospaced))
-                                .foregroundColor(.white)
+                                .foregroundColor(Pastel.textPrimary)
                                 .tracking(2)
                             
                             Label(planets[travelTargetIndex].mood.uppercased(), systemImage: planets[travelTargetIndex].moodIcon)
@@ -204,7 +205,7 @@ struct PlanetLevelsView: View {
                         
                         Text("Your current planet progress will be saved.")
                             .font(.system(size: 10, weight: .regular, design: .serif))
-                            .foregroundColor(.white.opacity(0.4))
+                            .foregroundColor(Pastel.textMuted)
                             .multilineTextAlignment(.center)
                         
                         HStack(spacing: 16) {
@@ -215,12 +216,12 @@ struct PlanetLevelsView: View {
                             }) {
                                 Text("CANCEL")
                                     .font(.system(size: 11, weight: .bold, design: .monospaced))
-                                    .foregroundColor(.white.opacity(0.6))
+                                    .foregroundColor(Pastel.textSecondary)
                                     .padding(.horizontal, 24)
                                     .padding(.vertical, 12)
-                                    .background(Color.white.opacity(0.08))
+                                    .background(Pastel.cardFill)
                                     .clipShape(Capsule())
-                                    .overlay(Capsule().stroke(Color.white.opacity(0.15), lineWidth: 1))
+                                    .overlay(Capsule().stroke(Pastel.cardStroke, lineWidth: 1))
                             }
                             
                             Button(action: {
@@ -233,30 +234,30 @@ struct PlanetLevelsView: View {
                                         .font(.system(size: 11, weight: .bold, design: .monospaced))
                                         .tracking(2)
                                 }
-                                .foregroundColor(.black)
+                                .foregroundColor(Pastel.bg)
                                 .padding(.horizontal, 24)
                                 .padding(.vertical, 12)
                                 .background(
                                     LinearGradient(
-                                        colors: [.cyan, .blue],
+                                        colors: [Pastel.primary, Pastel.tertiary],
                                         startPoint: .leading,
                                         endPoint: .trailing
                                     )
                                 )
                                 .clipShape(Capsule())
-                                .shadow(color: .cyan.opacity(0.4), radius: 8)
+                                .shadow(color: Pastel.primary.opacity(0.25), radius: 8)
                             }
                         }
                     }
                     .padding(30)
                     .background(
                         RoundedRectangle(cornerRadius: 20)
-                            .fill(Color.black.opacity(0.95))
+                            .fill(Pastel.surface)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 20)
                                     .stroke(
                                         LinearGradient(
-                                            colors: [planets[travelTargetIndex].accentColor.opacity(0.4), .clear],
+                                            colors: [planets[travelTargetIndex].accentColor.opacity(0.3), .clear],
                                             startPoint: .top,
                                             endPoint: .bottom
                                         ),
@@ -329,7 +330,7 @@ struct PlanetNode: View {
                 // Glow ring for current planet
                 if isCurrent {
                     Circle()
-                        .stroke(planet.accentColor.opacity(0.3 + sin(pulsePhase) * 0.2), lineWidth: 2)
+                        .stroke(planet.accentColor.opacity(0.25 + sin(pulsePhase) * 0.12), lineWidth: 2)
                         .frame(width: 62, height: 62)
                         .scaleEffect(1.0 + CGFloat(sin(pulsePhase) * 0.05))
                 }
@@ -339,7 +340,7 @@ struct PlanetNode: View {
                     .fill(
                         RadialGradient(
                             colors: isLocked
-                                ? [.gray.opacity(0.3), .gray.opacity(0.1)]
+                                ? [Pastel.textMuted.opacity(0.25), Pastel.textMuted.opacity(0.08)]
                                 : [planet.primaryColor, planet.secondaryColor],
                             center: .topLeading,
                             startRadius: 5,
@@ -350,38 +351,38 @@ struct PlanetNode: View {
                     .overlay(
                         Circle()
                             .stroke(
-                                isCompleted ? planet.accentColor.opacity(0.6) :
-                                isCurrent ? planet.accentColor.opacity(0.4) :
-                                .white.opacity(0.1),
+                                isCompleted ? planet.accentColor.opacity(0.5) :
+                                isCurrent ? planet.accentColor.opacity(0.35) :
+                                Pastel.cardStroke,
                                 lineWidth: isCompleted ? 2 : 1
                             )
                     )
-                    .shadow(color: isLocked ? .clear : planet.accentColor.opacity(0.3), radius: isSelected ? 12 : 6)
+                    .shadow(color: isLocked ? .clear : planet.accentColor.opacity(0.2), radius: isSelected ? 12 : 6)
                 
                 // Status icon
                 if isCompleted {
                     Image(systemName: "checkmark.circle.fill")
                         .font(.system(size: 16))
-                        .foregroundColor(.green)
+                        .foregroundColor(Pastel.success)
                         .offset(x: 18, y: -18)
                 } else if isLocked {
                     Image(systemName: "lock.fill")
                         .font(.system(size: 12))
-                        .foregroundColor(.white.opacity(0.3))
+                        .foregroundColor(Pastel.textMuted)
                 }
                 
                 // Planet number
                 if !isLocked {
                     Text("\(index + 1)")
                         .font(.system(size: 11, weight: .bold, design: .monospaced))
-                        .foregroundColor(.white.opacity(0.8))
+                        .foregroundColor(Pastel.textPrimary.opacity(0.8))
                 }
             }
             
             // Planet name
             Text(planet.name)
                 .font(.system(size: 8, weight: .bold, design: .monospaced))
-                .foregroundColor(isLocked ? .white.opacity(0.2) : .white.opacity(0.7))
+                .foregroundColor(isLocked ? Pastel.textMuted : Pastel.textSecondary)
                 .lineLimit(1)
         }
         .onAppear {
@@ -415,12 +416,12 @@ struct PlanetDetailPanel: View {
                     )
                 )
                 .frame(width: 44, height: 44)
-                .overlay(Circle().stroke(planet.accentColor.opacity(0.4), lineWidth: 1))
+                .overlay(Circle().stroke(planet.accentColor.opacity(0.3), lineWidth: 1))
             
             VStack(alignment: .leading, spacing: 4) {
                 Text(planet.name)
                     .font(.system(size: 13, weight: .bold, design: .monospaced))
-                    .foregroundColor(.white)
+                    .foregroundColor(Pastel.textPrimary)
                 
                 HStack(spacing: 8) {
                     Label(planet.mood.uppercased(), systemImage: planet.moodIcon)
@@ -430,25 +431,25 @@ struct PlanetDetailPanel: View {
                     if isCompleted {
                         Text("DECODED")
                             .font(.system(size: 8, weight: .bold, design: .monospaced))
-                            .foregroundColor(.green)
+                            .foregroundColor(Pastel.success)
                             .padding(.horizontal, 6)
                             .padding(.vertical, 2)
-                            .background(Color.green.opacity(0.15))
+                            .background(Pastel.success.opacity(0.10))
                             .clipShape(Capsule())
                     } else if isCurrent {
                         Text("ACTIVE")
                             .font(.system(size: 8, weight: .bold, design: .monospaced))
-                            .foregroundColor(.cyan)
+                            .foregroundColor(Pastel.primary)
                             .padding(.horizontal, 6)
                             .padding(.vertical, 2)
-                            .background(Color.cyan.opacity(0.15))
+                            .background(Pastel.primary.opacity(0.10))
                             .clipShape(Capsule())
                     }
                 }
                 
                 Text(planet.description)
                     .font(.system(size: 9, weight: .regular, design: .serif))
-                    .foregroundColor(.white.opacity(0.5))
+                    .foregroundColor(Pastel.textSecondary)
                     .lineLimit(2)
             }
             
@@ -463,13 +464,13 @@ struct PlanetDetailPanel: View {
                         Text("TRAVEL")
                             .font(.system(size: 7, weight: .bold, design: .monospaced))
                     }
-                    .foregroundColor(.cyan)
+                    .foregroundColor(Pastel.primary)
                     .frame(width: 50, height: 50)
-                    .background(Color.cyan.opacity(0.12))
+                    .background(Pastel.primary.opacity(0.08))
                     .clipShape(RoundedRectangle(cornerRadius: 10))
                     .overlay(
                         RoundedRectangle(cornerRadius: 10)
-                            .stroke(Color.cyan.opacity(0.3), lineWidth: 1)
+                            .stroke(Pastel.primary.opacity(0.2), lineWidth: 1)
                     )
                 }
             }
@@ -477,16 +478,16 @@ struct PlanetDetailPanel: View {
         .padding(14)
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .fill(Color.black.opacity(0.8))
+                .fill(Pastel.surface.opacity(0.9))
                 .overlay(
                     RoundedRectangle(cornerRadius: 12)
-                        .stroke(planet.accentColor.opacity(0.3), lineWidth: 1)
+                        .stroke(planet.accentColor.opacity(0.2), lineWidth: 1)
                 )
         )
     }
 }
 
-// MARK: - Planet Level Data
+// MARK: - Planet Level Data (Pastel Matte Colors)
 struct PlanetLevelData {
     let name: String
     let mood: String
@@ -510,22 +511,24 @@ struct PlanetLevelData {
             let mood = PlanetMood.allCases[Int(rng.next() % UInt64(PlanetMood.allCases.count))]
             let name = "\(prefixes[i])\(suffixes[Int(rng.next() % UInt64(suffixes.count))])-\(i + 1)"
             
-            let (primary, secondary, accent, moodStr, icon, desc): (Color, Color, Color, String, String, String) = {
+            let colors = Pastel.planetColors(mood)
+            
+            let (moodStr, icon, desc): (String, String, String) = {
                 switch mood {
                 case .lonely:
-                    return (.init(red: 0.15, green: 0.2, blue: 0.4), .init(red: 0.05, green: 0.08, blue: 0.2), .init(red: 0.3, green: 0.5, blue: 0.8), "lonely", "wind", "Vast emptiness stretches beyond comprehension")
+                    return ("lonely", "wind", "Vast emptiness stretches beyond comprehension")
                 case .decayed:
-                    return (.init(red: 0.4, green: 0.3, blue: 0.15), .init(red: 0.2, green: 0.15, blue: 0.08), .init(red: 0.8, green: 0.5, blue: 0.2), "decayed", "leaf.fill", "Ancient ruins whisper forgotten histories")
+                    return ("decayed", "leaf.fill", "Ancient ruins whisper forgotten histories")
                 case .serene:
-                    return (.init(red: 0.2, green: 0.35, blue: 0.45), .init(red: 0.1, green: 0.2, blue: 0.3), .init(red: 0.4, green: 0.7, blue: 0.9), "serene", "sparkles", "Gentle light bathes peaceful landscapes")
+                    return ("serene", "sparkles", "Gentle light bathes peaceful landscapes")
                 case .hostile:
-                    return (.init(red: 0.8, green: 0.4, blue: 0.35), .init(red: 0.6, green: 0.2, blue: 0.2), .init(red: 1.0, green: 0.5, blue: 0.4), "hostile", "flame.fill", "Harsh terrain threatens every step")
+                    return ("hostile", "flame.fill", "Harsh terrain threatens every step")
                 case .surreal:
-                    return (.init(red: 0.35, green: 0.15, blue: 0.5), .init(red: 0.15, green: 0.05, blue: 0.3), .init(red: 0.6, green: 0.2, blue: 0.9), "surreal", "wand.and.stars", "Reality bends in impossible ways")
+                    return ("surreal", "wand.and.stars", "Reality bends in impossible ways")
                 }
             }()
             
-            return PlanetLevelData(name: name, mood: moodStr, moodIcon: icon, description: desc, primaryColor: primary, secondaryColor: secondary, accentColor: accent)
+            return PlanetLevelData(name: name, mood: moodStr, moodIcon: icon, description: desc, primaryColor: colors.primary, secondaryColor: colors.secondary, accentColor: colors.accent)
         }
     }
 }
