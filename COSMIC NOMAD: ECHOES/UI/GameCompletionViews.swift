@@ -16,6 +16,8 @@ struct PlanetDecodedView: View {
     let planetMood: PlanetMood
     let planetsCompleted: Int
     let totalPlanets: Int
+    let starRating: Int  // 1-3 stars earned
+    let bountiesCompleted: [String]  // Names of completed bounties
     let onContinue: () -> Void
     
     @State private var phase: Int = 0
@@ -25,6 +27,8 @@ struct PlanetDecodedView: View {
     @State private var buttonOpacity: Double = 0
     @State private var ringScale: CGFloat = 0.3
     @State private var ringOpacity: Double = 0
+    @State private var starsOpacity: Double = 0
+    @State private var bountyOpacity: Double = 0
     
     private let impactGenerator = UINotificationFeedbackGenerator()
     
@@ -126,6 +130,49 @@ struct PlanetDecodedView: View {
                             .foregroundColor(Pastel.textMuted)
                             .opacity(quoteOpacity)
                         
+                        // Star Rating
+                        VStack(spacing: 8) {
+                            Text("PERFORMANCE")
+                                .font(.system(size: 9, weight: .medium, design: .monospaced))
+                                .foregroundColor(Pastel.textMuted)
+                                .tracking(2)
+                            
+                            HStack(spacing: 6) {
+                                ForEach(0..<3, id: \.self) { s in
+                                    Image(systemName: s < starRating ? "star.fill" : "star")
+                                        .font(.system(size: 22))
+                                        .foregroundColor(s < starRating ? Pastel.gold : Pastel.textMuted.opacity(0.3))
+                                        .scaleEffect(s < starRating ? 1.0 : 0.8)
+                                }
+                            }
+                            
+                            Text(starRatingDescription)
+                                .font(.system(size: 9, weight: .regular, design: .serif))
+                                .foregroundColor(Pastel.textMuted)
+                        }
+                        .opacity(starsOpacity)
+                        
+                        // Bounties completed
+                        if !bountiesCompleted.isEmpty {
+                            VStack(spacing: 6) {
+                                Text("BOUNTIES COMPLETED")
+                                    .font(.system(size: 9, weight: .medium, design: .monospaced))
+                                    .foregroundColor(Pastel.bounty)
+                                    .tracking(2)
+                                
+                                ForEach(bountiesCompleted, id: \.self) { name in
+                                    HStack(spacing: 4) {
+                                        Image(systemName: "target")
+                                            .font(.system(size: 8))
+                                        Text(name)
+                                            .font(.system(size: 10, weight: .bold, design: .monospaced))
+                                    }
+                                    .foregroundColor(Pastel.bounty.opacity(0.8))
+                                }
+                            }
+                            .opacity(bountyOpacity)
+                        }
+                        
                         Spacer(minLength: 40)
                         
                         // Progress dots
@@ -186,11 +233,25 @@ struct PlanetDecodedView: View {
             withAnimation(.easeOut(duration: 0.8).delay(3.8)) {
                 buttonOpacity = 1.0
             }
+            withAnimation(.easeOut(duration: 1.0).delay(4.5)) {
+                starsOpacity = 1.0
+            }
+            withAnimation(.easeOut(duration: 0.8).delay(5.0)) {
+                bountyOpacity = 1.0
+            }
         }
     }
     
     private var moodColor: Color {
         Pastel.moodColor(planetMood)
+    }
+    
+    private var starRatingDescription: String {
+        switch starRating {
+        case 3: return "Perfect run — no blackouts!"
+        case 2: return "Good pace — try without blackouts for 3 stars"
+        default: return "Planet decoded — keep exploring for more stars"
+        }
     }
 }
 
@@ -198,6 +259,7 @@ struct PlanetDecodedView: View {
 
 struct FinalRevelationView: View {
     let onRestart: () -> Void
+    let onEndlessMode: () -> Void
     
     @State private var phase1: Double = 0
     @State private var phase2: Double = 0
@@ -255,14 +317,15 @@ struct FinalRevelationView: View {
                         
                         Spacer(minLength: 60)
                         
-                        // Journey stats
+                        // Journey stats (real data)
                         VStack(spacing: 8) {
                             Text("JOURNEY COMPLETE")
                                 .font(.system(size: 10, weight: .bold, design: .monospaced))
                                 .foregroundColor(Pastel.textMuted)
                                 .tracking(4)
                             
-                            Text("5 worlds explored  •  100 signals decoded")
+                            let stats = StatisticsManager.shared
+                            Text("\(stats.totalPlanetsCompleted) worlds  •  \(stats.totalFragmentsDiscovered) signals  •  \(stats.formattedPlayTime)")
                                 .font(.system(size: 11, weight: .regular, design: .monospaced))
                                 .foregroundColor(Pastel.textMuted.opacity(0.8))
                             
@@ -292,6 +355,29 @@ struct FinalRevelationView: View {
                             .background(Pastel.cardFill)
                             .clipShape(Capsule())
                             .overlay(Capsule().stroke(Pastel.primary.opacity(0.4), lineWidth: 1))
+                        }
+                        .opacity(phase4)
+                        
+                        // Endless Mode button
+                        Button(action: onEndlessMode) {
+                            HStack(spacing: 10) {
+                                Image(systemName: "infinity")
+                                    .font(.system(size: 14, weight: .bold))
+                                Text("ENDLESS MODE")
+                                    .font(.system(size: 13, weight: .bold, design: .monospaced))
+                            }
+                            .foregroundColor(Pastel.bg)
+                            .padding(.horizontal, 32)
+                            .padding(.vertical, 14)
+                            .background(
+                                LinearGradient(
+                                    colors: [Pastel.tertiary, Pastel.primary],
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
+                            )
+                            .clipShape(Capsule())
+                            .shadow(color: Pastel.tertiary.opacity(0.3), radius: 10)
                         }
                         .opacity(phase4)
                         .padding(.bottom, 60)

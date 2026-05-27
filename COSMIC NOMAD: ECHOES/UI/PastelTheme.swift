@@ -97,6 +97,23 @@ enum Pastel {
     static let hazardLava      = Color(red: 0.88, green: 0.55, blue: 0.52)
     static let hazardUnstable  = Color(red: 0.92, green: 0.72, blue: 0.55)
     
+    // MARK: - Engagement Colors (New Systems)
+    
+    /// Golden shimmer for legendary fragments
+    static let legendary = Color(red: 1.0, green: 0.88, blue: 0.42)
+    
+    /// Electric cyan for combo streaks
+    static let combo = Color(red: 0.40, green: 0.92, blue: 0.95)
+    
+    /// Bright blue for oxygen cache indicators
+    static let oxygenCache = Color(red: 0.50, green: 0.78, blue: 0.95)
+    
+    /// Warm signal pulse glow
+    static let signalPulse = Color(red: 0.92, green: 0.88, blue: 0.75)
+    
+    /// Bounty accent color
+    static let bounty = Color(red: 0.88, green: 0.72, blue: 0.42)
+    
     // MARK: - Planet Level Colors (Star Chart)
     
     struct PlanetColors {

@@ -154,7 +154,8 @@ struct PlanetLevelsView: View {
                             withAnimation(.spring(response: 0.3)) {
                                 showTravelConfirm = true
                             }
-                        }
+                        },
+                        planets: planets
                     )
                     .transition(.move(edge: .bottom).combined(with: .opacity))
                     .padding(.horizontal, 20)
@@ -384,6 +385,18 @@ struct PlanetNode: View {
                 .font(.system(size: 8, weight: .bold, design: .monospaced))
                 .foregroundColor(isLocked ? Pastel.textMuted : Pastel.textSecondary)
                 .lineLimit(1)
+            
+            // Star rating (for completed planets)
+            if isCompleted {
+                let stars = SaveManager.shared.getStarRating(forPlanet: index)
+                HStack(spacing: 2) {
+                    ForEach(0..<3, id: \.self) { s in
+                        Image(systemName: s < stars ? "star.fill" : "star")
+                            .font(.system(size: 7))
+                            .foregroundColor(s < stars ? Pastel.gold : Pastel.textMuted.opacity(0.4))
+                    }
+                }
+            }
         }
         .onAppear {
             if isCurrent {
@@ -402,6 +415,7 @@ struct PlanetDetailPanel: View {
     let isCurrent: Bool
     var canTravel: Bool = false
     var onTravel: (() -> Void)? = nil
+    var planets: [PlanetLevelData]? = nil  // For star rating lookup
     
     var body: some View {
         HStack(spacing: 16) {
@@ -451,6 +465,22 @@ struct PlanetDetailPanel: View {
                     .font(.system(size: 9, weight: .regular, design: .serif))
                     .foregroundColor(Pastel.textSecondary)
                     .lineLimit(2)
+                
+                // Star rating display (detail panel)
+                if isCompleted {
+                    let idx = planets?.firstIndex(where: { $0.name == planet.name }) ?? 0
+                    let stars = SaveManager.shared.getStarRating(forPlanet: idx)
+                    HStack(spacing: 3) {
+                        ForEach(0..<3, id: \.self) { s in
+                            Image(systemName: s < stars ? "star.fill" : "star")
+                                .font(.system(size: 9))
+                                .foregroundColor(s < stars ? Pastel.gold : Pastel.textMuted.opacity(0.3))
+                        }
+                        Text("\(stars)/3")
+                            .font(.system(size: 8, weight: .bold, design: .monospaced))
+                            .foregroundColor(Pastel.gold.opacity(0.7))
+                    }
+                }
             }
             
             Spacer()

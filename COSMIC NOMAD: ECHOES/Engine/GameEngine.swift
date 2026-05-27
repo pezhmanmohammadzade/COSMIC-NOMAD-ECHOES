@@ -28,6 +28,8 @@ final class GameEngine: NSObject, MTKViewDelegate {
     let survivalSystem = SurvivalSystem()
     let hazardSystem = HazardSystem()
     let npcSystem = NPCSystem()
+    let engagementSystem = EngagementSystem()
+    let bountySystem = BountySystem()
     
     // State
     private(set) var isRunning: Bool = false
@@ -41,6 +43,17 @@ final class GameEngine: NSObject, MTKViewDelegate {
     private(set) var isPlanetDecoded: Bool = false
     private(set) var showFinalRevelation: Bool = false
     static let totalPlanetsForEnding = 10
+    
+    // Endless Mode / New Game+
+    private(set) var isEndlessMode: Bool = false
+    private(set) var endlessPlanetsCompleted: Int = 0
+    
+    // Planet performance tracking (for star ratings)
+    private(set) var planetStartTime: Float = 0
+    private(set) var planetBlackoutCount: Int = 0
+    private(set) var planetCombosAchieved: Int = 0
+    private(set) var planetCreaturesScanned: Int = 0
+    private(set) var planetHazardFragments: Int = 0
     
     // Debug info
     var showDebugInfo: Bool = true
@@ -75,9 +88,15 @@ final class GameEngine: NSObject, MTKViewDelegate {
             self?.onScanCompleted(result)
         }
         
+        // Wire scanner to NPC system for creature scanning
+        scanner.npcSystemRef = npcSystem
+        
         // Survival blackout callback
         survivalSystem.onBlackout = { [weak self] in
             self?.player.teleportTo(SIMD3<Float>(32, 20, 32))
+            self?.planetBlackoutCount += 1
+            self?.bountySystem.onBlackout()
+            StatisticsManager.shared.recordBlackout()
         }
         
         // Generate initial world
@@ -93,6 +112,13 @@ final class GameEngine: NSObject, MTKViewDelegate {
         let terrainH = world.heightAt(worldX: 32, worldZ: 32) ?? 0
         hazardSystem.generate(around: player.position, mood: world.planetConfig.mood, seed: currentPlanetSeed)
         npcSystem.generate(around: player.position, mood: world.planetConfig.mood, terrainHeight: terrainH, seed: currentPlanetSeed)
+        
+        // Generate engagement systems
+        engagementSystem.generate(seed: currentPlanetSeed, playerPosition: player.position, level: planetsCompleted + 1)
+        bountySystem.generate(mood: world.planetConfig.mood, level: planetsCompleted + 1, seed: currentPlanetSeed)
+        
+        // Load endless mode state
+        isEndlessMode = SaveManager.shared.isEndlessMode()
         
         // Initialize NPC renderer
         renderer.npcRenderer = NPCRenderer(device: device)
@@ -171,6 +197,34 @@ final class GameEngine: NSObject, MTKViewDelegate {
         
         // 3.8. NPC system
         npcSystem.update(deltaTime: deltaTime, time: totalTime, playerPosition: player.position)
+        
+        // 3.85. Engagement system update (combo, signal strength, ambient events, oxygen caches)
+        engagementSystem.update(
+            deltaTime: deltaTime,
+            playerPosition: player.position,
+            fragments: world.memoryFragmentSystem.fragments,
+            totalTime: totalTime
+        )
+        
+        // 3.86. Oxygen cache collection
+        let oxygenRefill = engagementSystem.checkOxygenCaches(playerPosition: player.position)
+        if oxygenRefill > 0 {
+            survivalSystem.refillOxygen(amount: oxygenRefill)
+        }
+        
+        // 3.87. Bounty system update
+        bountySystem.update(
+            deltaTime: deltaTime,
+            playerPosition: player.position,
+            fragmentsDiscovered: world.memoryFragmentSystem.discoveredCount,
+            creaturesScanned: planetCreaturesScanned,
+            combosAchieved: planetCombosAchieved,
+            isInHazardZone: hazardSystem.isPlayerInHazardZone,
+            hazardFragmentsFound: planetHazardFragments
+        )
+        
+        // 3.88. Statistics update
+        StatisticsManager.shared.update(playerPosition: player.position, deltaTime: deltaTime)
         
         // 3.9. NPC collision damage
         let _ = npcSystem.checkCollision(
@@ -331,8 +385,23 @@ final class GameEngine: NSObject, MTKViewDelegate {
                 
                 camera.focusOnDiscovery(at: frag.worldPosition)
                 
-                // Award Data Cores
-                UpgradeSystem.shared.awardDataCores(1)
+                // Engagement system: combo multiplier + legendary bonus
+                let multiplier = engagementSystem.onFragmentDiscovered(isLegendary: frag.isLegendary)
+                
+                // Award Data Cores with multiplier
+                UpgradeSystem.shared.awardDataCores(multiplier)
+                StatisticsManager.shared.recordDataCoresEarned(multiplier)
+                StatisticsManager.shared.recordFragmentDiscovered(isLegendary: frag.isLegendary)
+                
+                // Track combos for bounty system
+                if engagementSystem.comboJustTriggered {
+                    planetCombosAchieved += 1
+                }
+                
+                // Check if found in hazard zone
+                if hazardSystem.isPlayerInHazardZone {
+                    planetHazardFragments += 1
+                }
                 
                 // Refill some oxygen as reward
                 survivalSystem.refillOxygen(amount: 15)
@@ -345,13 +414,27 @@ final class GameEngine: NSObject, MTKViewDelegate {
                     type: frag.fragmentType.rawValue
                 )
                 
-                print("📡 Signal Discovered: \(frag.fragmentType.rawValue) — \(frag.title) (+1 Data Core)")
+                let legendaryTag = frag.isLegendary ? " ⭐ LEGENDARY" : ""
+                print("📡 Signal Discovered: \(frag.fragmentType.rawValue) — \(frag.title) (+\(multiplier) Data Cores\(legendaryTag))")
                 
                 if world.memoryFragmentSystem.allDiscovered && !isPlanetDecoded {
                     isPlanetDecoded = true
+                    
+                    // Calculate star rating
+                    let starRating = calculateStarRating()
+                    SaveManager.shared.saveStarRating(starRating, forPlanet: planetsCompleted)
+                    StatisticsManager.shared.recordStarRating(starRating)
+                    
+                    // Bounty completion rewards
+                    let bountyReward = bountySystem.onPlanetCompleted()
+                    
                     // Bonus data cores for completing a planet
-                    UpgradeSystem.shared.awardDataCores(3)
-                    print("🌍 PLANET DECODED: \(world.planetConfig.name) (+3 Bonus Data Cores)")
+                    let planetBonus = 3 + bountyReward
+                    UpgradeSystem.shared.awardDataCores(planetBonus)
+                    StatisticsManager.shared.recordDataCoresEarned(planetBonus)
+                    StatisticsManager.shared.recordPlanetCompleted()
+                    
+                    print("🌍 PLANET DECODED: \(world.planetConfig.name) (+\(planetBonus) Data Cores, \(starRating)⭐)")
                 }
                 
                 break
@@ -359,13 +442,33 @@ final class GameEngine: NSObject, MTKViewDelegate {
         }
     }
     
+    /// Calculate star rating: ⭐ completed, ⭐⭐ under time limit, ⭐⭐⭐ no blackouts
+    func calculateStarRating() -> Int {
+        var stars = 1  // Always 1 star for completion
+        let elapsed = renderer.totalTime - planetStartTime
+        if elapsed < 600 { stars += 1 }  // Under 10 min = 2 stars
+        if planetBlackoutCount == 0 { stars = 3 }  // No blackouts = 3 stars
+        return stars
+    }
+    
     // MARK: - Planet Progression
     
     func advanceToNextPlanet() {
         planetsCompleted += 1
         isPlanetDecoded = false
+        planetBlackoutCount = 0
+        planetCombosAchieved = 0
+        planetCreaturesScanned = 0
+        planetHazardFragments = 0
         
-        if planetsCompleted >= Self.totalPlanetsForEnding {
+        if isEndlessMode {
+            // Endless mode: just keep going
+            endlessPlanetsCompleted += 1
+            SaveManager.shared.saveEndlessBest(endlessPlanetsCompleted)
+            StatisticsManager.shared.recordEndlessPlanets(endlessPlanetsCompleted)
+        }
+        
+        if !isEndlessMode && planetsCompleted >= Self.totalPlanetsForEnding {
             showFinalRevelation = true
             print("🌌 FINAL REVELATION UNLOCKED")
         } else {
@@ -379,11 +482,16 @@ final class GameEngine: NSObject, MTKViewDelegate {
             player.teleportTo(SIMD3<Float>(32, 20, 32))
             survivalSystem.reset()
             applySurvivalUpgrades()
+            planetStartTime = renderer.totalTime
             
             // Regenerate NPCs and hazards for new planet
             let terrainH = world.heightAt(worldX: 32, worldZ: 32) ?? 0
             hazardSystem.generate(around: player.position, mood: world.planetConfig.mood, seed: currentPlanetSeed)
             npcSystem.generate(around: player.position, mood: world.planetConfig.mood, terrainHeight: terrainH, seed: currentPlanetSeed)
+            
+            // Regenerate engagement systems
+            engagementSystem.generate(seed: currentPlanetSeed, playerPosition: player.position, level: planetsCompleted + 1)
+            bountySystem.generate(mood: world.planetConfig.mood, level: planetsCompleted + 1, seed: currentPlanetSeed)
             
             print("🚀 Traveling to planet \(planetsCompleted + 1)/\(Self.totalPlanetsForEnding): \(world.planetConfig.name)")
         }
@@ -391,10 +499,17 @@ final class GameEngine: NSObject, MTKViewDelegate {
     
     func resetJourney() {
         showFinalRevelation = false
+        isEndlessMode = false
+        endlessPlanetsCompleted = 0
         planetsCompleted = 0
         currentPlanetSeed = 42
+        planetBlackoutCount = 0
+        planetCombosAchieved = 0
+        planetCreaturesScanned = 0
+        planetHazardFragments = 0
         
         SaveManager.shared.resetProgress()
+        SaveManager.shared.setEndlessMode(false)
         UpgradeSystem.shared.reset()
         
         world = WorldGenerator(device: renderer.device, seed: currentPlanetSeed, level: 1)
@@ -402,11 +517,48 @@ final class GameEngine: NSObject, MTKViewDelegate {
         player.teleportTo(SIMD3<Float>(32, 20, 32))
         survivalSystem.reset()
         applySurvivalUpgrades()
+        planetStartTime = renderer.totalTime
         
         // Regenerate NPCs and hazards
         let terrainH = world.heightAt(worldX: 32, worldZ: 32) ?? 0
         hazardSystem.generate(around: player.position, mood: world.planetConfig.mood, seed: currentPlanetSeed)
         npcSystem.generate(around: player.position, mood: world.planetConfig.mood, terrainHeight: terrainH, seed: currentPlanetSeed)
+        
+        // Regenerate engagement systems
+        engagementSystem.generate(seed: currentPlanetSeed, playerPosition: player.position, level: 1)
+        bountySystem.generate(mood: world.planetConfig.mood, level: 1, seed: currentPlanetSeed)
+    }
+    
+    /// Enter Endless Mode (New Game+)
+    func startEndlessMode() {
+        showFinalRevelation = false
+        isEndlessMode = true
+        endlessPlanetsCompleted = 0
+        SaveManager.shared.setEndlessMode(true)
+        
+        // Keep progress but generate a new planet
+        currentPlanetSeed &+= 1
+        SaveManager.shared.savePlanetSeed(currentPlanetSeed)
+        
+        world = WorldGenerator(device: renderer.device, seed: currentPlanetSeed, level: planetsCompleted + 1)
+        renderer.world = world
+        player.teleportTo(SIMD3<Float>(32, 20, 32))
+        survivalSystem.reset()
+        applySurvivalUpgrades()
+        planetStartTime = renderer.totalTime
+        isPlanetDecoded = false
+        planetBlackoutCount = 0
+        planetCombosAchieved = 0
+        planetCreaturesScanned = 0
+        planetHazardFragments = 0
+        
+        let terrainH = world.heightAt(worldX: 32, worldZ: 32) ?? 0
+        hazardSystem.generate(around: player.position, mood: world.planetConfig.mood, seed: currentPlanetSeed)
+        npcSystem.generate(around: player.position, mood: world.planetConfig.mood, terrainHeight: terrainH, seed: currentPlanetSeed)
+        engagementSystem.generate(seed: currentPlanetSeed, playerPosition: player.position, level: planetsCompleted + 1)
+        bountySystem.generate(mood: world.planetConfig.mood, level: planetsCompleted + 1, seed: currentPlanetSeed)
+        
+        print("♾️ ENDLESS MODE ACTIVATED")
     }
     
     // MARK: - Upgrade Application
@@ -453,11 +605,21 @@ final class GameEngine: NSObject, MTKViewDelegate {
         player.teleportTo(SIMD3<Float>(32, 20, 32))
         survivalSystem.reset()
         applySurvivalUpgrades()
+        isPlanetDecoded = false
+        planetStartTime = renderer.totalTime
+        planetBlackoutCount = 0
+        planetCombosAchieved = 0
+        planetCreaturesScanned = 0
+        planetHazardFragments = 0
         
         // Regenerate NPCs and hazards
         let terrainH = world.heightAt(worldX: 32, worldZ: 32) ?? 0
         hazardSystem.generate(around: player.position, mood: world.planetConfig.mood, seed: seed)
         npcSystem.generate(around: player.position, mood: world.planetConfig.mood, terrainHeight: terrainH, seed: seed)
+        
+        // Regenerate engagement systems
+        engagementSystem.generate(seed: seed, playerPosition: player.position, level: planetsCompleted + 1)
+        bountySystem.generate(mood: world.planetConfig.mood, level: planetsCompleted + 1, seed: seed)
     }
     
     // MARK: - Lifecycle

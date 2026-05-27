@@ -145,7 +145,125 @@ final class SaveManager {
         defaults.removeObject(forKey: kUpgradeLevels)
         defaults.removeObject(forKey: kCodexFragments)
         defaults.removeObject(forKey: kPlanetSeedHistory)
+        defaults.removeObject(forKey: kPlanetStars)
+        defaults.removeObject(forKey: kScannedCreatures)
+        defaults.removeObject(forKey: kIsEndlessMode)
+        defaults.removeObject(forKey: kEndlessBest)
         defaults.synchronize()
     }
+    
+    // MARK: - Daily Login Rewards
+    
+    private let kDailyLastPlayed = "cn_daily_last_played"
+    private let kDailyStreak = "cn_daily_streak"
+    
+    func getDailyStreak() -> Int {
+        return UserDefaults.standard.integer(forKey: kDailyStreak)
+    }
+    
+    func getLastPlayedDate() -> Date? {
+        return UserDefaults.standard.object(forKey: kDailyLastPlayed) as? Date
+    }
+    
+    /// Check if a daily reward is available. Returns (isNewDay, currentStreak).
+    func checkDailyReward() -> (isNewDay: Bool, streak: Int) {
+        let calendar = Calendar.current
+        _ = Date()
+        let currentStreak = getDailyStreak()
+        
+        guard let lastPlayed = getLastPlayedDate() else {
+            // First ever play
+            return (true, 0)
+        }
+        
+        if calendar.isDateInToday(lastPlayed) {
+            // Already played today
+            return (false, currentStreak)
+        }
+        
+        if calendar.isDateInYesterday(lastPlayed) {
+            // Consecutive day — streak continues
+            return (true, currentStreak)
+        }
+        
+        // Streak broken (gap of 2+ days)
+        return (true, 0)
+    }
+    
+    /// Claim the daily reward. Returns the Data Cores awarded.
+    func claimDailyReward() -> Int {
+        let (_, currentStreak) = checkDailyReward()
+        let newStreak = (currentStreak % 7) + 1  // 1-7 cycle
+        
+        UserDefaults.standard.set(Date(), forKey: kDailyLastPlayed)
+        UserDefaults.standard.set(newStreak, forKey: kDailyStreak)
+        
+        // Scaling rewards: Day 1=1, 2=2, 3=3, 4=5, 5=5, 6=7, 7=10
+        let rewards = [0, 1, 2, 3, 5, 5, 7, 10]
+        let reward = rewards[min(newStreak, 7)]
+        
+        StatisticsManager.shared.recordLoginStreak(newStreak)
+        
+        return reward
+    }
+    
+    // MARK: - Planet Star Ratings
+    
+    private let kPlanetStars = "cn_planet_stars"
+    
+    func getStarRating(forPlanet level: Int) -> Int {
+        guard let dict = UserDefaults.standard.dictionary(forKey: kPlanetStars) as? [String: Int] else {
+            return 0
+        }
+        return dict["\(level)"] ?? 0
+    }
+    
+    func saveStarRating(_ stars: Int, forPlanet level: Int) {
+        var dict = (UserDefaults.standard.dictionary(forKey: kPlanetStars) as? [String: Int]) ?? [:]
+        let existing = dict["\(level)"] ?? 0
+        if stars > existing {
+            dict["\(level)"] = stars
+            UserDefaults.standard.set(dict, forKey: kPlanetStars)
+        }
+    }
+    
+    // MARK: - Scanned Creatures (Bestiary)
+    
+    private let kScannedCreatures = "cn_scanned_creatures"
+    
+    func getScannedCreatures() -> [String] {
+        return UserDefaults.standard.stringArray(forKey: kScannedCreatures) ?? []
+    }
+    
+    func addScannedCreature(_ name: String) {
+        var current = getScannedCreatures()
+        if !current.contains(name) {
+            current.append(name)
+            UserDefaults.standard.set(current, forKey: kScannedCreatures)
+        }
+    }
+    
+    // MARK: - Endless Mode
+    
+    private let kIsEndlessMode = "cn_is_endless"
+    private let kEndlessBest = "cn_endless_best"
+    
+    func isEndlessMode() -> Bool {
+        return UserDefaults.standard.bool(forKey: kIsEndlessMode)
+    }
+    
+    func setEndlessMode(_ value: Bool) {
+        UserDefaults.standard.set(value, forKey: kIsEndlessMode)
+    }
+    
+    func getEndlessBest() -> Int {
+        return UserDefaults.standard.integer(forKey: kEndlessBest)
+    }
+    
+    func saveEndlessBest(_ count: Int) {
+        let current = getEndlessBest()
+        if count > current {
+            UserDefaults.standard.set(count, forKey: kEndlessBest)
+        }
+    }
 }
-

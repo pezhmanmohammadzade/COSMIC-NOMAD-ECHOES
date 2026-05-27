@@ -16,148 +16,277 @@ struct MainMenuView: View {
     @State private var showWipeConfirm: Bool = false
     @State private var showCodex: Bool = false
     @State private var showPlanets: Bool = false
+    @State private var showStatistics: Bool = false
+    @State private var showBestiary: Bool = false
+    @State private var showDailyReward: Bool = false
+    @State private var dailyRewardAmount: Int = 0
+    @State private var dailyStreak: Int = 0
     
     // UI animations
     @State private var titleOpacity: Double = 0
     @State private var buttonsOpacity: Double = 0
     
     var body: some View {
-        ZStack {
-            // Background
-            Pastel.bg.ignoresSafeArea()
-            AnimatedStarfield()
+        GeometryReader { geometry in
+            let isLandscape = geometry.size.width > geometry.size.height
             
-            VStack(spacing: 0) {
-                Spacer()
+            ZStack {
+                // Background
+                Pastel.bg.ignoresSafeArea()
+                AnimatedStarfield()
                 
-                // Title
-                VStack(spacing: 6) {
-                    Text("COSMIC NOMAD")
-                        .font(.system(size: 26, weight: .ultraLight, design: .serif))
-                        .foregroundStyle(Pastel.textPrimary)
-                        .tracking(10)
-                    
-                    Rectangle()
-                        .fill(Pastel.primary.opacity(0.4))
-                        .frame(width: 60, height: 0.5)
-                    
-                    Text("ECHOES")
-                        .font(.system(size: 15, weight: .thin, design: .serif))
-                        .foregroundStyle(Pastel.primary.opacity(0.6))
-                        .tracking(16)
-                }
-                .opacity(titleOpacity)
-                
-                Spacer()
-                    .frame(maxHeight: 60)
-                
-                // Menu Buttons
-                VStack(spacing: 14) {
-                    if hasSavedProgress {
-                        MenuButton(title: "RESUME JOURNEY", icon: "play.fill", color: Pastel.primary) {
-                            startGame(reset: false)
+                if isLandscape {
+                    // Premium Landscape Layout
+                    HStack(spacing: 40) {
+                        // Left Column: Title & Subtitle/Tagline
+                        VStack(spacing: 16) {
+                            Spacer()
+                            VStack(spacing: 8) {
+                                Text("COSMIC NOMAD")
+                                    .font(.system(size: 30, weight: .ultraLight, design: .serif))
+                                    .foregroundStyle(Pastel.textPrimary)
+                                    .tracking(10)
+                                
+                                Rectangle()
+                                    .fill(Pastel.primary.opacity(0.4))
+                                    .frame(width: 80, height: 0.5)
+                                
+                                Text("ECHOES")
+                                    .font(.system(size: 16, weight: .thin, design: .serif))
+                                    .foregroundStyle(Pastel.primary.opacity(0.6))
+                                    .tracking(18)
+                            }
+                            
+                            Text("Every world remembers. Every silence speaks.")
+                                .font(.system(size: 10, weight: .light, design: .serif))
+                                .foregroundStyle(Pastel.textMuted)
+                                .italic()
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal, 20)
+                            
+                            Spacer()
                         }
+                        .frame(maxWidth: .infinity)
+                        .opacity(titleOpacity)
                         
-                        MenuButton(title: "NEW JOURNEY", icon: "plus.circle", color: Pastel.secondary) {
-                            showWipeConfirm = true
-                        }
-                    } else {
-                        MenuButton(title: "BEGIN JOURNEY", icon: "play.fill", color: Pastel.primary) {
-                            startGame(reset: true)
-                        }
-                    }
-                    
-                    MenuButton(title: "SETTINGS", icon: "gearshape", color: Pastel.textSecondary) {
-                        withAnimation { showSettings = true }
-                    }
-                    
-                    MenuButton(title: "STAR CHART", icon: "globe.americas.fill", color: Pastel.tertiary) {
-                        withAnimation { showPlanets = true }
-                    }
-                    
-                    MenuButton(title: "CODEX", icon: "book.closed.fill", color: Pastel.primary.opacity(0.7)) {
-                        withAnimation { showCodex = true }
-                    }
-                }
-                .opacity(buttonsOpacity)
-                
-                Spacer()
-                    .frame(maxHeight: 40)
-            }
-            .padding(.bottom, 20)
-            
-            // Settings Overlay
-            if showSettings {
-                SettingsOverlayView(onClose: {
-                    withAnimation { showSettings = false }
-                })
-            }
-            
-            // Codex Overlay
-            if showCodex {
-                CodexView(onClose: {
-                    withAnimation { showCodex = false }
-                })
-            }
-            
-            // Planet Levels Map (Star Chart)
-            if showPlanets {
-                PlanetLevelsView(
-                    engine: engine,
-                    appState: $currentAppState,
-                    onClose: {
-                        withAnimation { showPlanets = false }
-                    }
-                )
-            }
-            
-            // Wipe Confirmation Overlay
-            if showWipeConfirm {
-                Pastel.overlay.opacity(0.9).ignoresSafeArea()
-                VStack(spacing: 24) {
-                    Text("WARNING")
-                        .font(.system(size: 18, weight: .bold, design: .monospaced))
-                        .foregroundColor(Pastel.secondary)
-                    
-                    Text("Starting a new journey will erase all your current progress.")
-                        .font(.system(size: 14, weight: .regular, design: .serif))
-                        .foregroundColor(Pastel.textPrimary)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal, 40)
-                    
-                    HStack(spacing: 20) {
-                        Button("CANCEL") {
-                            withAnimation { showWipeConfirm = false }
-                        }
-                        .font(.system(size: 12, weight: .bold, design: .monospaced))
-                        .foregroundColor(Pastel.textSecondary)
-                        .padding(.horizontal, 20)
-                        .padding(.vertical, 10)
-                        
-                        Button("ERASE") {
-                            withAnimation {
-                                showWipeConfirm = false
-                                startGame(reset: true)
+                        // Right Column: Scrollable vertical stack of menu buttons
+                        ScrollView(showsIndicators: false) {
+                            VStack(spacing: 12) {
+                                Spacer(minLength: 24)
+                                
+                                if hasSavedProgress {
+                                    MenuButton(title: "RESUME JOURNEY", icon: "play.fill", color: Pastel.primary) {
+                                        startGame(reset: false)
+                                    }
+                                    
+                                    MenuButton(title: "NEW JOURNEY", icon: "plus.circle", color: Pastel.secondary) {
+                                        showWipeConfirm = true
+                                    }
+                                } else {
+                                    MenuButton(title: "BEGIN JOURNEY", icon: "play.fill", color: Pastel.primary) {
+                                        startGame(reset: true)
+                                    }
+                                }
+                                
+                                MenuButton(title: "SETTINGS", icon: "gearshape", color: Pastel.textSecondary) {
+                                    withAnimation { showSettings = true }
+                                }
+                                
+                                MenuButton(title: "STAR CHART", icon: "globe.americas.fill", color: Pastel.tertiary) {
+                                    withAnimation { showPlanets = true }
+                                }
+                                
+                                MenuButton(title: "CODEX", icon: "book.closed.fill", color: Pastel.primary.opacity(0.7)) {
+                                    withAnimation { showCodex = true }
+                                }
+                                
+                                MenuButton(title: "BESTIARY", icon: "pawprint.fill", color: Pastel.tertiary) {
+                                    withAnimation { showBestiary = true }
+                                }
+                                
+                                MenuButton(title: "STATISTICS", icon: "chart.bar.fill", color: Pastel.gold.opacity(0.8)) {
+                                    withAnimation { showStatistics = true }
+                                }
+                                
+                                Spacer(minLength: 24)
                             }
                         }
-                        .font(.system(size: 12, weight: .bold, design: .monospaced))
-                        .foregroundColor(Pastel.bg)
-                        .padding(.horizontal, 20)
-                        .padding(.vertical, 10)
-                        .background(Pastel.secondary)
-                        .clipShape(Capsule())
+                        .frame(maxWidth: .infinity)
+                        .opacity(buttonsOpacity)
                     }
+                    .padding(.horizontal, 30)
+                } else {
+                    // Keep original portrait layout
+                    VStack(spacing: 0) {
+                        Spacer()
+                        
+                        // Title
+                        VStack(spacing: 6) {
+                            Text("COSMIC NOMAD")
+                                .font(.system(size: 26, weight: .ultraLight, design: .serif))
+                                .foregroundStyle(Pastel.textPrimary)
+                                .tracking(10)
+                            
+                            Rectangle()
+                                .fill(Pastel.primary.opacity(0.4))
+                                .frame(width: 60, height: 0.5)
+                            
+                            Text("ECHOES")
+                                .font(.system(size: 15, weight: .thin, design: .serif))
+                                .foregroundStyle(Pastel.primary.opacity(0.6))
+                                .tracking(16)
+                        }
+                        .opacity(titleOpacity)
+                        
+                        Spacer()
+                            .frame(maxHeight: 60)
+                        
+                        // Menu Buttons
+                        VStack(spacing: 14) {
+                            if hasSavedProgress {
+                                MenuButton(title: "RESUME JOURNEY", icon: "play.fill", color: Pastel.primary) {
+                                    startGame(reset: false)
+                                }
+                                
+                                MenuButton(title: "NEW JOURNEY", icon: "plus.circle", color: Pastel.secondary) {
+                                    showWipeConfirm = true
+                                }
+                            } else {
+                                MenuButton(title: "BEGIN JOURNEY", icon: "play.fill", color: Pastel.primary) {
+                                    startGame(reset: true)
+                                }
+                            }
+                            
+                            MenuButton(title: "SETTINGS", icon: "gearshape", color: Pastel.textSecondary) {
+                                withAnimation { showSettings = true }
+                            }
+                            
+                            MenuButton(title: "STAR CHART", icon: "globe.americas.fill", color: Pastel.tertiary) {
+                                withAnimation { showPlanets = true }
+                            }
+                            
+                            MenuButton(title: "CODEX", icon: "book.closed.fill", color: Pastel.primary.opacity(0.7)) {
+                                withAnimation { showCodex = true }
+                            }
+                            
+                            MenuButton(title: "BESTIARY", icon: "pawprint.fill", color: Pastel.tertiary) {
+                                withAnimation { showBestiary = true }
+                            }
+                            
+                            MenuButton(title: "STATISTICS", icon: "chart.bar.fill", color: Pastel.gold.opacity(0.8)) {
+                                withAnimation { showStatistics = true }
+                            }
+                        }
+                        .opacity(buttonsOpacity)
+                        
+                        Spacer()
+                            .frame(maxHeight: 40)
+                    }
+                    .padding(.bottom, 20)
                 }
-                .padding(30)
-                .background(Pastel.surface)
-                .overlay(RoundedRectangle(cornerRadius: 16).stroke(Pastel.secondary.opacity(0.3), lineWidth: 1))
-                .cornerRadius(16)
-                .padding(40)
-                .transition(.scale.combined(with: .opacity))
+                
+                // Settings Overlay
+                if showSettings {
+                    SettingsOverlayView(onClose: {
+                        withAnimation { showSettings = false }
+                    })
+                }
+                
+                // Codex Overlay
+                if showCodex {
+                    CodexView(onClose: {
+                        withAnimation { showCodex = false }
+                    })
+                }
+                
+                // Planet Levels Map (Star Chart)
+                if showPlanets {
+                    PlanetLevelsView(
+                        engine: engine,
+                        appState: $currentAppState,
+                        onClose: {
+                            withAnimation { showPlanets = false }
+                        }
+                    )
+                }
+                
+                // Wipe Confirmation Overlay
+                if showWipeConfirm {
+                    Pastel.overlay.opacity(0.9).ignoresSafeArea()
+                    VStack(spacing: 24) {
+                        Text("WARNING")
+                            .font(.system(size: 18, weight: .bold, design: .monospaced))
+                            .foregroundColor(Pastel.secondary)
+                        
+                        Text("Starting a new journey will erase all your current progress.")
+                            .font(.system(size: 14, weight: .regular, design: .serif))
+                            .foregroundColor(Pastel.textPrimary)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 40)
+                        
+                        HStack(spacing: 20) {
+                            Button("CANCEL") {
+                                withAnimation { showWipeConfirm = false }
+                            }
+                            .font(.system(size: 12, weight: .bold, design: .monospaced))
+                            .foregroundColor(Pastel.textSecondary)
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, 10)
+                            
+                            Button("ERASE") {
+                                withAnimation {
+                                    showWipeConfirm = false
+                                    startGame(reset: true)
+                                }
+                            }
+                            .font(.system(size: 12, weight: .bold, design: .monospaced))
+                            .foregroundColor(Pastel.bg)
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, 10)
+                            .background(Pastel.secondary)
+                            .clipShape(Capsule())
+                        }
+                    }
+                    .padding(30)
+                    .background(Pastel.surface)
+                    .overlay(RoundedRectangle(cornerRadius: 16).stroke(Pastel.secondary.opacity(0.3), lineWidth: 1))
+                    .cornerRadius(16)
+                    .padding(40)
+                    .transition(.scale.combined(with: .opacity))
+                }
+                
+                // Statistics Overlay
+                if showStatistics {
+                    StatisticsView(onClose: {
+                        withAnimation { showStatistics = false }
+                    })
+                }
+                
+                // Bestiary Overlay
+                if showBestiary {
+                    BestiaryView(onClose: {
+                        withAnimation { showBestiary = false }
+                    })
+                }
+                
+                // Daily Reward Popup
+                if showDailyReward {
+                    DailyRewardView(
+                        reward: dailyRewardAmount,
+                        streak: dailyStreak,
+                        onDismiss: {
+                            UpgradeSystem.shared.awardDataCores(dailyRewardAmount)
+                            StatisticsManager.shared.recordDataCoresEarned(dailyRewardAmount)
+                            withAnimation { showDailyReward = false }
+                        }
+                    )
+                    .transition(.opacity.combined(with: .scale(scale: 0.95)))
+                }
             }
         }
         .onAppear {
             checkProgress()
+            checkDailyReward()
             
             withAnimation(.easeOut(duration: 1.5)) {
                 titleOpacity = 1.0
@@ -181,6 +310,20 @@ struct MainMenuView: View {
         }
         withAnimation {
             currentAppState = .playing
+        }
+    }
+    
+    private func checkDailyReward() {
+        let (isNewDay, streak) = SaveManager.shared.checkDailyReward()
+        if isNewDay {
+            let reward = SaveManager.shared.claimDailyReward()
+            dailyRewardAmount = reward
+            dailyStreak = (streak % 7) + 1
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                withAnimation(.spring(response: 0.4)) {
+                    showDailyReward = true
+                }
+            }
         }
     }
 }

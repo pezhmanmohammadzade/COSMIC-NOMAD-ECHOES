@@ -17,6 +17,7 @@ struct MemoryFragment: Identifiable {
     let content: String
     let fragmentType: FragmentType
     var isDiscovered: Bool
+    let isLegendary: Bool  // 5% chance — golden glow, 5× Data Cores
     
     enum FragmentType: String {
         case precursorLog = "Precursor Log"
@@ -79,7 +80,8 @@ final class MemoryFragmentSystem {
                 title: fact.title,
                 content: fact.fact,
                 fragmentType: type,
-                isDiscovered: false
+                isDiscovered: false,
+                isLegendary: rng.nextFloatRange(0, 1.0) < 0.05  // 5% legendary chance
             )
             
             fragments.append(fragment)

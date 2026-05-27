@@ -29,6 +29,15 @@ final class ScannerSystem {
     private(set) var scanProgress: Float = 0     // 0-1
     private(set) var lastScanResult: ScanResult?
     
+    // Creature scanning
+    private(set) var lastScannedCreatureName: String? = nil
+    private(set) var lastCreatureScanReward: Int = 0
+    
+    func clearLastCreatureScan() {
+        lastScannedCreatureName = nil
+        lastCreatureScanReward = 0
+    }
+    
     // Scanner parameters
     let scanRadius: Float = 20.0       // Detection radius
     let scanDuration: Float = 2.0      // Seconds to complete scan
@@ -43,6 +52,9 @@ final class ScannerSystem {
     var onScanStarted: (() -> Void)?
     
     // MARK: - Update
+    
+    // NPC system reference for creature scanning
+    weak var npcSystemRef: NPCSystem?
     
     func update(isPressed: Bool, inputProgress: Float, playerPosition: SIMD3<Float>, cameraForward: SIMD3<Float>, world: WorldGenerator, deltaTime: Float) {
         // Cooldown
@@ -86,7 +98,37 @@ final class ScannerSystem {
         
         let lookPoint = position + cameraForward * scanRadius * 0.5
         
-        // Find nearest memory fragment
+        // --- Try creature scanning first ---
+        if let npcSystem = npcSystemRef {
+            let scanRange = scanRadius + UpgradeSystem.shared.scannerRangeBonus
+            if let creatureIdx = npcSystem.nearestScannableCreature(at: position, scanRange: scanRange) {
+                let creatureName = npcSystem.scanCreature(at: creatureIdx)
+                let reward = npcSystem.scanReward
+                UpgradeSystem.shared.awardDataCores(reward)
+                lastScannedCreatureName = creatureName
+                lastCreatureScanReward = reward
+                
+                // Save to bestiary
+                SaveManager.shared.addScannedCreature(creatureName)
+                StatisticsManager.shared.recordCreatureScanned()
+                StatisticsManager.shared.recordDataCoresEarned(reward)
+                
+                let result = ScanResult(
+                    objectType: "Alien Lifeform: \(creatureName)",
+                    worldPosition: npcSystem.creatures[creatureIdx].position,
+                    scanTime: 0,
+                    interpretations: ["Species catalogued: \(creatureName)", "+\(reward) Data Cores"],
+                    confidence: 0.99
+                )
+                lastScanResult = result
+                onScanComplete?(result)
+                currentTarget = nil
+                print("🔬 Creature Scanned: \(creatureName) (+\(reward) Data Cores)")
+                return
+            }
+        }
+        
+        // --- Try memory fragment ---
         var nearestFrag: MemoryFragment? = nil
         var minDist: Float = scanRadius
         

@@ -39,6 +39,20 @@ struct MinimalHUD: View {
     @State private var dataCores: Int = 0
     @State private var isJetpacking: Bool = false
     
+    // Engagement HUD state
+    @State private var signalStrength: Float = 0
+    @State private var comboText: String = ""
+    @State private var showCombo: Bool = false
+    @State private var fragmentTeaser: String? = nil
+    @State private var showCreatureScan: Bool = false
+    @State private var creatureScanName: String = ""
+    @State private var creatureScanReward: Int = 0
+    @State private var ambientEventText: String? = nil
+    @State private var showAmbientEvent: Bool = false
+    @State private var lastDiscoveryLegendary: Bool = false
+    @State private var nearOxygenCache: Bool = false
+    @State private var signalPulsePhase: Double = 0
+    
     @State private var joystickActive: Bool = false
     @State private var joystickOffset: CGPoint = .zero
     @State private var lastStepTime: Double = 0.0
@@ -97,13 +111,13 @@ struct MinimalHUD: View {
                         // Header
                         ZStack {
                             HStack(spacing: 6) {
-                                Image(systemName: "antenna.radiowaves.left.and.right")
+                                Image(systemName: lastDiscoveryLegendary ? "sparkles" : "antenna.radiowaves.left.and.right")
                                     .font(.system(size: 12))
-                                    .foregroundColor(Pastel.primary)
+                                    .foregroundColor(lastDiscoveryLegendary ? Pastel.legendary : Pastel.primary)
                                 
-                                Text("SIGNAL ACQUIRED")
+                                Text(lastDiscoveryLegendary ? "★ LEGENDARY SIGNAL ★" : "SIGNAL ACQUIRED")
                                     .font(.system(size: 11, weight: .bold, design: .monospaced))
-                                    .foregroundColor(Pastel.primary)
+                                    .foregroundColor(lastDiscoveryLegendary ? Pastel.legendary : Pastel.primary)
                             }
                             
                             HStack {
@@ -131,7 +145,7 @@ struct MinimalHUD: View {
                         
                         // Divider
                         Rectangle()
-                            .fill(Pastel.primary.opacity(0.2))
+                            .fill((lastDiscoveryLegendary ? Pastel.legendary : Pastel.primary).opacity(0.2))
                             .frame(height: 0.5)
                             .padding(.horizontal, 12)
                         
@@ -157,7 +171,7 @@ struct MinimalHUD: View {
                             .fill(Pastel.surface.opacity(0.92))
                             .overlay(
                                 RoundedRectangle(cornerRadius: 12)
-                                    .stroke(Pastel.primary.opacity(0.3), lineWidth: 1)
+                                    .stroke((lastDiscoveryLegendary ? Pastel.legendary : Pastel.primary).opacity(0.3), lineWidth: lastDiscoveryLegendary ? 2 : 1)
                             )
                     )
                     .frame(maxWidth: 260)
@@ -237,7 +251,33 @@ struct MinimalHUD: View {
                                         .foregroundStyle(Pastel.primary.opacity(0.5))
                                 }
                             }
-                        }
+                            
+                            // Fragment teaser
+                            if let teaser = fragmentTeaser {
+                                HStack(spacing: 4) {
+                                    Image(systemName: "waveform")
+                                        .font(.system(size: 8))
+                                        .foregroundStyle(Pastel.signalPulse.opacity(0.6))
+                                    Text(teaser)
+                                        .font(.system(size: 9, weight: .light, design: .serif))
+                                        .foregroundStyle(Pastel.signalPulse.opacity(0.7))
+                                        .italic()
+                                }
+                            }
+                            
+                            // Active bounty tracker
+                            ForEach(engine.bountySystem.activeBounties) { bounty in
+                                if !bounty.isCompleted {
+                                    HStack(spacing: 4) {
+                                        Image(systemName: bounty.type.icon)
+                                            .font(.system(size: 8))
+                                            .foregroundStyle(Pastel.bounty.opacity(0.7))
+                                        Text("\(bounty.type.rawValue): \(bounty.progressText)")
+                                            .font(.system(size: 8, weight: .medium, design: .monospaced))
+                                            .foregroundStyle(Pastel.bounty.opacity(0.6))
+                                    }
+                                }
+                            }   }
                         }
                         .padding(.top, 60)
                         .padding(.leading, 20)
@@ -424,6 +464,8 @@ struct MinimalHUD: View {
                     planetMood: engine.world.planetConfig.mood,
                     planetsCompleted: engine.planetsCompleted + 1,
                     totalPlanets: GameEngine.totalPlanetsForEnding,
+                    starRating: engine.calculateStarRating(),
+                    bountiesCompleted: engine.bountySystem.completedBountyNames,
                     onContinue: {
                         withAnimation(.easeOut(duration: 0.5)) {
                             showPlanetDecoded = false
@@ -436,12 +478,20 @@ struct MinimalHUD: View {
             
             // === FINAL REVELATION SCREEN ===
             if showFinalRevelation {
-                FinalRevelationView(onRestart: {
-                    withAnimation(.easeOut(duration: 0.5)) {
-                        showFinalRevelation = false
+                FinalRevelationView(
+                    onRestart: {
+                        withAnimation(.easeOut(duration: 0.5)) {
+                            showFinalRevelation = false
+                        }
+                        engine?.resetJourney()
+                    },
+                    onEndlessMode: {
+                        withAnimation(.easeOut(duration: 0.5)) {
+                            showFinalRevelation = false
+                        }
+                        engine?.startEndlessMode()
                     }
-                    engine?.resetJourney()
-                })
+                )
                 .transition(.opacity)
             }
             // Upgrade Shop Overlay
@@ -519,6 +569,73 @@ struct MinimalHUD: View {
             }
         }
         .ignoresSafeArea()
+
+        // --- Combo Banner (top center) ---
+        .overlay(alignment: .top) {
+            if showCombo {
+                Text(comboText)
+                    .font(.system(size: 14, weight: .black, design: .monospaced))
+                    .foregroundColor(Pastel.combo)
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 8)
+                    .background(
+                        Capsule()
+                            .fill(Pastel.combo.opacity(0.12))
+                            .overlay(Capsule().stroke(Pastel.combo.opacity(0.3), lineWidth: 1))
+                    )
+                    .shadow(color: Pastel.combo.opacity(0.3), radius: 12)
+                    .padding(.top, 120)
+                    .transition(.move(edge: .top).combined(with: .opacity))
+                    .allowsHitTesting(false)
+            }
+        }
+        // --- Creature Scan Popup ---
+        .overlay(alignment: .top) {
+            if showCreatureScan {
+                HStack(spacing: 8) {
+                    Image(systemName: "eye.fill")
+                        .font(.system(size: 12))
+                        .foregroundColor(Pastel.tertiary)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("LIFEFORM CATALOGUED")
+                            .font(.system(size: 8, weight: .bold, design: .monospaced))
+                            .foregroundColor(Pastel.textMuted)
+                        Text(creatureScanName)
+                            .font(.system(size: 12, weight: .bold, design: .monospaced))
+                            .foregroundColor(Pastel.tertiary)
+                    }
+                    Text("+\(creatureScanReward) ◆")
+                        .font(.system(size: 11, weight: .bold, design: .monospaced))
+                        .foregroundColor(Pastel.gold)
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 10)
+                .background(
+                    Capsule()
+                        .fill(Pastel.surface.opacity(0.9))
+                        .overlay(Capsule().stroke(Pastel.tertiary.opacity(0.3), lineWidth: 1))
+                )
+                .padding(.top, 155)
+                .transition(.move(edge: .top).combined(with: .opacity))
+                .allowsHitTesting(false)
+            }
+        }
+        // --- Ambient Event ---
+        .overlay(alignment: .top) {
+            if showAmbientEvent, let text = ambientEventText {
+                Text(text)
+                    .font(.system(size: 10, weight: .medium, design: .serif))
+                    .foregroundColor(Pastel.textSecondary)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
+                    .background(
+                        Capsule().fill(Pastel.surface.opacity(0.75))
+                    )
+                    .padding(.top, 85)
+                    .transition(.opacity)
+                    .allowsHitTesting(false)
+            }
+        }
         .onReceive(timer) { _ in
             guard let engine = engine else { return }
             let state = engine.inputManager.state
@@ -545,6 +662,7 @@ struct MinimalHUD: View {
                 discoveryType = frag.fragmentType.rawValue
                 discoveryTitle = frag.title
                 discoveryText = frag.content
+                lastDiscoveryLegendary = frag.isLegendary
                 engine.clearLastDiscovery()
                 
                 // Haptic feedback
@@ -561,6 +679,55 @@ struct MinimalHUD: View {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 12.0) {
                     withAnimation(.easeIn(duration: 0.6)) {
                         showDiscovery = false
+                    }
+                }
+            }
+            
+            // Check for combo triggers
+            if engine.engagementSystem.comboJustTriggered {
+                comboText = engine.engagementSystem.lastComboText
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+                    showCombo = true
+                }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+                    withAnimation(.easeOut(duration: 0.5)) {
+                        showCombo = false
+                    }
+                }
+            }
+            
+            // Check for creature scans
+            if let name = engine.scanner.lastScannedCreatureName {
+                creatureScanName = name
+                creatureScanReward = engine.scanner.lastCreatureScanReward
+                engine.scanner.clearLastCreatureScan()
+                withAnimation(.spring(response: 0.3)) {
+                    showCreatureScan = true
+                }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 4.0) {
+                    withAnimation(.easeOut(duration: 0.5)) {
+                        showCreatureScan = false
+                    }
+                }
+            }
+            
+            // Sync engagement state
+            signalStrength = engine.engagementSystem.signalStrength
+            fragmentTeaser = engine.engagementSystem.fragmentTeaser
+            nearOxygenCache = engine.engagementSystem.nearestUncollectedCacheDistance(from: engine.player.position) != nil
+            
+            // Ambient events
+            if let event = engine.engagementSystem.currentAmbientEvent {
+                let text = event.type.rawValue
+                if ambientEventText != text {
+                    ambientEventText = text
+                    withAnimation(.easeOut(duration: 0.5)) {
+                        showAmbientEvent = true
+                    }
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 4.0) {
+                        withAnimation(.easeIn(duration: 0.5)) {
+                            showAmbientEvent = false
+                        }
                     }
                 }
             }

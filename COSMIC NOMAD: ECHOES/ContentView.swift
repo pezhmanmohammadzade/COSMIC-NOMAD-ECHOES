@@ -82,6 +82,24 @@ struct ContentView: View {
         }
         .preferredColorScheme(.dark)
         .persistentSystemOverlays(.hidden)
+        .onAppear {
+            forceLandscape()
+        }
+        .onChange(of: appState) { oldValue, newValue in
+            if newValue == .playing || newValue == .mainMenu {
+                forceLandscape()
+            }
+        }
+    }
+    
+    private func forceLandscape() {
+        #if os(iOS)
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
+            windowScene.requestGeometryUpdate(.iOS(interfaceOrientations: .landscape)) { error in
+                print("Failed to lock orientation to landscape: \(error.localizedDescription)")
+            }
+        }
+        #endif
     }
 }
 

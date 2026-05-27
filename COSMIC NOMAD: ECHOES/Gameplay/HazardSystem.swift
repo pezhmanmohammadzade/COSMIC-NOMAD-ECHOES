@@ -36,6 +36,10 @@ final class HazardSystem {
     private(set) var activeHazardType: HazardType? = nil
     private(set) var activeIntensity: Float = 0
     
+    var isPlayerInHazardZone: Bool {
+        return activeHazardType != nil
+    }
+    
     // Pulse timer for unstable zones
     private var unstablePulseTimer: Float = 0
     private var unstablePulseActive: Bool = false
