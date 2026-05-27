@@ -74,11 +74,11 @@ enum Pastel {
     
     static func moodColor(_ mood: PlanetMood) -> Color {
         switch mood {
-        case .lonely:  return Color(red: 0.58, green: 0.68, blue: 0.88)
-        case .decayed: return Color(red: 0.88, green: 0.72, blue: 0.52)
-        case .serene:  return Color(red: 0.55, green: 0.82, blue: 0.72)
-        case .hostile: return Color(red: 0.88, green: 0.58, blue: 0.55)
-        case .surreal: return Color(red: 0.75, green: 0.55, blue: 0.85)
+        case .lonely:  return Color(red: 0.62, green: 0.78, blue: 0.95)  // Baby blue
+        case .decayed: return Color(red: 0.96, green: 0.78, blue: 0.58)  // Warm apricot
+        case .serene:  return Color(red: 0.55, green: 0.90, blue: 0.78)  // Fresh mint
+        case .hostile: return Color(red: 0.95, green: 0.65, blue: 0.68)  // Strawberry pink
+        case .surreal: return Color(red: 0.82, green: 0.65, blue: 0.95)  // Bubblegum lilac
         }
     }
     
@@ -108,34 +108,39 @@ enum Pastel {
     static func planetColors(_ mood: PlanetMood) -> PlanetColors {
         switch mood {
         case .lonely:
+            // Cotton candy blue — soft, dreamy, inviting
             return PlanetColors(
-                primary:   Color(red: 0.42, green: 0.48, blue: 0.65),
-                secondary: Color(red: 0.22, green: 0.25, blue: 0.42),
-                accent:    Color(red: 0.58, green: 0.68, blue: 0.88)
+                primary:   Color(red: 0.55, green: 0.72, blue: 0.92),
+                secondary: Color(red: 0.35, green: 0.48, blue: 0.75),
+                accent:    Color(red: 0.62, green: 0.78, blue: 0.95)
             )
         case .decayed:
+            // Warm apricot — cozy, golden, friendly
             return PlanetColors(
-                primary:   Color(red: 0.62, green: 0.52, blue: 0.40),
-                secondary: Color(red: 0.40, green: 0.32, blue: 0.25),
-                accent:    Color(red: 0.88, green: 0.72, blue: 0.52)
+                primary:   Color(red: 0.92, green: 0.72, blue: 0.52),
+                secondary: Color(red: 0.72, green: 0.50, blue: 0.35),
+                accent:    Color(red: 0.96, green: 0.78, blue: 0.58)
             )
         case .serene:
+            // Fresh mint — cool, refreshing, peaceful
             return PlanetColors(
-                primary:   Color(red: 0.45, green: 0.60, blue: 0.58),
-                secondary: Color(red: 0.28, green: 0.40, blue: 0.38),
-                accent:    Color(red: 0.55, green: 0.82, blue: 0.72)
+                primary:   Color(red: 0.50, green: 0.85, blue: 0.72),
+                secondary: Color(red: 0.32, green: 0.62, blue: 0.55),
+                accent:    Color(red: 0.55, green: 0.90, blue: 0.78)
             )
         case .hostile:
+            // Strawberry coral — warm pink, playful danger
             return PlanetColors(
-                primary:   Color(red: 0.68, green: 0.48, blue: 0.45),
-                secondary: Color(red: 0.48, green: 0.30, blue: 0.28),
-                accent:    Color(red: 0.88, green: 0.58, blue: 0.55)
+                primary:   Color(red: 0.92, green: 0.58, blue: 0.62),
+                secondary: Color(red: 0.72, green: 0.40, blue: 0.45),
+                accent:    Color(red: 0.95, green: 0.65, blue: 0.68)
             )
         case .surreal:
+            // Bubblegum lilac — dreamy, playful, magical
             return PlanetColors(
-                primary:   Color(red: 0.52, green: 0.38, blue: 0.62),
-                secondary: Color(red: 0.32, green: 0.22, blue: 0.45),
-                accent:    Color(red: 0.75, green: 0.55, blue: 0.85)
+                primary:   Color(red: 0.75, green: 0.58, blue: 0.90),
+                secondary: Color(red: 0.52, green: 0.38, blue: 0.72),
+                accent:    Color(red: 0.82, green: 0.65, blue: 0.95)
             )
         }
     }

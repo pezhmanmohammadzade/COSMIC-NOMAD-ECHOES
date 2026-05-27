@@ -212,22 +212,35 @@ fragment GBufferOutput entityFragmentShader(
         float pulse = (sin(uniforms.time * 2.0 + in.worldPosition.x) * 0.5 + 0.5);
         baseColor = mix(baseColor, float3(1.0, 1.0, 1.0), pulse * 0.5);
     } else {
-        // 4.x = Astronaut Suit (High-tech fabric with rim light)
-        metallic = 0.1;
+        // 4.x = AAA Astronaut Suit (Layered composite armor with micro-panel detail)
+        metallic = 0.12;
         
-        // Procedural Kevlar/fabric pattern
-        float2 texUV = in.worldPosition.xy * 40.0 + in.worldPosition.yz * 40.0;
-        float fabricPattern = abs(sin(texUV.x + texUV.y) * cos(texUV.x - texUV.y));
+        // Micro-panel seam lines — creates hi-tech armor plate look
+        float2 panelUV = in.worldPosition.xy * 18.0 + in.worldPosition.yz * 18.0;
+        float seamX = smoothstep(0.92, 1.0, abs(sin(panelUV.x * 3.14159)));
+        float seamY = smoothstep(0.92, 1.0, abs(sin(panelUV.y * 3.14159)));
+        float seamPattern = max(seamX, seamY);
         
-        roughness = 0.5 + fabricPattern * 0.3;
+        // Subtle fabric/composite weave texture
+        float2 weaveUV = in.worldPosition.xy * 60.0 + in.worldPosition.yz * 60.0;
+        float weavePattern = abs(sin(weaveUV.x + weaveUV.y) * cos(weaveUV.x - weaveUV.y));
         
-        // Professional fresnel rim lighting
+        roughness = 0.45 + weavePattern * 0.2 + seamPattern * 0.15;
+        
+        // Darken seam lines slightly
+        baseColor *= (1.0 - seamPattern * 0.15);
+        
+        // Professional soft fresnel rim lighting
         float3 viewDir = normalize(uniforms.cameraPosition - in.worldPosition);
-        float fresnel = pow(1.0 - max(dot(normalize(in.worldNormal), viewDir), 0.0), 3.0);
+        float NdotV = max(dot(normalize(in.worldNormal), viewDir), 0.0);
+        float fresnel = pow(1.0 - NdotV, 4.0) * 0.5;
         
-        // Apply texture and rim glow
-        baseColor *= 0.7 + fabricPattern * 0.4;
-        emission = fresnel * 0.6; // Edge glow separates character from background
+        // Subtle ambient occlusion in crevices
+        float ao_hint = 0.85 + weavePattern * 0.15;
+        baseColor *= ao_hint;
+        
+        // Soft edge glow for character readability
+        emission = fresnel * 0.45;
     }
     
     // Output to G-Buffer
