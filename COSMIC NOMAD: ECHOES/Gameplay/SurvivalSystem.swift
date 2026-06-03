@@ -28,11 +28,11 @@ final class SurvivalSystem {
     
     // MARK: - Drain Rates (per second)
     
-    private let baseOxygenDrain: Float = 0.2        // ~8 min on a serene planet
-    private let basePowerRechargeRate: Float = 3.0   // recharge when idle
-    private let sprintPowerDrain: Float = 1.5        // drain when sprinting
-    private let jetpackPowerDrain: Float = 3.0       // drain when jetpacking
-    private let scanPowerDrain: Float = 1.0          // drain when scanning
+    private let baseOxygenDrain: Float = 0.12        // Was 0.2 (~13 min on a serene planet now)
+    private let basePowerRechargeRate: Float = 4.0   // Was 3.0 (recharge when idle)
+    private let sprintPowerDrain: Float = 0.8        // Was 1.5 (drain when sprinting)
+    private let jetpackPowerDrain: Float = 2.0       // Was 3.0 (drain when jetpacking)
+    private let scanPowerDrain: Float = 0.5          // Was 1.0 (drain when scanning)
     
     // MARK: - Temperature Targets by Mood
     
@@ -66,7 +66,8 @@ final class SurvivalSystem {
         isMoving: Bool,
         isSprinting: Bool,
         isJetpacking: Bool,
-        isScanning: Bool
+        isScanning: Bool,
+        level: Int = 0 // Used for difficulty scaling
     ) {
         guard !isBlackedOut else {
             blackoutTimer += deltaTime
@@ -79,8 +80,12 @@ final class SurvivalSystem {
         // --- Weather Effects ---
         updateWeatherEffects(weatherType: weatherType, intensity: weatherIntensity)
         
+        // --- Difficulty Scaling ---
+        // Drain increases by 5% per level to offset player upgrades and keep late-game challenging
+        let difficultyMultiplier: Float = 1.0 + (Float(level) * 0.05)
+        
         // --- Oxygen ---
-        var oxygenDrain = baseOxygenDrain * weatherOxygenMultiplier
+        var oxygenDrain = baseOxygenDrain * weatherOxygenMultiplier * difficultyMultiplier
         
         // Mood multiplier
         switch mood {
@@ -97,7 +102,7 @@ final class SurvivalSystem {
         
         // Temperature stress increases oxygen drain
         let tempStress = temperatureStress()
-        oxygenDrain += tempStress * 0.5
+        oxygenDrain += tempStress * 0.5 * difficultyMultiplier
         
         oxygen = max(0, oxygen - oxygenDrain * deltaTime)
         
@@ -106,11 +111,11 @@ final class SurvivalSystem {
         let jetpackDrainReduction = max(0, 1.0 - jetpackFuelBonus)
         
         if isSprinting {
-            suitPower = max(0, suitPower - sprintPowerDrain * deltaTime)
+            suitPower = max(0, suitPower - sprintPowerDrain * difficultyMultiplier * deltaTime)
         } else if isJetpacking {
-            suitPower = max(0, suitPower - jetpackPowerDrain * jetpackDrainReduction * deltaTime)
+            suitPower = max(0, suitPower - jetpackPowerDrain * jetpackDrainReduction * difficultyMultiplier * deltaTime)
         } else if isScanning {
-            suitPower = max(0, suitPower - scanPowerDrain * deltaTime)
+            suitPower = max(0, suitPower - scanPowerDrain * difficultyMultiplier * deltaTime)
         } else {
             // Passive recharge when not using power
             suitPower = min(maxSuitPower, suitPower + basePowerRechargeRate * deltaTime)

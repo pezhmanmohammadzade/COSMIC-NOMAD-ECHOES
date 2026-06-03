@@ -38,7 +38,7 @@ final class MemoryFragmentSystem {
     }
     
     // Generate fragments based on seed and level
-    func generate(seed: UInt64, planetName: String, mood: PlanetMood, level: Int) {
+    func generate(seed: UInt64, planetName: String, mood: PlanetMood, level: Int, restoredFactIds: [Int]? = nil) {
         fragments.removeAll()
         discoveredCount = 0
         
@@ -73,6 +73,9 @@ final class MemoryFragmentSystem {
             
             let fact = FactLibrary.shared.getFact(for: globalIndexOffset + i)
             
+            // Check if this fragment was already discovered in a previous session
+            let isAlreadyDiscovered = restoredFactIds?.contains(fact.id) ?? false
+            
             let fragment = MemoryFragment(
                 id: UUID(),
                 worldPosition: SIMD3<Float>(x, 0, z),
@@ -80,11 +83,15 @@ final class MemoryFragmentSystem {
                 title: fact.title,
                 content: fact.fact,
                 fragmentType: type,
-                isDiscovered: false,
+                isDiscovered: isAlreadyDiscovered,
                 isLegendary: rng.nextFloatRange(0, 1.0) < 0.05  // 5% legendary chance
             )
             
             fragments.append(fragment)
+            
+            if isAlreadyDiscovered {
+                discoveredCount += 1
+            }
         }
     }
     

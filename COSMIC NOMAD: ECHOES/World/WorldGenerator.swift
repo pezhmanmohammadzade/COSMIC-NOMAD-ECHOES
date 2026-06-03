@@ -28,7 +28,7 @@ final class WorldGenerator {
     // World state
     private(set) var isReady: Bool = false
     
-    init(device: MTLDevice, seed: UInt64, level: Int) {
+    init(device: MTLDevice, seed: UInt64, level: Int, restoredFactIds: [Int]? = nil) {
         self.device = device
         
         // Generate planet from seed
@@ -40,7 +40,7 @@ final class WorldGenerator {
         self.weatherSystem = WeatherSystem(planetConfig: planetConfig)
         self.memoryFragmentSystem = MemoryFragmentSystem()
         self.anomalySystem = AnomalySystem()
-        self.memoryFragmentSystem.generate(seed: seed, planetName: self.planetConfig.name, mood: self.planetConfig.mood, level: level)
+        self.memoryFragmentSystem.generate(seed: seed, planetName: self.planetConfig.name, mood: self.planetConfig.mood, level: level, restoredFactIds: restoredFactIds)
         self.anomalySystem.generate(seed: seed, mood: self.planetConfig.mood)
         
         print("🌍 World Generated: \(planetConfig.name)")
@@ -113,7 +113,7 @@ final class WorldGenerator {
     
     // MARK: - Planet Change
     
-    func changePlanet(seed: UInt64) {
+    func changePlanet(seed: UInt64, restoredFactIds: [Int]? = nil) {
         chunkStreamer.unloadAll()
         
         let newConfig = PlanetConfig.generate(seed: seed)
@@ -126,7 +126,7 @@ final class WorldGenerator {
         self.chunkStreamer = ChunkStreamer(device: device, terrainGenerator: newTerrainGen, cityGenerator: newCityGen, planetConfig: newConfig)
         self.atmosphereSystem = AtmosphereSystem(planetConfig: newConfig)
         self.weatherSystem = WeatherSystem(planetConfig: newConfig)
-        self.memoryFragmentSystem.generate(seed: seed, planetName: newConfig.name, mood: newConfig.mood, level: SaveManager.shared.getPlanetsCompleted() + 1)
+        self.memoryFragmentSystem.generate(seed: seed, planetName: newConfig.name, mood: newConfig.mood, level: SaveManager.shared.getPlanetsCompleted() + 1, restoredFactIds: restoredFactIds)
         self.anomalySystem.generate(seed: seed, mood: newConfig.mood)
         
         print("🌍 Planet Changed: \(newConfig.name) (Mood: \(newConfig.mood.rawValue))")

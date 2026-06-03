@@ -283,6 +283,9 @@ final class TerrainChunk {
     func release() {
         vertexBuffer = nil
         indexBuffer = nil
+        entityInstanceBuffer = nil
+        entities = []
+        buildingColliders = []
         heightfield = []
         isReady = false
     }

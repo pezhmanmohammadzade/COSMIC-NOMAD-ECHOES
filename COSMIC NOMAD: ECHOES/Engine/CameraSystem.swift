@@ -33,6 +33,11 @@ final class CameraSystem {
     private(set) var forward: SIMD3<Float> = SIMD3<Float>(0, 0, -1)
     private(set) var right: SIMD3<Float> = SIMD3<Float>(1, 0, 0)
     
+    // Camera facing yaw (derived from forward vector)
+    var yaw: Float {
+        atan2(forward.x, forward.z)
+    }
+    
     // Matrices
     private(set) var viewMatrix: float4x4 = matrix_identity_float4x4
     private(set) var projectionMatrix: float4x4 = matrix_identity_float4x4

@@ -61,6 +61,8 @@ final class GameEngine: NSObject, MTKViewDelegate {
     private var fpsAccumulator: Float = 0
     private var fpsFrameCount: Int = 0
     
+    // Mid-level save timer
+    private var midLevelSaveTimer: Float = 0
     // MARK: - Initialization
     
     init(device: MTLDevice) throws {
@@ -99,11 +101,22 @@ final class GameEngine: NSObject, MTKViewDelegate {
             StatisticsManager.shared.recordBlackout()
         }
         
-        // Generate initial world
-        world = WorldGenerator(device: device, seed: currentPlanetSeed, level: planetsCompleted + 1)
+        // 1. Check for mid-level save state
+        let midLevelState = SaveManager.shared.getMidLevelState()
+        let hasValidMidLevelState = midLevelState?.seed == currentPlanetSeed
+        
+        // 2. Generate initial world, passing restored facts if valid
+        let restoredFacts = hasValidMidLevelState ? midLevelState?.discoveredFactIds : nil
+        world = WorldGenerator(device: device, seed: currentPlanetSeed, level: planetsCompleted + 1, restoredFactIds: restoredFacts)
         renderer.world = world
         
-        player.teleportTo(SIMD3<Float>(32, 20, 32))
+        // 3. Set player position (restored or default spawn)
+        if hasValidMidLevelState, let state = midLevelState {
+            player.teleportTo(state.position, yaw: state.yaw)
+            print("🎮 GameEngine: Resumed mid-level state at \(state.position) with \(state.discoveredFactIds.count) signals.")
+        } else {
+            player.teleportTo(SIMD3<Float>(32, 20, 32))
+        }
         
         // Save the current planet seed in history for star chart navigation
         SaveManager.shared.savePlanetSeedForLevel(planetsCompleted, seed: currentPlanetSeed)
@@ -189,7 +202,8 @@ final class GameEngine: NSObject, MTKViewDelegate {
             isMoving: player.isMoving,
             isSprinting: player.isSprinting,
             isJetpacking: player.isJetpacking,
-            isScanning: scanner.isScanning
+            isScanning: scanner.isScanning,
+            level: planetsCompleted
         )
         
         // 3.7. Hazard system
@@ -252,13 +266,30 @@ final class GameEngine: NSObject, MTKViewDelegate {
             totalTime: totalTime
         )
         
-        // 6. World update
+        // 6. World systems update (chunk streaming, sky, weather)
         world.update(
             playerPosition: player.position,
             cameraFrustum: camera.frustum(),
             deltaTime: deltaTime,
             totalTime: totalTime
         )
+        
+        // 7. Periodic Mid-Level Save (every 5 seconds)
+        midLevelSaveTimer += deltaTime
+        if midLevelSaveTimer >= 5.0 {
+            midLevelSaveTimer = 0
+            
+            let discoveredIds = world.memoryFragmentSystem.fragments
+                .filter { $0.isDiscovered }
+                .map { $0.factId }
+            
+            SaveManager.shared.saveMidLevelState(
+                position: player.position,
+                yaw: player.yaw,
+                discoveredFactIds: discoveredIds,
+                currentSeed: currentPlanetSeed
+            )
+        }
         
         // --- Prepare Render Data ---
         
@@ -454,6 +485,8 @@ final class GameEngine: NSObject, MTKViewDelegate {
     // MARK: - Planet Progression
     
     func advanceToNextPlanet() {
+        SaveManager.shared.clearMidLevelState()
+        
         planetsCompleted += 1
         isPlanetDecoded = false
         planetBlackoutCount = 0
@@ -509,6 +542,7 @@ final class GameEngine: NSObject, MTKViewDelegate {
         planetHazardFragments = 0
         
         SaveManager.shared.resetProgress()
+        SaveManager.shared.clearMidLevelState()
         SaveManager.shared.setEndlessMode(false)
         UpgradeSystem.shared.reset()
         
@@ -599,6 +633,8 @@ final class GameEngine: NSObject, MTKViewDelegate {
     }
     
     func visitPlanet(seed: UInt64) {
+        SaveManager.shared.clearMidLevelState()
+        
         currentPlanetSeed = seed
         world = WorldGenerator(device: renderer.device, seed: seed, level: planetsCompleted + 1)
         renderer.world = world

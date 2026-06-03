@@ -266,4 +266,48 @@ final class SaveManager {
             UserDefaults.standard.set(count, forKey: kEndlessBest)
         }
     }
+    
+    // MARK: - Mid-Level Save State
+    
+    private let kMidLevelPosX = "cn_midlevel_pos_x"
+    private let kMidLevelPosY = "cn_midlevel_pos_y"
+    private let kMidLevelPosZ = "cn_midlevel_pos_z"
+    private let kMidLevelYaw = "cn_midlevel_yaw"
+    private let kMidLevelDiscovered = "cn_midlevel_discovered"
+    private let kMidLevelSeed = "cn_midlevel_seed"
+    
+    func saveMidLevelState(position: SIMD3<Float>, yaw: Float, discoveredFactIds: [Int], currentSeed: UInt64) {
+        let defaults = UserDefaults.standard
+        defaults.set(position.x, forKey: kMidLevelPosX)
+        defaults.set(position.y, forKey: kMidLevelPosY)
+        defaults.set(position.z, forKey: kMidLevelPosZ)
+        defaults.set(yaw, forKey: kMidLevelYaw)
+        defaults.set(discoveredFactIds, forKey: kMidLevelDiscovered)
+        defaults.set(String(currentSeed), forKey: kMidLevelSeed)
+    }
+    
+    func getMidLevelState() -> (position: SIMD3<Float>, yaw: Float, discoveredFactIds: [Int], seed: UInt64)? {
+        let defaults = UserDefaults.standard
+        guard let seedString = defaults.string(forKey: kMidLevelSeed), let seed = UInt64(seedString) else {
+            return nil // No mid-level state exists
+        }
+        
+        let x = defaults.float(forKey: kMidLevelPosX)
+        let y = defaults.float(forKey: kMidLevelPosY)
+        let z = defaults.float(forKey: kMidLevelPosZ)
+        let yaw = defaults.float(forKey: kMidLevelYaw)
+        let discoveredFactIds = defaults.array(forKey: kMidLevelDiscovered) as? [Int] ?? []
+        
+        return (SIMD3<Float>(x, y, z), yaw, discoveredFactIds, seed)
+    }
+    
+    func clearMidLevelState() {
+        let defaults = UserDefaults.standard
+        defaults.removeObject(forKey: kMidLevelPosX)
+        defaults.removeObject(forKey: kMidLevelPosY)
+        defaults.removeObject(forKey: kMidLevelPosZ)
+        defaults.removeObject(forKey: kMidLevelYaw)
+        defaults.removeObject(forKey: kMidLevelDiscovered)
+        defaults.removeObject(forKey: kMidLevelSeed)
+    }
 }

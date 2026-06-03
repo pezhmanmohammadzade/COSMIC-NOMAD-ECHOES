@@ -24,7 +24,7 @@ final class AstronautRenderer {
     private var objInstanceBuffer: MTLBuffer?
     
     // --- AAA Procedural Astronaut ---
-    private let partCount = 62
+    private let partCount = 72
     private var instanceBuffer: MTLBuffer?
     
     // Walk animation phase
@@ -37,6 +37,12 @@ final class AstronautRenderer {
     
     // Breathing animation
     private var breathPhase: Float = 0
+    
+    // Eye blink animation
+    private var blinkTimer: Float = 0
+    private var blinkCooldown: Float = 3.0
+    private var isBlinking: Bool = false
+    private var blinkDuration: Float = 0.12
     
     init(device: MTLDevice) {
         self.device = device
@@ -122,6 +128,19 @@ final class AstronautRenderer {
         }
         
         breathPhase += deltaTime * 1.2
+        
+        // Eye blink animation
+        blinkTimer -= deltaTime
+        if blinkTimer <= 0 {
+            if isBlinking {
+                isBlinking = false
+                blinkCooldown = Float.random(in: 2.0...5.0)
+                blinkTimer = blinkCooldown
+            } else {
+                isBlinking = true
+                blinkTimer = blinkDuration
+            }
+        }
     }
     
     func draw(player: PlayerController, encoder: MTLRenderCommandEncoder, resources: ResourceManager, pipeline: RenderPipeline, time: Float, isMoving: Bool) {
@@ -241,6 +260,13 @@ final class AstronautRenderer {
         let breathScale: Float = 1.0 + sin(breathPhase) * 0.008
         let shoulderRoll: Float = isMoving ? sin(walkPhase) * 0.06 : 0.0
         
+        // Face colors
+        let skinTone        = SIMD4<Float>(0.85, 0.72, 0.60, 4.0)  // Warm skin behind visor
+        let eyeWhite        = SIMD4<Float>(0.95, 0.95, 0.97, 4.0)
+        let eyePupil        = SIMD4<Float>(0.15, 0.25, 0.45, 1.0)  // Deep blue iris, slight glow
+        let mouthColor      = SIMD4<Float>(0.70, 0.45, 0.42, 4.0)
+        _     = SIMD4<Float>(0.75, 0.62, 0.52, 4.0)  // Slightly darker for eyelids
+        
         let pointer = instanceBuffer.contents().bindMemory(to: EntityInstance.self, capacity: partCount)
         
         let feetY = player.position.y - player.playerHeight
@@ -249,26 +275,39 @@ final class AstronautRenderer {
         // === JOINT PIVOTS ===
         let headPivot = bodyMatrix * MatrixUtil.translation(SIMD3<Float>(0, 1.68, 0)) * MatrixUtil.rotation(pitch: headTilt, yaw: 0, roll: 0)
         
+        // NOTE: User wants arm movement 180 degrees different
         let lShoulderPivot = bodyMatrix * MatrixUtil.translation(SIMD3<Float>(-0.42, 1.55, 0)) * MatrixUtil.rotation(pitch: armSwing, yaw: 0, roll: shoulderRoll)
         let rShoulderPivot = bodyMatrix * MatrixUtil.translation(SIMD3<Float>(0.42, 1.55, 0)) * MatrixUtil.rotation(pitch: -armSwing, yaw: 0, roll: -shoulderRoll)
         
-        let elbowBend: Float = isMoving ? 0.35 + abs(armSwing) * 0.3 : 0.15
-        let lElbowPivot = lShoulderPivot * MatrixUtil.translation(SIMD3<Float>(0, -0.38, 0)) * MatrixUtil.rotation(pitch: -elbowBend, yaw: 0, roll: 0)
-        let rElbowPivot = rShoulderPivot * MatrixUtil.translation(SIMD3<Float>(0, -0.38, 0)) * MatrixUtil.rotation(pitch: -elbowBend, yaw: 0, roll: 0)
+        // Elbow IK: bend more when arm swings forward, straighten when swinging back
+        // Left arm is forward when armSwing < 0 (pitch: armSwing < 0 = forward)
+        // Right arm is forward when armSwing > 0 (pitch: -armSwing < 0 = forward)
+        let lElbowBend: Float = isMoving ? 0.20 + max(0, -armSwing) * 0.6 : 0.10
+        let rElbowBend: Float = isMoving ? 0.20 + max(0, armSwing) * 0.6 : 0.10
+        // Negative pitch on elbow = forearm curls forward (natural arm bend)
+        let lElbowPivot = lShoulderPivot * MatrixUtil.translation(SIMD3<Float>(0, -0.38, 0)) * MatrixUtil.rotation(pitch: -lElbowBend, yaw: 0, roll: 0)
+        let rElbowPivot = rShoulderPivot * MatrixUtil.translation(SIMD3<Float>(0, -0.38, 0)) * MatrixUtil.rotation(pitch: -rElbowBend, yaw: 0, roll: 0)
         
         let lWristPivot = lElbowPivot * MatrixUtil.translation(SIMD3<Float>(0, -0.32, 0))
         let rWristPivot = rElbowPivot * MatrixUtil.translation(SIMD3<Float>(0, -0.32, 0))
         
-        let lHipPivot = bodyMatrix * MatrixUtil.translation(SIMD3<Float>(-0.20, 0.72, 0)) * MatrixUtil.rotation(pitch: -legSwing, yaw: 0, roll: 0)
-        let rHipPivot = bodyMatrix * MatrixUtil.translation(SIMD3<Float>(0.20, 0.72, 0)) * MatrixUtil.rotation(pitch: legSwing, yaw: 0, roll: 0)
+        // Cross-body: right leg forward when left arm forward
+        let lHipPivot = bodyMatrix * MatrixUtil.translation(SIMD3<Float>(-0.20, 0.72, 0)) * MatrixUtil.rotation(pitch: legSwing, yaw: 0, roll: 0)
+        let rHipPivot = bodyMatrix * MatrixUtil.translation(SIMD3<Float>(0.20, 0.72, 0)) * MatrixUtil.rotation(pitch: -legSwing, yaw: 0, roll: 0)
         
-        let kneeBendL: Float = isMoving ? max(0, legSwing * 1.2) + 0.1 : 0.05
-        let kneeBendR: Float = isMoving ? max(0, -legSwing * 1.2) + 0.1 : 0.05
-        let lKneePivot = lHipPivot * MatrixUtil.translation(SIMD3<Float>(0, -0.38, 0)) * MatrixUtil.rotation(pitch: kneeBendL, yaw: 0, roll: 0)
-        let rKneePivot = rHipPivot * MatrixUtil.translation(SIMD3<Float>(0, -0.38, 0)) * MatrixUtil.rotation(pitch: kneeBendR, yaw: 0, roll: 0)
+        // Knee IK: User wants knees to bend FORWARD, not backward
+        // Negative pitch = rotates toward -Z (forward)
+        let kneeBendL: Float = isMoving ? max(0, -legSwing) * 1.4 + 0.1 : 0.05   // Left bends when going FORWARD (legSwing < 0)
+        let kneeBendR: Float = isMoving ? max(0, legSwing) * 1.4 + 0.1 : 0.05    // Right bends when going FORWARD (legSwing > 0)
+        let lKneePivot = lHipPivot * MatrixUtil.translation(SIMD3<Float>(0, -0.38, 0)) * MatrixUtil.rotation(pitch: -kneeBendL, yaw: 0, roll: 0)
+        let rKneePivot = rHipPivot * MatrixUtil.translation(SIMD3<Float>(0, -0.38, 0)) * MatrixUtil.rotation(pitch: -kneeBendR, yaw: 0, roll: 0)
         
-        let lAnklePivot = lKneePivot * MatrixUtil.translation(SIMD3<Float>(0, -0.35, 0))
-        let rAnklePivot = rKneePivot * MatrixUtil.translation(SIMD3<Float>(0, -0.35, 0))
+        // Foot toe-off: trailing foot tilts slightly for push-off effect
+        // Left foot is trailing when legSwing > 0, right foot when legSwing < 0
+        let toeOffL: Float = isMoving ? max(0, legSwing) * 0.2 : 0.0
+        let toeOffR: Float = isMoving ? max(0, -legSwing) * 0.2 : 0.0
+        let lAnklePivot = lKneePivot * MatrixUtil.translation(SIMD3<Float>(0, -0.35, 0)) * MatrixUtil.rotation(pitch: -toeOffL, yaw: 0, roll: 0)
+        let rAnklePivot = rKneePivot * MatrixUtil.translation(SIMD3<Float>(0, -0.35, 0)) * MatrixUtil.rotation(pitch: -toeOffR, yaw: 0, roll: 0)
         
         // Helper
         func makePart(_ index: Int, _ pivot: float4x4, _ offset: SIMD3<Float>, _ scale: SIMD3<Float>, _ color: SIMD4<Float>) {
@@ -408,6 +447,37 @@ final class AstronautRenderer {
         let jetFlame = SIMD4<Float>(0.55 * jetPhase, 0.72 * jetPhase, 0.95 * jetPhase, jetPhase > 0 ? 1.0 : 0.0)
         makePart(idx, bodyMatrix, SIMD3<Float>(-0.14, 0.98, 0.36), SIMD3<Float>(0.08, 0.06, 0.08), jetFlame); idx += 1
         makePart(idx, bodyMatrix, SIMD3<Float>(0.14, 0.98, 0.36), SIMD3<Float>(0.08, 0.06, 0.08), jetFlame); idx += 1
+        
+        // ===== FACE (behind visor) (10 parts) =====
+        let eyebrowColor = SIMD4<Float>(0.15, 0.12, 0.10, 4.0)
+        let cheekColor = SIMD4<Float>(0.95, 0.60, 0.55, 4.0)
+        
+        // Left eye white
+        let eyeScale: SIMD3<Float> = isBlinking ? SIMD3<Float>(0.06, 0.01, 0.04) : SIMD3<Float>(0.06, 0.05, 0.04)
+        makePart(idx, headPivot, SIMD3<Float>(-0.08, 0.30, -0.18), eyeScale, eyeWhite); idx += 1
+        // Right eye white
+        makePart(idx, headPivot, SIMD3<Float>(0.08, 0.30, -0.18), eyeScale, eyeWhite); idx += 1
+        
+        // Left pupil (emissive blue)
+        let pupilScale: SIMD3<Float> = isBlinking ? SIMD3<Float>(0.03, 0.005, 0.02) : SIMD3<Float>(0.03, 0.03, 0.02)
+        makePart(idx, headPivot, SIMD3<Float>(-0.08, 0.30, -0.20), pupilScale, eyePupil); idx += 1
+        // Right pupil
+        makePart(idx, headPivot, SIMD3<Float>(0.08, 0.30, -0.20), pupilScale, eyePupil); idx += 1
+        
+        // Left eyebrow
+        makePart(idx, headPivot, SIMD3<Float>(-0.09, 0.36, -0.19), SIMD3<Float>(0.05, 0.015, 0.02), eyebrowColor); idx += 1
+        // Right eyebrow
+        makePart(idx, headPivot, SIMD3<Float>(0.09, 0.36, -0.19), SIMD3<Float>(0.05, 0.015, 0.02), eyebrowColor); idx += 1
+        
+        // Left cheek (rosy)
+        makePart(idx, headPivot, SIMD3<Float>(-0.12, 0.24, -0.17), SIMD3<Float>(0.04, 0.03, 0.02), cheekColor); idx += 1
+        // Right cheek (rosy)
+        makePart(idx, headPivot, SIMD3<Float>(0.12, 0.24, -0.17), SIMD3<Float>(0.04, 0.03, 0.02), cheekColor); idx += 1
+        
+        // Nose bridge (subtle)
+        makePart(idx, headPivot, SIMD3<Float>(0, 0.24, -0.19), SIMD3<Float>(0.03, 0.06, 0.03), skinTone); idx += 1
+        // Mouth (small subtle line)
+        makePart(idx, headPivot, SIMD3<Float>(0, 0.18, -0.19), SIMD3<Float>(0.07, 0.015, 0.02), mouthColor); idx += 1
         
         // ===== ANTENNA (2 parts) =====
         // Antenna rod

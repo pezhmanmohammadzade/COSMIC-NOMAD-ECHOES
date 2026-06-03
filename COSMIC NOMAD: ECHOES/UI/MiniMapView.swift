@@ -13,6 +13,7 @@ import simd
 struct MiniMapView: View {
     let playerPosition: SIMD3<Float>
     let playerYaw: Float
+    let cameraYaw: Float
     let signals: [MemoryFragment]
     let mapRadius: Float = 150.0 // World units visible on mini-map
     
@@ -34,7 +35,7 @@ struct MiniMapView: View {
                 .font(.system(size: 7, weight: .bold, design: .monospaced))
                 .foregroundColor(Pastel.primary.opacity(0.5))
                 .offset(y: -size / 2 + 8)
-                .rotationEffect(.radians(Double(playerYaw)))
+                .rotationEffect(.radians(Double(cameraYaw + .pi)))
             
             // Signal markers
             ForEach(Array(signals.enumerated()), id: \.offset) { _, signal in
@@ -42,10 +43,10 @@ struct MiniMapView: View {
                     let relX = signal.worldPosition.x - playerPosition.x
                     let relZ = signal.worldPosition.z - playerPosition.z
                     
-                    // Rotate by player yaw
-                    let cosY = cos(playerYaw)
-                    let sinY = sin(playerYaw)
-                    let rotX = relX * cosY - relZ * sinY
+                    // Rotate by camera yaw so UP on map is UP on screen
+                    let cosY = cos(cameraYaw)
+                    let sinY = sin(cameraYaw)
+                    let rotX = -relX * cosY + relZ * sinY
                     let rotZ = relX * sinY + relZ * cosY
                     
                     let dist = sqrt(relX * relX + relZ * relZ)
@@ -74,6 +75,7 @@ struct MiniMapView: View {
                 .fill(Pastel.primary)
                 .frame(width: 8, height: 10)
                 .shadow(color: Pastel.primary.opacity(0.5), radius: 4)
+                .rotationEffect(.radians(Double(cameraYaw - playerYaw)))
             
             // Range ring
             Circle()

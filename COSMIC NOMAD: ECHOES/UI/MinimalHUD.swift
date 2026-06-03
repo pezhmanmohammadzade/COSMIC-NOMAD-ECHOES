@@ -97,7 +97,11 @@ struct MinimalHUD: View {
             
             // --- Scanner Ring (center of screen) ---
             if let engine = engine, engine.scanner.isScanning {
-                ScannerRingView(progress: engine.scanner.scanProgress)
+                ScannerRingView(
+                    progress: engine.scanner.scanProgress,
+                    playerYaw: engine.player.yaw,
+                    cameraYaw: engine.camera.yaw
+                )
                     .frame(width: 120, height: 120)
                     .allowsHitTesting(false)
             }
@@ -194,7 +198,7 @@ struct MinimalHUD: View {
                             }) {
                                 ZStack {
                                     Circle()
-                                        .fill(Pastel.surface.opacity(0.7))
+                                        .fill(Pastel.surface.opacity(0.85))
                                         .frame(width: 40, height: 40)
                                     Circle()
                                         .stroke(Pastel.danger.opacity(0.5), lineWidth: 1)
@@ -209,20 +213,20 @@ struct MinimalHUD: View {
                                 HStack(spacing: 8) {
                                 Text(engine.world.planetConfig.name)
                                     .font(.system(size: 13, weight: .bold, design: .monospaced))
-                                    .foregroundStyle(Pastel.textPrimary.opacity(0.8))
+                                    .foregroundStyle(Pastel.textPrimary)
                                 
                                 Text("PLANET \(engine.planetsCompleted + 1)/\(GameEngine.totalPlanetsForEnding)")
                                     .font(.system(size: 9, weight: .bold, design: .monospaced))
-                                    .foregroundStyle(Pastel.primary.opacity(0.6))
+                                    .foregroundStyle(Pastel.primary)
                                     .padding(.horizontal, 6)
                                     .padding(.vertical, 2)
-                                    .background(Pastel.primary.opacity(0.08))
+                                    .background(Pastel.primary.opacity(0.15))
                                     .clipShape(Capsule())
                             }
                             
                             Text(engine.world.planetConfig.mood.rawValue.uppercased())
-                                .font(.system(size: 9, weight: .light, design: .monospaced))
-                                .foregroundStyle(Pastel.textMuted)
+                                .font(.system(size: 9, weight: .medium, design: .monospaced))
+                                .foregroundStyle(Pastel.textSecondary)
                             
                             // Objective
                             HStack(spacing: 4) {
@@ -233,7 +237,7 @@ struct MinimalHUD: View {
                                 let remaining = engine.world.memoryFragmentSystem.fragments.count - engine.world.memoryFragmentSystem.discoveredCount
                                 Text("SIGNALS: \(remaining) remaining")
                                     .font(.system(size: 10, weight: .medium, design: .monospaced))
-                                    .foregroundStyle(Pastel.secondary.opacity(0.9))
+                                    .foregroundStyle(Pastel.secondary)
                             }
                             .padding(.top, 4)
                             
@@ -243,12 +247,12 @@ struct MinimalHUD: View {
                                 HStack(spacing: 4) {
                                     Image(systemName: "arrow.up.circle.fill")
                                         .font(.system(size: 10))
-                                        .foregroundStyle(Pastel.primary.opacity(0.6))
+                                        .foregroundStyle(Pastel.primary)
                                         .rotationEffect(.degrees(bearingTo(from: engine.player, to: nearest.worldPosition)))
                                     
                                     Text("\(Int(dist))m to nearest signal")
                                         .font(.system(size: 9, weight: .regular, design: .monospaced))
-                                        .foregroundStyle(Pastel.primary.opacity(0.5))
+                                        .foregroundStyle(Pastel.primary.opacity(0.85))
                                 }
                             }
                             
@@ -257,10 +261,10 @@ struct MinimalHUD: View {
                                 HStack(spacing: 4) {
                                     Image(systemName: "waveform")
                                         .font(.system(size: 8))
-                                        .foregroundStyle(Pastel.signalPulse.opacity(0.6))
+                                        .foregroundStyle(Pastel.signalPulse)
                                     Text(teaser)
                                         .font(.system(size: 9, weight: .light, design: .serif))
-                                        .foregroundStyle(Pastel.signalPulse.opacity(0.7))
+                                        .foregroundStyle(Pastel.signalPulse.opacity(0.9))
                                         .italic()
                                 }
                             }
@@ -271,13 +275,23 @@ struct MinimalHUD: View {
                                     HStack(spacing: 4) {
                                         Image(systemName: bounty.type.icon)
                                             .font(.system(size: 8))
-                                            .foregroundStyle(Pastel.bounty.opacity(0.7))
+                                            .foregroundStyle(Pastel.bounty)
                                         Text("\(bounty.type.rawValue): \(bounty.progressText)")
                                             .font(.system(size: 8, weight: .medium, design: .monospaced))
-                                            .foregroundStyle(Pastel.bounty.opacity(0.6))
+                                            .foregroundStyle(Pastel.bounty.opacity(0.85))
                                     }
                                 }
                             }   }
+                            // Dark background panel for readability
+                            .padding(10)
+                            .background(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .fill(Pastel.bg.opacity(0.75))
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 10)
+                                            .stroke(Color.white.opacity(0.06), lineWidth: 0.5)
+                                    )
+                            )
                         }
                         .padding(.top, 60)
                         .padding(.leading, 20)
@@ -348,6 +362,7 @@ struct MinimalHUD: View {
                             MiniMapView(
                                 playerPosition: engine.player.position,
                                 playerYaw: engine.player.yaw,
+                                cameraYaw: engine.camera.yaw,
                                 signals: engine.world.memoryFragmentSystem.fragments
                             )
                         }
@@ -883,11 +898,18 @@ struct SurvivalBarView: View {
 
 struct ScannerRingView: View {
     let progress: Float
+    var playerYaw: Float = 0
+    var cameraYaw: Float = 0
     
     // Haptics
     @State private var lastHapticProgress: Float = 0.0
     private let impactGenerator = UIImpactFeedbackGenerator(style: .soft)
     private let completeGenerator = UINotificationFeedbackGenerator()
+    
+    // Pointer direction: player facing relative to camera
+    private var pointerAngle: Double {
+        Double(cameraYaw - playerYaw) * (180.0 / .pi)
+    }
     
     var body: some View {
         ZStack {
@@ -918,6 +940,60 @@ struct ScannerRingView: View {
                     .stroke(Pastel.primary.opacity(0.3), lineWidth: 1)
                     .frame(width: 80 - CGFloat((progress - 0.5) * 40))
                     .opacity(Double(1.0 - progress))
+            }
+            
+            // === DIRECTIONAL POINTER ===
+            // Arrow pointing in character facing direction
+            GeometryReader { geo in
+                let center = CGPoint(x: geo.size.width / 2, y: geo.size.height / 2)
+                let radius: CGFloat = 38
+                let arrowSize: CGFloat = 8
+                
+                // Pointer triangle
+                Path { path in
+                    let tipX = center.x + radius * CGFloat(sin(pointerAngle * .pi / 180.0))
+                    let tipY = center.y - radius * CGFloat(cos(pointerAngle * .pi / 180.0))
+                    
+                    let leftAngle = (pointerAngle - 150) * .pi / 180.0
+                    let rightAngle = (pointerAngle + 150) * .pi / 180.0
+                    
+                    let leftX = tipX + arrowSize * CGFloat(sin(leftAngle))
+                    let leftY = tipY - arrowSize * CGFloat(cos(leftAngle))
+                    let rightX = tipX + arrowSize * CGFloat(sin(rightAngle))
+                    let rightY = tipY - arrowSize * CGFloat(cos(rightAngle))
+                    
+                    path.move(to: CGPoint(x: tipX, y: tipY))
+                    path.addLine(to: CGPoint(x: leftX, y: leftY))
+                    path.addLine(to: CGPoint(x: rightX, y: rightY))
+                    path.closeSubpath()
+                }
+                .fill(Pastel.primary.opacity(Double(0.5 + progress * 0.5)))
+                
+                // Pulsing dot at arrow tip
+                let dotX = center.x + (radius + 4) * CGFloat(sin(pointerAngle * .pi / 180.0))
+                let dotY = center.y - (radius + 4) * CGFloat(cos(pointerAngle * .pi / 180.0))
+                
+                Circle()
+                    .fill(Pastel.primary)
+                    .frame(width: 4 + CGFloat(progress * 3), height: 4 + CGFloat(progress * 3))
+                    .shadow(color: Pastel.primary.opacity(0.8), radius: CGFloat(progress * 6))
+                    .position(x: dotX, y: dotY)
+                
+                // Center-to-tip line (scan direction beam)
+                Path { path in
+                    let innerRadius: CGFloat = 8
+                    let startX = center.x + innerRadius * CGFloat(sin(pointerAngle * .pi / 180.0))
+                    let startY = center.y - innerRadius * CGFloat(cos(pointerAngle * .pi / 180.0))
+                    let endX = center.x + (radius - arrowSize * 0.5) * CGFloat(sin(pointerAngle * .pi / 180.0))
+                    let endY = center.y - (radius - arrowSize * 0.5) * CGFloat(cos(pointerAngle * .pi / 180.0))
+                    
+                    path.move(to: CGPoint(x: startX, y: startY))
+                    path.addLine(to: CGPoint(x: endX, y: endY))
+                }
+                .stroke(
+                    Pastel.primary.opacity(Double(progress * 0.4)),
+                    style: StrokeStyle(lineWidth: 1.5, lineCap: .round, dash: [4, 3])
+                )
             }
             
             Circle()

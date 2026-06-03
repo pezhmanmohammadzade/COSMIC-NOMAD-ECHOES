@@ -64,6 +64,13 @@ final class ChunkStreamer {
             
             // Unload distant chunks
             unloadDistantChunks(playerChunkX: playerChunkX, playerChunkZ: playerChunkZ)
+            
+            // Remove chunks from generation queue that are now too far away
+            generationQueue.removeAll { coord in
+                let dx = abs(coord.x - playerChunkX)
+                let dz = abs(coord.z - playerChunkZ)
+                return dx > loadRadius || dz > loadRadius
+            }
         }
         
         // Update LOD levels based on distance

@@ -209,8 +209,10 @@ final class PlayerController {
     
     // MARK: - Teleport
     
-    func teleportTo(_ pos: SIMD3<Float>) {
+    func teleportTo(_ pos: SIMD3<Float>, yaw: Float = 0) {
         position = pos
+        self.yaw = yaw
+        self.forward = SIMD3<Float>(sin(yaw), 0, cos(yaw))
         velocity = .zero
         isAirborne = false
         isJetpacking = false

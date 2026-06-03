@@ -4,7 +4,7 @@
 //
 //  Planet Decoded cinematic screen and Final Revelation endgame screen.
 //  These are the key reward moments in the game loop.
-//  Pastel matte color aesthetic.
+//  Pastel matte color aesthetic with fun rounded typography.
 //
 
 import SwiftUI
@@ -46,40 +46,40 @@ struct PlanetDecodedView: View {
             // Animated ring
             Circle()
                 .stroke(moodColor.opacity(ringOpacity * 0.7), lineWidth: 2)
-                .frame(width: 200, height: 200)
+                .frame(width: 160, height: 160)
                 .scaleEffect(ringScale)
             
             Circle()
                 .stroke(moodColor.opacity(ringOpacity * 0.35), lineWidth: 1)
-                .frame(width: 260, height: 260)
+                .frame(width: 210, height: 210)
                 .scaleEffect(ringScale * 0.9)
             
             GeometryReader { geo in
-                ScrollView(showsIndicators: false) {
-                    VStack(spacing: geo.size.height > 700 ? 24 : 16) {
-                        Spacer(minLength: 40)
+                ScrollView(showsIndicators: true) {
+                    VStack(spacing: 18) { // Increased spacing slightly
+                        Spacer(minLength: 30)
                         
                         // Status
                         Text("PLANET DECODED")
-                            .font(.system(size: 12, weight: .bold, design: .monospaced))
+                            .font(.custom("Chalkboard SE", size: 13).weight(.heavy))
                             .foregroundColor(moodColor)
-                            .tracking(8)
+                            .tracking(6)
                             .opacity(textOpacity)
                         
                         // Planet name
                         Text(planetName.uppercased())
-                            .font(.system(size: 28, weight: .ultraLight, design: .serif))
+                            .font(.custom("Chalkboard SE", size: 26).weight(.bold))
                             .foregroundColor(Pastel.textPrimary)
-                            .tracking(6)
+                            .tracking(4)
                             .minimumScaleFactor(0.5)
                             .opacity(textOpacity)
                         
                         // Mood badge
                         Text(planetMood.rawValue.uppercased())
-                            .font(.system(size: 10, weight: .medium, design: .monospaced))
+                            .font(.custom("Chalkboard SE", size: 10).weight(.semibold))
                             .foregroundColor(moodColor.opacity(0.8))
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 6)
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 5)
                             .background(moodColor.opacity(0.08))
                             .clipShape(Capsule())
                             .overlay(Capsule().stroke(moodColor.opacity(0.2), lineWidth: 0.5))
@@ -88,99 +88,137 @@ struct PlanetDecodedView: View {
                         // Divider
                         Rectangle()
                             .fill(moodColor.opacity(0.25))
-                            .frame(width: 100, height: 0.5)
+                            .frame(width: 80, height: 0.5)
                             .opacity(summaryOpacity)
                         
-                        // Planet-specific summary (unique per level!)
-                        Text(LoreLibrary.planetSummary(forLevel: planetsCompleted))
-                            .font(.system(size: 14, weight: .regular, design: .serif))
-                            .foregroundColor(Pastel.textPrimary.opacity(0.8))
-                            .multilineTextAlignment(.center)
-                            .lineSpacing(6)
-                            .padding(.horizontal, 40)
-                            .minimumScaleFactor(0.7)
-                            .opacity(summaryOpacity)
-                        
-                        // Unique inspirational quote per level
-                        VStack(spacing: 8) {
-                            Rectangle()
-                                .fill(moodColor.opacity(0.12))
-                                .frame(width: 30, height: 0.5)
-                            
-                            Text(levelQuote.quote)
-                                .font(.system(size: 13, weight: .light, design: .serif))
-                                .italic()
-                                .foregroundColor(moodColor.opacity(0.85))
+                        // Planet-specific summary in a minimal transparent box
+                        VStack {
+                            Text(LoreLibrary.planetSummary(forLevel: planetsCompleted))
+                                .font(.custom("Chalkboard SE", size: 10).weight(.regular))
+                                .foregroundColor(Pastel.textPrimary.opacity(0.85))
                                 .multilineTextAlignment(.center)
-                                .lineSpacing(5)
-                                .padding(.horizontal, 36)
+                                .lineSpacing(4)
+                                .minimumScaleFactor(0.7)
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 12)
+                        .background(
+                            RoundedRectangle(cornerRadius: 12)
+                                .fill(moodColor.opacity(0.12))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .stroke(moodColor.opacity(0.3), lineWidth: 1)
+                                )
+                        )
+                        .padding(.horizontal, 48)
+                        .opacity(summaryOpacity)
+                        
+                        // Unique inspirational quote in a minimal box
+                        VStack(spacing: 8) {
+                            Text(levelQuote.quote)
+                                .font(.custom("Chalkboard SE", size: 12).weight(.regular))
+                                .italic()
+                                .foregroundColor(moodColor.opacity(0.9))
+                                .multilineTextAlignment(.center)
+                                .lineSpacing(4)
                                 .minimumScaleFactor(0.7)
                             
                             Text(levelQuote.author)
-                                .font(.system(size: 10, weight: .medium, design: .monospaced))
+                                .font(.custom("Chalkboard SE", size: 9).weight(.bold))
                                 .foregroundColor(Pastel.textMuted)
                                 .tracking(1)
                         }
-                        .padding(.vertical, 8)
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 12)
+                        .background(
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(moodColor.opacity(0.05))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .stroke(moodColor.opacity(0.1), lineWidth: 1)
+                                )
+                        )
+                        .padding(.horizontal, 32)
                         .opacity(quoteOpacity)
                         
                         // Signals collected
                         Text("ALL SIGNALS RECONSTRUCTED")
-                            .font(.system(size: 10, weight: .medium, design: .monospaced))
+                            .font(.custom("Chalkboard SE", size: 9).weight(.heavy))
                             .foregroundColor(Pastel.textMuted)
+                            .tracking(1)
                             .opacity(quoteOpacity)
                         
-                        // Star Rating
+                        // Star Rating in a box
                         VStack(spacing: 8) {
                             Text("PERFORMANCE")
-                                .font(.system(size: 9, weight: .medium, design: .monospaced))
-                                .foregroundColor(Pastel.textMuted)
+                                .font(.custom("Chalkboard SE", size: 9).weight(.bold))
+                                .foregroundColor(Pastel.textPrimary.opacity(0.7))
                                 .tracking(2)
                             
-                            HStack(spacing: 6) {
+                            HStack(spacing: 8) {
                                 ForEach(0..<3, id: \.self) { s in
                                     Image(systemName: s < starRating ? "star.fill" : "star")
                                         .font(.system(size: 22))
-                                        .foregroundColor(s < starRating ? Pastel.gold : Pastel.textMuted.opacity(0.3))
+                                        .foregroundColor(s < starRating ? Pastel.gold : Pastel.textMuted.opacity(0.2))
                                         .scaleEffect(s < starRating ? 1.0 : 0.8)
                                 }
                             }
                             
                             Text(starRatingDescription)
-                                .font(.system(size: 9, weight: .regular, design: .serif))
+                                .font(.custom("Chalkboard SE", size: 10).weight(.medium))
                                 .foregroundColor(Pastel.textMuted)
                         }
+                        .padding(.vertical, 12)
+                        .padding(.horizontal, 24)
+                        .background(
+                            RoundedRectangle(cornerRadius: 12)
+                                .fill(moodColor.opacity(0.08))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .stroke(Pastel.gold.opacity(0.25), lineWidth: 1)
+                                )
+                        )
                         .opacity(starsOpacity)
                         
-                        // Bounties completed
+                        // Bounties completed in a box
                         if !bountiesCompleted.isEmpty {
                             VStack(spacing: 6) {
                                 Text("BOUNTIES COMPLETED")
-                                    .font(.system(size: 9, weight: .medium, design: .monospaced))
+                                    .font(.custom("Chalkboard SE", size: 9).weight(.bold))
                                     .foregroundColor(Pastel.bounty)
                                     .tracking(2)
                                 
                                 ForEach(bountiesCompleted, id: \.self) { name in
-                                    HStack(spacing: 4) {
+                                    HStack(spacing: 6) {
                                         Image(systemName: "target")
-                                            .font(.system(size: 8))
+                                            .font(.system(size: 9))
                                         Text(name)
-                                            .font(.system(size: 10, weight: .bold, design: .monospaced))
+                                            .font(.custom("Chalkboard SE", size: 11).weight(.bold))
                                     }
-                                    .foregroundColor(Pastel.bounty.opacity(0.8))
+                                    .foregroundColor(Pastel.bounty.opacity(0.9))
                                 }
                             }
+                            .padding(.vertical, 10)
+                            .padding(.horizontal, 20)
+                            .background(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .fill(Pastel.bounty.opacity(0.05))
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 8)
+                                            .stroke(Pastel.bounty.opacity(0.2), lineWidth: 1)
+                                    )
+                            )
                             .opacity(bountyOpacity)
                         }
                         
-                        Spacer(minLength: 40)
+                        Spacer(minLength: 20)
                         
                         // Progress dots
-                        HStack(spacing: 12) {
+                        HStack(spacing: 10) {
                             ForEach(0..<totalPlanets, id: \.self) { i in
                                 Circle()
                                     .fill(i < planetsCompleted ? moodColor : Pastel.cardStroke)
-                                    .frame(width: 10, height: 10)
+                                    .frame(width: 8, height: 8)
                                     .overlay(
                                         Circle()
                                             .stroke(Pastel.textMuted, lineWidth: 0.5)
@@ -191,22 +229,33 @@ struct PlanetDecodedView: View {
                         
                         // Continue button
                         Button(action: onContinue) {
-                            HStack(spacing: 10) {
+                            HStack(spacing: 8) {
                                 Text(planetsCompleted < totalPlanets ? "TRAVEL TO NEXT WORLD" : "FINAL REVELATION")
-                                    .font(.system(size: 13, weight: .bold, design: .monospaced))
+                                    .font(.custom("Chalkboard SE", size: 13).weight(.heavy))
                                     .foregroundColor(Pastel.bg)
                                 
                                 Image(systemName: "arrow.right")
-                                    .font(.system(size: 12, weight: .bold))
+                                    .font(.custom("Chalkboard SE", size: 12).weight(.bold))
                                     .foregroundColor(Pastel.bg)
                             }
-                            .padding(.horizontal, 32)
+                            .padding(.horizontal, 30)
                             .padding(.vertical, 14)
                             .background(moodColor)
                             .clipShape(Capsule())
                         }
                         .opacity(buttonOpacity)
-                        .padding(.bottom, 40)
+                        
+                        // Scroll indicator
+                        VStack(spacing: 2) {
+                            Image(systemName: "chevron.compact.down")
+                                .font(.system(size: 16))
+                                .foregroundColor(Pastel.textMuted.opacity(0.5))
+                            Text("scroll")
+                                .font(.custom("Chalkboard SE", size: 8).weight(.bold))
+                                .foregroundColor(Pastel.textMuted.opacity(0.4))
+                        }
+                        .opacity(buttonOpacity * 0.7)
+                        .padding(.bottom, 30)
                     }
                     .frame(minHeight: geo.size.height)
                 }
@@ -287,100 +336,136 @@ struct FinalRevelationView: View {
             }
             
             GeometryReader { geo in
-                ScrollView(showsIndicators: false) {
-                    VStack(spacing: geo.size.height > 700 ? 30 : 20) {
-                        Spacer(minLength: 60)
+                ScrollView(showsIndicators: true) {
+                    VStack(spacing: 24) {
+                        Spacer(minLength: 40)
                         
                         // Title
                         VStack(spacing: 12) {
                             Text("THE FINAL ECHO")
-                                .font(.system(size: 11, weight: .bold, design: .monospaced))
+                                .font(.custom("Chalkboard SE", size: 15).weight(.heavy))
                                 .foregroundColor(Pastel.primary)
-                                .tracking(10)
+                                .tracking(8)
                                 .opacity(phase1)
                             
                             Rectangle()
-                                .fill(Pastel.primary.opacity(0.25))
-                                .frame(width: 60, height: 0.5)
+                                .fill(Pastel.primary.opacity(0.3))
+                                .frame(width: 60, height: 1)
                                 .opacity(phase1)
                         }
                         
-                        // Revelation text
-                        Text(LoreLibrary.finalRevelation)
-                            .font(.system(size: 16, weight: .regular, design: .serif))
-                            .foregroundColor(Pastel.textPrimary.opacity(0.9))
-                            .multilineTextAlignment(.center)
-                            .lineSpacing(8)
-                            .padding(.horizontal, 36)
-                            .minimumScaleFactor(0.7)
-                            .opacity(phase2)
+                        // Revelation text in a minimal transparent box
+                        VStack {
+                            Text(LoreLibrary.finalRevelation)
+                                .font(.custom("Chalkboard SE", size: 15).weight(.medium))
+                                .foregroundColor(Pastel.textPrimary.opacity(0.95))
+                                .multilineTextAlignment(.center)
+                                .lineSpacing(8)
+                                .minimumScaleFactor(0.7)
+                        }
+                        .padding(.horizontal, 28)
+                        .padding(.vertical, 24)
+                        .background(
+                            RoundedRectangle(cornerRadius: 16)
+                                .fill(Pastel.primary.opacity(0.15))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 16)
+                                        .stroke(Pastel.primary.opacity(0.3), lineWidth: 1)
+                                )
+                        )
+                        .padding(.horizontal, 24)
+                        .opacity(phase2)
                         
-                        Spacer(minLength: 60)
+                        Spacer(minLength: 30)
                         
-                        // Journey stats (real data)
+                        // Journey stats in a minimal box
                         VStack(spacing: 8) {
                             Text("JOURNEY COMPLETE")
-                                .font(.system(size: 10, weight: .bold, design: .monospaced))
+                                .font(.custom("Chalkboard SE", size: 11).weight(.heavy))
                                 .foregroundColor(Pastel.textMuted)
-                                .tracking(4)
+                                .tracking(3)
                             
                             let stats = StatisticsManager.shared
                             Text("\(stats.totalPlanetsCompleted) worlds  •  \(stats.totalFragmentsDiscovered) signals  •  \(stats.formattedPlayTime)")
-                                .font(.system(size: 11, weight: .regular, design: .monospaced))
-                                .foregroundColor(Pastel.textMuted.opacity(0.8))
+                                .font(.custom("Chalkboard SE", size: 11).weight(.bold))
+                                .foregroundColor(Pastel.textPrimary.opacity(0.7))
                             
                             // 5 filled dots
                             HStack(spacing: 8) {
                                 ForEach(0..<5, id: \.self) { _ in
                                     Circle()
-                                        .fill(Pastel.primary)
-                                        .frame(width: 8, height: 8)
+                                        .fill(Pastel.primary.opacity(0.8))
+                                        .frame(width: 6, height: 6)
                                 }
                             }
                             .padding(.top, 8)
                         }
+                        .padding(.vertical, 16)
+                        .padding(.horizontal, 30)
+                        .background(
+                            RoundedRectangle(cornerRadius: 12)
+                                .fill(Pastel.primary.opacity(0.08))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .stroke(Pastel.textMuted.opacity(0.2), lineWidth: 1)
+                                )
+                        )
                         .opacity(phase3)
                         
-                        // Restart button
-                        Button(action: onRestart) {
-                            HStack(spacing: 10) {
-                                Image(systemName: "arrow.counterclockwise")
-                                    .font(.system(size: 12, weight: .bold))
-                                Text("BEGIN AGAIN")
-                                    .font(.system(size: 13, weight: .bold, design: .monospaced))
+                        // Action Buttons
+                        VStack(spacing: 16) {
+                            // Endless Mode button (Primary)
+                            Button(action: onEndlessMode) {
+                                HStack(spacing: 8) {
+                                    Image(systemName: "infinity")
+                                        .font(.custom("Chalkboard SE", size: 14).weight(.bold))
+                                    Text("ENDLESS MODE")
+                                        .font(.custom("Chalkboard SE", size: 13).weight(.heavy))
+                                }
+                                .foregroundColor(Pastel.bg)
+                                .padding(.horizontal, 32)
+                                .padding(.vertical, 14)
+                                .background(
+                                    LinearGradient(
+                                        colors: [Pastel.tertiary, Pastel.primary],
+                                        startPoint: .leading,
+                                        endPoint: .trailing
+                                    )
+                                )
+                                .clipShape(Capsule())
+                                .shadow(color: Pastel.tertiary.opacity(0.4), radius: 10)
                             }
-                            .foregroundColor(Pastel.textPrimary)
-                            .padding(.horizontal, 32)
-                            .padding(.vertical, 14)
-                            .background(Pastel.cardFill)
-                            .clipShape(Capsule())
-                            .overlay(Capsule().stroke(Pastel.primary.opacity(0.4), lineWidth: 1))
+                            
+                            // Restart button (Secondary)
+                            Button(action: onRestart) {
+                                HStack(spacing: 8) {
+                                    Image(systemName: "arrow.counterclockwise")
+                                        .font(.custom("Chalkboard SE", size: 12).weight(.bold))
+                                    Text("BEGIN AGAIN")
+                                        .font(.custom("Chalkboard SE", size: 12).weight(.bold))
+                                }
+                                .foregroundColor(Pastel.textPrimary.opacity(0.8))
+                                .padding(.horizontal, 24)
+                                .padding(.vertical, 12)
+                                .background(Pastel.primary.opacity(0.1))
+                                .clipShape(Capsule())
+                                .overlay(Capsule().stroke(Pastel.primary.opacity(0.3), lineWidth: 1))
+                            }
                         }
+                        .padding(.top, 10)
                         .opacity(phase4)
                         
-                        // Endless Mode button
-                        Button(action: onEndlessMode) {
-                            HStack(spacing: 10) {
-                                Image(systemName: "infinity")
-                                    .font(.system(size: 14, weight: .bold))
-                                Text("ENDLESS MODE")
-                                    .font(.system(size: 13, weight: .bold, design: .monospaced))
-                            }
-                            .foregroundColor(Pastel.bg)
-                            .padding(.horizontal, 32)
-                            .padding(.vertical, 14)
-                            .background(
-                                LinearGradient(
-                                    colors: [Pastel.tertiary, Pastel.primary],
-                                    startPoint: .leading,
-                                    endPoint: .trailing
-                                )
-                            )
-                            .clipShape(Capsule())
-                            .shadow(color: Pastel.tertiary.opacity(0.3), radius: 10)
+                        // Scroll indicator
+                        VStack(spacing: 2) {
+                            Image(systemName: "chevron.compact.down")
+                                .font(.system(size: 16))
+                                .foregroundColor(Pastel.textMuted.opacity(0.5))
+                            Text("scroll")
+                                .font(.custom("Chalkboard SE", size: 8).weight(.bold))
+                                .foregroundColor(Pastel.textMuted.opacity(0.4))
                         }
-                        .opacity(phase4)
-                        .padding(.bottom, 60)
+                        .opacity(phase4 * 0.7)
+                        .padding(.bottom, 40)
                     }
                     .frame(minHeight: geo.size.height)
                 }
