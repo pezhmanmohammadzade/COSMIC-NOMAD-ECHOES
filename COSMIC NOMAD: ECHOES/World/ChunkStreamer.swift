@@ -243,6 +243,19 @@ final class ChunkStreamer {
     
     /// Generate terrain params for all ready chunks
     func terrainParams() -> [TerrainParams] {
+        let moodIdx: Float = {
+            switch planetConfig.mood {
+            case .lonely: return 0.0
+            case .decayed: return 1.0
+            case .serene: return 2.0
+            case .hostile: return 3.0
+            case .surreal: return 4.0
+            }
+        }()
+        
+        let tTint = planetConfig.palette.terrainTint
+        let rTint = planetConfig.palette.ambientColor * 0.75 + SIMD3<Float>(0.15, 0.15, 0.18)
+        
         return readyChunks().map { chunk in
             var params = TerrainParams()
             params.modelMatrix = matrix_identity_float4x4
@@ -251,6 +264,8 @@ final class ChunkStreamer {
             params.lodLevel = Float(chunk.lodLevel.rawValue)
             params.heightScale = planetConfig.terrainHeightScale
             params.textureScale = 4.0
+            params.terrainTintAndWeight = SIMD4<Float>(tTint.x, tTint.y, tTint.z, 1.0)
+            params.rockTintAndMood = SIMD4<Float>(rTint.x, rTint.y, rTint.z, moodIdx)
             return params
         }
     }

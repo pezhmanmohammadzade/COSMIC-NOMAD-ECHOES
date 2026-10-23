@@ -238,30 +238,102 @@ fragment GBufferOutput entityFragmentShader(
     float3 N = normalize(in.worldNormal);
     
     if (materialType < 0.5) {
-        // 0 = Metal (Cities)
-        metallic = 0.9;
-        roughness = 0.2 + surfaceNoise * 0.2;
-        baseColor *= 0.8 + surfaceNoise * 0.2; // Add some grit
-    } else if (materialType < 1.5) {
-        // 1 = Glass / Emissive Energy
-        metallic = 0.8;
-        roughness = 0.1;
-        emission = 1.0;
-        baseColor *= 1.5; // Brighten
-    } else if (materialType < 2.5) {
-        // 2 = Ruin (Stone)
-        metallic = 0.0;
-        roughness = 0.8 + surfaceNoise * 0.2;
-        baseColor *= 0.5 + surfaceNoise * 0.5;
-    } else if (materialType < 3.5) {
-        // 3 = Memory Fragment (Glowing)
-        metallic = 0.1;
-        roughness = 0.1;
-        emission = 1.0;
+        // === 0: AAA Sci-Fi Megastructure & City Metal ===
+        float3 op = in.objectPos;
         
-        // Pulse effect
-        float pulse = (sin(uniforms.time * 2.0 + in.worldPosition.x) * 0.5 + 0.5);
-        baseColor = mix(baseColor, float3(1.0, 1.0, 1.0), pulse * 0.5);
+        // Vertical structural mullions (every 4.0m)
+        float colSpacing = 4.0;
+        float colX = abs(fmod(abs(op.x), colSpacing) - colSpacing * 0.5);
+        float colZ = abs(fmod(abs(op.z), colSpacing) - colSpacing * 0.5);
+        float mullion = smoothstep(0.18, 0.04, min(colX, colZ));
+        
+        // Horizontal floor plates (every 3.2m story height)
+        float floorSpacing = 3.2;
+        float floorY = abs(fmod(abs(op.y), floorSpacing) - floorSpacing * 0.5);
+        float floorPlate = smoothstep(0.20, 0.05, floorY);
+        
+        // High-tech panel division
+        float panelGrid = max(mullion, floorPlate);
+        
+        // Window apertures with subtle interior glow
+        float windowArea = (1.0 - mullion) * (1.0 - floorPlate);
+        float windowHash = hash(floor(op.xy * float2(1.0 / colSpacing, 1.0 / floorSpacing)));
+        float windowLit = (windowHash > 0.65) ? 0.35 : 0.0;
+        
+        metallic = mix(0.85, 0.4, panelGrid);
+        roughness = mix(0.25, 0.6, panelGrid);
+        
+        // Dark metallic framework with illuminated technical window slots
+        float3 frameColor = baseColor * (0.55 + surfaceNoise * 0.15);
+        float3 windowColor = baseColor * 1.35 + float3(0.1, 0.2, 0.3);
+        baseColor = mix(frameColor, windowColor, windowArea * 0.4);
+        
+        // Subtle emissive accents on active windows / architectural trim
+        emission = windowArea * windowLit * 0.8;
+    } else if (materialType < 1.5) {
+        // === 1: AAA Energy Spire & Glass Monolith ===
+        float3 op = in.objectPos;
+        
+        // Vertical structural spine exoskeleton
+        float cornerDist = max(abs(in.objectNormal.x), abs(in.objectNormal.z));
+        float spineFrame = smoothstep(0.82, 0.98, cornerDist);
+        
+        // Horizontal tier bands / energy conduits
+        float tierY = sin(op.y * 0.8 - uniforms.time * 1.2) * 0.5 + 0.5;
+        float tierBands = sin(op.y * 2.0) * 0.5 + 0.5;
+        tierBands = pow(tierBands, 4.0);
+        
+        // Refined crystalline glass shading with controlled emission
+        metallic = 0.92;
+        roughness = 0.08;
+        
+        // Soft fresnel rim on glass panels
+        float3 V = normalize(uniforms.cameraPosition - in.worldPosition);
+        float NdotV = max(dot(N, V), 0.0);
+        float glassFresnel = pow(1.0 - NdotV, 3.5);
+        
+        float3 coreGlow = baseColor * (0.4 + tierBands * 0.5 + tierY * 0.3);
+        float3 frameColor = float3(0.12, 0.14, 0.18);
+        
+        baseColor = mix(coreGlow, frameColor, spineFrame * 0.7);
+        emission = (0.35 + tierBands * 0.5 + glassFresnel * 0.4) * (1.0 - spineFrame * 0.5);
+    } else if (materialType < 2.5) {
+        // === 2: AAA Ancient Alien Ruins & Megaliths ===
+        float3 op = in.objectPos;
+        
+        // Carved alien runic grooves
+        float runePattern = fbm(op * 0.5, 3, 2.0, 0.5);
+        float runeGroove = smoothstep(0.48, 0.52, abs(runePattern - 0.5) * 2.0);
+        
+        metallic = 0.05;
+        roughness = 0.75 + surfaceNoise * 0.2;
+        
+        // Weathered ancient stone with glowing runic conduits
+        float3 stoneColor = baseColor * (0.6 + surfaceNoise * 0.3);
+        float3 runeColor = float3(0.2, 0.85, 0.75); // Cyan alien luminescence
+        
+        float runeGlow = (1.0 - runeGroove) * (sin(uniforms.time * 1.8 + op.y * 0.6) * 0.3 + 0.7);
+        baseColor = mix(stoneColor, runeColor, runeGlow * 0.6);
+        emission = runeGlow * 0.85;
+    } else if (materialType < 3.5) {
+        // === 3: AAA Luminous Memory Fragment Crystal ===
+        // Multi-faceted crystal refraction and harmonic pulse
+        float pulse = sin(uniforms.time * 3.0 + in.worldPosition.y * 1.5) * 0.5 + 0.5;
+        float sparkle = pow(abs(dot(N, normalize(uniforms.cameraPosition - in.worldPosition))), 6.0);
+        
+        metallic = 0.2;
+        roughness = 0.06; // Highly polished crystal
+        
+        float3 V = normalize(uniforms.cameraPosition - in.worldPosition);
+        float fresnel = pow(1.0 - max(dot(N, V), 0.0), 3.0);
+        
+        // Cyan-emerald celestial crystal with diamond core
+        float3 crystalCore = float3(0.15, 0.85, 1.0);
+        float3 crystalApex = float3(0.85, 0.98, 1.0);
+        baseColor = mix(crystalCore, crystalApex, pulse * 0.6 + sparkle * 0.4);
+        
+        // Radiant emissive aura for bloom resolve
+        emission = 1.2 + pulse * 0.8 + fresnel * 0.8;
     } else if (materialType < 5.5) {
         // 4.x = AAA Astronaut Suit (Layered composite armor with micro-panel detail)
         metallic = 0.12;

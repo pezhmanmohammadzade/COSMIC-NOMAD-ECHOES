@@ -2,8 +2,9 @@
 //  TerrainShaders.metal
 //  COSMIC NOMAD: ECHOES
 //
-//  Terrain vertex and fragment shaders for G-buffer pass.
-//  PBR-based with height/slope material blending.
+//  AAA Planetary Terrain Shaders for G-buffer pass.
+//  Multi-scale procedural detail, geological strata layering,
+//  slope-based sediment distribution, and planet-specific PBR materials.
 //
 
 #include "ShaderCommon.h"
@@ -29,10 +30,12 @@ vertex GBufferVertexOut terrainVertex(uint vid [[vertex_id]],
     return out;
 }
 
+// MARK: - Procedural Terrain Noise & Stratification
+
 inline float triplanarNoise(float3 pos, float3 normal, float scale) {
     float3 blendWeights = abs(normal);
-    blendWeights = max(blendWeights - 0.2, 0.0); // sharpen blend
-    blendWeights /= (blendWeights.x + blendWeights.y + blendWeights.z);
+    blendWeights = pow(blendWeights, 3.0);
+    blendWeights /= (blendWeights.x + blendWeights.y + blendWeights.z + 0.0001);
     
     float nx = fbm(pos.yz * scale, 3, 2.0, 0.5);
     float ny = fbm(pos.xz * scale, 3, 2.0, 0.5);
@@ -41,36 +44,11 @@ inline float triplanarNoise(float3 pos, float3 normal, float scale) {
     return nx * blendWeights.x + ny * blendWeights.y + nz * blendWeights.z;
 }
 
-// MARK: - Terrain Fragment Shader (G-Buffer Output)
-
-// Enhanced tri-planar with detail layers at multiple frequencies
-inline float3 triplanarColor(float3 pos, float3 normal, float3 colorA, float3 colorB, float scale, float detailScale) {
-    float3 blendWeights = abs(normal);
-    blendWeights = pow(blendWeights, 4.0); // sharper blending at edges
-    blendWeights /= (blendWeights.x + blendWeights.y + blendWeights.z + 0.0001);
-    
-    // Main pattern
-    float nx = fbm(pos.yz * scale, 4, 2.0, 0.5);
-    float ny = fbm(pos.xz * scale, 4, 2.0, 0.5);
-    float nz = fbm(pos.xy * scale, 4, 2.0, 0.5);
-    float mainPattern = nx * blendWeights.x + ny * blendWeights.y + nz * blendWeights.z;
-    
-    // Detail layer (higher frequency for close-up)
-    float dx = fbm(pos.yz * detailScale, 3, 2.0, 0.5);
-    float dy = fbm(pos.xz * detailScale, 3, 2.0, 0.5);
-    float dz = fbm(pos.xy * detailScale, 3, 2.0, 0.5);
-    float detail = dx * blendWeights.x + dy * blendWeights.y + dz * blendWeights.z;
-    
-    float3 color = mix(colorA, colorB, mainPattern);
-    color += (detail - 0.5) * 0.08; // subtle close-up detail
-    
-    return color;
-}
-
-// Macro-variation: large-scale color shifts to break repetition
 inline float macroVariation(float3 worldPos) {
-    return fbm(worldPos.xz * 0.003, 2, 2.0, 0.5);
+    return fbm(worldPos.xz * 0.002, 3, 2.0, 0.5);
 }
+
+// MARK: - Terrain Fragment Shader (G-Buffer Output)
 
 fragment GBufferOutput terrainFragment(GBufferVertexOut in [[stage_in]],
                                         constant FrameUniforms &frame [[buffer(1)]],
@@ -79,93 +57,100 @@ fragment GBufferOutput terrainFragment(GBufferVertexOut in [[stage_in]],
     
     float3 normal = normalize(in.worldNormal);
     float3 worldPos = in.worldPosition;
+    float distToCamera = length(frame.cameraPosition - worldPos);
     
-    float3 baseColor;
-    float roughness;
-    float metallic;
+    // Distance detail fade factors
+    float detailFade = 1.0 - smoothstep(12.0, 90.0, distToCamera);
+    float microFade = 1.0 - smoothstep(4.0, 32.0, distToCamera);
     
-    // Macro-variation (breaks large-scale tiling patterns)
+    // Planet palette
+    float3 planetTint = terrain.terrainTintAndWeight.rgb;
+    float3 rockBedTint = terrain.rockTintAndMood.rgb;
+    float moodIndex = terrain.rockTintAndMood.w;
+    
+    // Macro-variation across the landscape (continental color and value shifts)
     float macro = macroVariation(worldPos);
+    float meso = triplanarNoise(worldPos, normal, 0.08);
+    float micro = triplanarNoise(worldPos, normal, 1.2) * microFade;
     
-    // Single triplanar noise sample for detail (replaces multiple per-material calls)
-    float noiseDetail = triplanarNoise(worldPos, normal, 0.5);
-    float noiseMicro = triplanarNoise(worldPos, normal, 4.0);
+    // Slope calculation (0 = flat plains, 1 = vertical cliff)
+    float slope = 1.0 - saturate(normal.y);
+    float cliffFactor = smoothstep(0.35, 0.72, slope);
     
-    // --- Height-based splatting with sharper transitions ---
+    // Geological horizontal sedimentary strata on slopes and canyon walls
+    float strataNoise = fbm(worldPos.xz * 0.02, 2, 2.0, 0.5);
+    float strataBands = sin((worldPos.y * 1.8 + strataNoise * 3.5)) * 0.5 + 0.5;
+    strataBands = pow(strataBands, 2.0);
+    
+    // Wind-blown sand ripples on flat ground
+    float2 rippleUV = worldPos.xz * 1.8 + fbm(worldPos.xz * 0.05, 2, 2.0, 0.5) * 1.5;
+    float sandRipples = sin(rippleUV.x * 2.5 + rippleUV.y * 1.2) * 0.5 + 0.5;
+    sandRipples = (sandRipples - 0.5) * 0.08 * (1.0 - cliffFactor) * microFade;
+    
+    // Primary soil / regolith tone (tinted by the planet's atmospheric identity)
+    float3 soilColor = planetTint * (0.82 + (macro - 0.5) * 0.25 + (meso - 0.5) * 0.12);
+    
+    // Weathered rock & bedrock tone (darker, mineral-rich with strata striations)
+    float3 cliffColor = rockBedTint * (0.75 + strataBands * 0.35 + (macro - 0.5) * 0.15);
+    
+    // Mineral veins (subtle crystal deposits that catch highlights)
+    float mineralMask = smoothstep(0.68, 0.85, meso + (micro * 0.5));
+    float3 mineralColor = mix(planetTint * 1.35, float3(0.95, 0.92, 0.88), 0.4);
+    
+    // Blend base color based on slope and heightfield material weights
     float4 w = in.materialWeights;
-    w.x += (macro - 0.5) * 0.15; // use macro for large blending variation
-    w.y += (noiseDetail - 0.5) * 0.1;
-    w.z += (noiseMicro - 0.5) * 0.05;
     w = max(w, 0.0);
     w /= (w.x + w.y + w.z + w.w + 0.0001);
     
-    // Base colors for each biome/height
-    float3 soilColor = float3(0.08, 0.06, 0.12);
-    float3 rockColor = float3(0.25, 0.22, 0.20);
-    float3 mineralColor = float3(0.35, 0.30, 0.45);
-    float3 cliffColor = float3(0.20, 0.18, 0.22);
+    // Composite albedo
+    float3 baseColor = mix(soilColor, cliffColor, cliffFactor);
+    baseColor = mix(baseColor, mineralColor, mineralMask * 0.35 * cliffFactor);
+    baseColor += sandRipples;
     
-    // Blend base colors first
-    baseColor = soilColor * w.x +
-                rockColor * w.y +
-                mineralColor * w.z +
-                cliffColor * w.w;
-                
-    // Apply detail variation globally instead of per-material
-    baseColor += (macro - 0.5) * 0.15;
-    baseColor += (noiseDetail - 0.5) * 0.08;
-    baseColor -= noiseMicro * 0.04;
+    // PBR Roughness & Metallic
+    // Flat powdery soil is high roughness; exposed cliff strata and mineral veins are slicker
+    float soilRough = 0.82 + (micro - 0.5) * 0.15;
+    float rockRough = 0.52 + strataBands * 0.18;
+    float mineralRough = 0.22;
     
-    // --- Roughness with micro-detail variation ---
-    float soilRough = 0.85 + noiseMicro * 0.1;
-    float rockRough = 0.6 + noiseDetail * 0.25;
-    float mineralRough = 0.2 + noiseMicro * 0.3;
-    float cliffRough = 0.7 + noiseDetail * 0.2;
+    float roughness = mix(soilRough, rockRough, cliffFactor);
+    roughness = mix(roughness, mineralRough, mineralMask * 0.4);
+    roughness = clamp(roughness, 0.08, 0.98);
     
-    roughness = soilRough * w.x + rockRough * w.y + mineralRough * w.z + cliffRough * w.w;
-    roughness = clamp(roughness, 0.05, 1.0);
+    float metallic = mineralMask * cliffFactor * 0.35;
     
-    // Metallic for mineral areas
-    metallic = w.z * (0.3 + noiseMicro * 0.5);
+    // --- Multi-scale Normal Perturbation ---
+    // Macro dune / rock contours + micro sand grains
+    float eps = 0.08;
+    float h0 = triplanarNoise(worldPos, normal, 0.8);
+    float hX0 = triplanarNoise(worldPos + float3(eps, 0, 0), normal, 0.8);
+    float hZ0 = triplanarNoise(worldPos + float3(0, 0, eps), normal, 0.8);
+    float3 bumpMeso = normalize(float3(h0 - hX0, eps * 2.2, h0 - hZ0));
     
-    // --- Multi-frequency normal perturbation ---
-    float eps = 0.1;
+    // Close-up micro grain
+    float epsD = 0.02;
+    float h1 = triplanarNoise(worldPos, normal, 5.0);
+    float hX1 = triplanarNoise(worldPos + float3(epsD, 0, 0), normal, 5.0);
+    float hZ1 = triplanarNoise(worldPos + float3(0, 0, epsD), normal, 5.0);
+    float3 bumpMicro = normalize(float3(h1 - hX1, epsD * 2.5, h1 - hZ1));
     
-    // Medium frequency bump
-    float h0 = triplanarNoise(worldPos, normal, 2.0);
-    float hX0 = triplanarNoise(worldPos + float3(eps, 0, 0), normal, 2.0);
-    float hZ0 = triplanarNoise(worldPos + float3(0, 0, eps), normal, 2.0);
-    float3 bump0 = normalize(float3(h0 - hX0, eps * 2.0, h0 - hZ0));
+    // Blend bumps with distance falloff
+    float3 combinedBump = normalize(bumpMeso + (bumpMicro - float3(0, 1, 0)) * microFade * 0.45);
     
-    // High frequency detail bump
-    float epsD = 0.03;
-    float h1 = triplanarNoise(worldPos, normal, 8.0);
-    float hX1 = triplanarNoise(worldPos + float3(epsD, 0, 0), normal, 8.0);
-    float hZ1 = triplanarNoise(worldPos + float3(0, 0, epsD), normal, 8.0);
-    float3 bump1 = normalize(float3(h1 - hX1, epsD * 2.0, h1 - hZ1));
-    
-    // Blend bumps (detail fades with distance)
-    float distToCamera = length(frame.cameraPosition - worldPos);
-    float detailFade = 1.0 - smoothstep(10.0, 80.0, distToCamera);
-    float microFade = 1.0 - smoothstep(5.0, 30.0, distToCamera);
-    
-    float3 combinedBump = normalize(bump0 + (bump1 - float3(0, 1, 0)) * microFade * 0.4);
-    
-    // Transform to world space via TBN
+    // World space TBN projection
     float3 T = normalize(cross(normal, float3(0, 0, 1)));
     if (length(T) < 0.001) T = normalize(cross(normal, float3(1, 0, 0)));
     float3 B = cross(normal, T);
     float3x3 TBN = float3x3(T, B, normal);
     float3 perturbedNormal = normalize(TBN * combinedBump);
     
-    float3 finalNormal = normalize(mix(normal, perturbedNormal, detailFade * 0.8));
+    float3 finalNormal = normalize(mix(normal, perturbedNormal, detailFade * 0.75));
     
     // Output to G-buffer
     gbuf.albedo = float4(baseColor, 0.0);
     gbuf.normal = float4(octEncode(finalNormal), roughness, metallic);
-    gbuf.pbrParams = float4(1.0, 0.0, 0.0, 0.0);
+    gbuf.pbrParams = float4(1.0, 0.0, 0.0, 0.0); // Ambient occlusion = 1.0, unused = 0
     gbuf.depth = in.depth;
     
     return gbuf;
 }
-

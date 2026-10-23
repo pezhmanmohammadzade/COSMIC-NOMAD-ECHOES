@@ -75,7 +75,7 @@ fragment float4 deferredLightingFragment(FullscreenVertexOut in [[stage_in]],
         // PCF 3x3 soft shadows
         float2 texelSize = 1.0 / float2(shadowMap.get_width(), shadowMap.get_height());
         float totalShadow = 0.0;
-        float bias = max(0.005 * (1.0 - NdotL), 0.001);
+        float bias = max(0.0018 * (1.0 - NdotL), 0.0004);
         
         for (int x = -1; x <= 1; x++) {
             for (int y = -1; y <= 1; y++) {

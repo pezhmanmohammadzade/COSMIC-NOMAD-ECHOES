@@ -157,6 +157,8 @@ struct TerrainParams {
     var heightScale: Float
     var textureScale: Float
     var _padding: SIMD2<Float> = .zero
+    var terrainTintAndWeight: SIMD4<Float> = SIMD4<Float>(0.7, 0.7, 0.7, 1.0)
+    var rockTintAndMood: SIMD4<Float> = SIMD4<Float>(0.3, 0.3, 0.3, 0.0)
     
     init() {
         modelMatrix = matrix_identity_float4x4
@@ -165,6 +167,8 @@ struct TerrainParams {
         lodLevel = 0
         heightScale = 50.0
         textureScale = 1.0
+        terrainTintAndWeight = SIMD4<Float>(0.7, 0.7, 0.7, 1.0)
+        rockTintAndMood = SIMD4<Float>(0.3, 0.3, 0.3, 0.0)
     }
 }
 

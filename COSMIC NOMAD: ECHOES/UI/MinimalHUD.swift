@@ -203,209 +203,178 @@ struct MinimalHUD: View {
                     .transition(.opacity.combined(with: .scale(scale: 0.92)))
                 }
             }
-            
-            // --- Planet Info + Objective (top left) ---
+                     // --- Planet Info + Objective (Top Left) & Status Cluster (Top Right) ---
             VStack {
                 HStack(alignment: .top) {
                     if let engine = engine {
                         HStack(alignment: .top, spacing: 14) {
-                            // Emergency Abort / Menu Button (Top Left)
+                            // 1. Tactical Exit / Pause Door Button (Top Left)
                             Button(action: {
                                 withAnimation(.spring(response: 0.35)) {
                                     appState = .mainMenu
                                 }
                             }) {
                                 ZStack {
-                                    AAAShape.ChamferedRectangle(chamferSize: 8)
-                                        .fill(Pastel.surface.opacity(0.85))
-                                        .frame(width: 38, height: 38)
-                                    AAAShape.ChamferedRectangle(chamferSize: 8)
-                                        .stroke(Pastel.danger.opacity(0.4), lineWidth: 1)
-                                        .frame(width: 38, height: 38)
-                                    Image(systemName: "power")
-                                        .font(.system(size: 14, weight: .bold))
-                                        .foregroundStyle(Pastel.danger)
+                                    Circle()
+                                        .fill(Color(red: 0.08, green: 0.09, blue: 0.14).opacity(0.85))
+                                        .frame(width: 44, height: 44)
+                                    Circle()
+                                        .stroke(Color(red: 0.95, green: 0.45, blue: 0.52).opacity(0.4), lineWidth: 1.5)
+                                        .frame(width: 44, height: 44)
+                                        .shadow(color: Color(red: 0.95, green: 0.45, blue: 0.52).opacity(0.3), radius: 6)
+                                    Image(systemName: "door.left.hand.open")
+                                        .font(.system(size: 16, weight: .bold))
+                                        .foregroundColor(Color(red: 0.95, green: 0.45, blue: 0.52))
                                 }
                             }
                             
-                            // Tactical Planetary HUD Panel
-                            AAAGlassPanel(chamfer: 10, borderColor: Pastel.primary.opacity(0.25), glowColor: Pastel.primary.opacity(0.1)) {
+                            // 2. Tactical Planetary Telemetry Card (Top Left)
+                            AAAGlassPanel(chamfer: 10, borderColor: Pastel.primary.opacity(0.25), glowColor: Pastel.primary.opacity(0.08)) {
                                 VStack(alignment: .leading, spacing: 6) {
-                                    // Header: Sector & Planet Name
+                                    // Row 1: Planet Name & Planet Index Tag
                                     HStack(spacing: 8) {
-                                        Text("SECTOR 0\(engine.planetsCompleted + 1)")
-                                            .font(.system(size: 8, weight: .black, design: .monospaced))
-                                            .foregroundStyle(Pastel.primary)
-                                            .padding(.horizontal, 6)
-                                            .padding(.vertical, 2)
-                                            .background(Pastel.primary.opacity(0.16))
-                                            .clipShape(Capsule())
+                                        Text(engine.world.planetConfig.name)
+                                            .font(.system(size: 15, weight: .bold, design: .monospaced))
+                                            .foregroundColor(.white)
                                         
-                                        Text(engine.world.planetConfig.name.uppercased())
-                                            .font(.system(size: 13, weight: .black, design: .monospaced))
-                                            .tracking(1.5)
-                                            .foregroundStyle(Pastel.textPrimary)
+                                        Text("PLANET \(engine.planetsCompleted + 1)/\(GameEngine.totalPlanetsForEnding)")
+                                            .font(.system(size: 8, weight: .heavy, design: .monospaced))
+                                            .foregroundColor(Color(red: 0.72, green: 0.78, blue: 0.98))
+                                            .padding(.horizontal, 7)
+                                            .padding(.vertical, 3)
+                                            .background(Color(red: 0.22, green: 0.28, blue: 0.45).opacity(0.6))
+                                            .clipShape(Capsule())
                                     }
                                     
-                                    // Mood & Atmosphere Tag
+                                    // Row 2: Planet Classification / Atmosphere
                                     HStack(spacing: 6) {
                                         Circle()
                                             .fill(Pastel.moodColor(engine.world.planetConfig.mood))
                                             .frame(width: 6, height: 6)
-                                            .shadow(color: Pastel.moodColor(engine.world.planetConfig.mood), radius: 3)
+                                            .shadow(color: Pastel.moodColor(engine.world.planetConfig.mood), radius: 4)
                                         
-                                        Text("\(engine.world.planetConfig.mood.rawValue.uppercased()) ATMOSPHERE")
-                                            .font(.system(size: 8, weight: .bold, design: .monospaced))
-                                            .foregroundStyle(Pastel.textSecondary)
+                                        Text(engine.world.planetConfig.mood.rawValue.uppercased())
+                                            .font(.system(size: 8, weight: .heavy, design: .monospaced))
+                                            .foregroundColor(Pastel.textSecondary)
+                                            .tracking(1.5)
                                     }
                                     
                                     Divider()
                                         .background(Color.white.opacity(0.08))
                                         .padding(.vertical, 1)
                                     
-                                    // Objective: Signals remaining with audio waveform
+                                    // Row 3: Remaining Signals
                                     let remaining = engine.world.memoryFragmentSystem.fragments.count - engine.world.memoryFragmentSystem.discoveredCount
-                                    HStack(spacing: 8) {
-                                        AAAWaveformView(color: remaining > 0 ? Pastel.secondary : Pastel.success, count: 8, height: 12)
+                                    HStack(spacing: 6) {
+                                        Image(systemName: "antenna.radiowaves.left.and.right")
+                                            .font(.system(size: 10, weight: .bold))
+                                            .foregroundColor(Pastel.secondary)
                                         
-                                        Text("SIGNALS:")
-                                            .font(.system(size: 9, weight: .bold, design: .monospaced))
-                                            .foregroundStyle(Pastel.secondary)
-                                        
-                                        Text("\(remaining) REMAINING")
-                                            .font(.system(size: 9, weight: .black, design: .monospaced))
-                                            .foregroundStyle(remaining > 0 ? Pastel.textPrimary : Pastel.success)
+                                        Text("SIGNALS: \(remaining) remaining")
+                                            .font(.system(size: 11, weight: .bold, design: .monospaced))
+                                            .foregroundColor(Pastel.secondary)
                                     }
                                     
-                                    // Nearest signal direction hint & distance
+                                    // Row 4: Distance & Bearing to nearest signal
                                     if let nearest = nearestFragment(engine: engine) {
                                         let dist = distance2D(engine.player.position, nearest.worldPosition)
                                         HStack(spacing: 6) {
-                                            ZStack {
-                                                Circle()
-                                                    .stroke(Pastel.primary.opacity(0.3), lineWidth: 1)
-                                                    .frame(width: 16, height: 16)
-                                                Image(systemName: "location.north.fill")
-                                                    .font(.system(size: 8, weight: .bold))
-                                                    .foregroundStyle(Pastel.primary)
-                                                    .rotationEffect(.degrees(bearingTo(from: engine.player, to: nearest.worldPosition)))
-                                            }
+                                            Image(systemName: "arrow.down")
+                                                .font(.system(size: 10, weight: .bold))
+                                                .foregroundColor(Color(red: 0.55, green: 0.75, blue: 0.95))
+                                                .rotationEffect(.degrees(bearingTo(from: engine.player, to: nearest.worldPosition)))
                                             
-                                            Text("\(Int(dist))m TO TARGET")
-                                                .font(.system(size: 9, weight: .bold, design: .monospaced))
-                                                .foregroundStyle(Pastel.primary)
+                                            Text("\(Int(dist))m to nearest signal")
+                                                .font(.system(size: 11, weight: .semibold, design: .monospaced))
+                                                .foregroundColor(Color(red: 0.65, green: 0.78, blue: 0.95))
                                         }
                                     }
                                     
-                                    // Fragment teaser
-                                    if let teaser = fragmentTeaser {
-                                        HStack(spacing: 4) {
-                                            Image(systemName: "waveform")
-                                                .font(.system(size: 8))
-                                                .foregroundStyle(Pastel.signalPulse)
-                                            Text(teaser)
-                                                .font(.system(size: 8, weight: .light, design: .serif))
-                                                .foregroundStyle(Pastel.signalPulse.opacity(0.9))
-                                                .italic()
-                                                .lineLimit(1)
-                                        }
-                                    }
-                                    
-                                    // Active bounty tracker
+                                    // Row 5+: Active Bounties / Objectives
                                     ForEach(engine.bountySystem.activeBounties) { bounty in
-                                        if !bounty.isCompleted {
-                                            HStack(spacing: 6) {
-                                                Image(systemName: bounty.type.icon)
-                                                    .font(.system(size: 8))
-                                                    .foregroundStyle(Pastel.bounty)
-                                                Text("\(bounty.type.rawValue.uppercased()):")
-                                                    .font(.system(size: 8, weight: .bold, design: .monospaced))
-                                                    .foregroundStyle(Pastel.bounty)
-                                                Text(bounty.progressText)
-                                                    .font(.system(size: 8, weight: .bold, design: .monospaced))
-                                                    .foregroundStyle(Pastel.textPrimary)
-                                            }
+                                        HStack(spacing: 6) {
+                                            Image(systemName: bounty.type.icon)
+                                                .font(.system(size: 10, weight: .bold))
+                                                .foregroundColor(bounty.isCompleted ? Pastel.success : Pastel.bounty)
+                                            
+                                            Text("\(bounty.type.rawValue):")
+                                                .font(.system(size: 10, weight: .bold, design: .monospaced))
+                                                .foregroundColor(bounty.isCompleted ? Pastel.success : Pastel.bounty)
+                                            
+                                            Text(bounty.progressText)
+                                                .font(.system(size: 10, weight: .medium, design: .monospaced))
+                                                .foregroundColor(.white.opacity(0.85))
                                         }
                                     }
                                 }
                                 .padding(12)
                             }
-                            .overlay(AAAHUDCornerBrackets(color: Pastel.primary.opacity(0.4), length: 6))
+                            .overlay(AAAHUDCornerBrackets(color: Pastel.primary.opacity(0.35), length: 6))
                         }
-                        .padding(.top, 56)
+                        .padding(.top, 44)
                         .padding(.leading, 20)
                     }
                     
                     Spacer()
                     
-                    // Top right: High-Tech Telemetry Cluster (Gauges + Data Cores)
+                    // 3. Top-Right Telemetry & Life Support Cluster
                     VStack(alignment: .trailing, spacing: 8) {
                         AAAGlassPanel(chamfer: 10, borderColor: Pastel.primary.opacity(0.2), glowColor: Pastel.primary.opacity(0.08)) {
-                            VStack(alignment: .trailing, spacing: 8) {
-                                // Data Cores Currency Badge
-                                HStack(spacing: 6) {
+                            VStack(alignment: .trailing, spacing: 6) {
+                                // Data Cores Currency (Row 1)
+                                HStack(spacing: 5) {
                                     Image(systemName: "diamond.fill")
-                                        .font(.system(size: 11, weight: .bold))
+                                        .font(.system(size: 12, weight: .bold))
                                         .foregroundColor(Pastel.gold)
                                         .shadow(color: Pastel.gold.opacity(0.6), radius: 4)
                                     Text("\(dataCores)")
-                                        .font(.system(size: 13, weight: .black, design: .monospaced))
+                                        .font(.system(size: 14, weight: .heavy, design: .monospaced))
                                         .foregroundColor(Pastel.gold)
-                                    Text("CORES")
-                                        .font(.system(size: 8, weight: .bold, design: .monospaced))
-                                        .foregroundColor(Pastel.gold.opacity(0.6))
-                                }
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 4)
-                                .background(Pastel.gold.opacity(0.08))
-                                .clipShape(Capsule())
-                                
-                                // Dual Circular Telemetry Gauges: O2 & PWR
-                                HStack(spacing: 14) {
-                                    AAACircularGauge(
-                                        title: "OXYGEN",
-                                        value: oxygen,
-                                        maxValue: engine?.survivalSystem.maxOxygen ?? 100,
-                                        color: Pastel.primary,
-                                        icon: "lungs.fill",
-                                        size: 46
-                                    )
-                                    
-                                    AAACircularGauge(
-                                        title: "SUIT PWR",
-                                        value: suitPower,
-                                        maxValue: engine?.survivalSystem.maxSuitPower ?? 100,
-                                        color: Pastel.gold,
-                                        icon: "bolt.fill",
-                                        size: 46
-                                    )
                                 }
                                 
-                                // Thermal Telemetry
+                                // Oxygen Bar (Row 2)
+                                AAAHUDTelemetryBar(
+                                    icon: "lungs.fill",
+                                    value: oxygen,
+                                    maxValue: engine?.survivalSystem.maxOxygen ?? 100,
+                                    color: Color(red: 0.95, green: 0.55, blue: 0.62),
+                                    lowWarning: oxygen < 25
+                                )
+                                
+                                // Suit Power / Jetpack Energy (Row 3)
+                                AAAHUDTelemetryBar(
+                                    icon: "bolt.fill",
+                                    value: suitPower,
+                                    maxValue: engine?.survivalSystem.maxSuitPower ?? 100,
+                                    color: Pastel.gold,
+                                    lowWarning: suitPower < 20
+                                )
+                                
+                                // Thermal Telemetry (Row 4)
                                 HStack(spacing: 5) {
                                     Image(systemName: "thermometer.medium")
-                                        .font(.system(size: 10))
+                                        .font(.system(size: 10, weight: .bold))
                                         .foregroundColor(temperatureColor)
-                                    Text("\(Int(temperature))°C")
-                                        .font(.system(size: 10, weight: .black, design: .monospaced))
+                                    Text("\(Int(temperature))°")
+                                        .font(.system(size: 11, weight: .heavy, design: .monospaced))
                                         .foregroundColor(temperatureColor)
                                     Text(temperatureState.rawValue.uppercased())
-                                        .font(.system(size: 7, weight: .bold, design: .monospaced))
-                                        .foregroundColor(temperatureColor.opacity(0.7))
+                                        .font(.system(size: 8, weight: .bold, design: .monospaced))
+                                        .foregroundColor(temperatureColor.opacity(0.85))
                                 }
                                 
-                                // Quick Navigation Pill: LOG
+                                // Quick Log Access (Row 5)
                                 Button(action: { showAchievements = true }) {
                                     HStack(spacing: 5) {
-                                        Image(systemName: "book.pages.fill")
+                                        Image(systemName: "doc.text.fill")
                                             .font(.system(size: 10))
-                                        Text("LOG / CODEX")
-                                            .font(.system(size: 8, weight: .bold, design: .monospaced))
-                                            .tracking(1)
+                                        Text("LOG")
+                                            .font(.system(size: 9, weight: .heavy, design: .monospaced))
+                                            .tracking(1.5)
                                     }
                                     .foregroundColor(Pastel.textPrimary)
                                     .padding(.horizontal, 10)
-                                    .padding(.vertical, 5)
+                                    .padding(.vertical, 4)
                                     .background(Pastel.primary.opacity(0.14))
                                     .overlay(Capsule().stroke(Pastel.primary.opacity(0.3), lineWidth: 0.8))
                                     .clipShape(Capsule())
@@ -428,26 +397,16 @@ struct MinimalHUD: View {
                             .background(Pastel.surface.opacity(0.7))
                             .cornerRadius(4)
                         }
-                        
-                        // Mini-Map
-                        if SettingsManager.shared.showMiniMap, let engine = engine {
-                            MiniMapView(
-                                playerPosition: engine.player.position,
-                                playerYaw: engine.player.yaw,
-                                cameraYaw: engine.camera.yaw,
-                                signals: engine.world.memoryFragmentSystem.fragments
-                            )
-                        }
                     }
-                    .padding(.top, 56)
-                    .padding(.trailing, 16)
+                    .padding(.top, 44)
+                    .padding(.trailing, 20)
                 }
                 
                 Spacer()
                 
-                // --- Bottom controls: AAA Aerospace Thumbstick & Flight Controls ---
+                // --- Bottom Controls: Aerospace Gimbal Thumbstick & Tactical Navigation Stack ---
                 HStack(alignment: .bottom) {
-                    // Aerospace Gimbal Virtual Joystick
+                    // Aerospace Gimbal Virtual Joystick (Bottom Left)
                     ZStack {
                         // Outer Heading Calibration Ring
                         Circle()
@@ -515,83 +474,93 @@ struct MinimalHUD: View {
                     
                     Spacer()
                     
-                    // Action Buttons (Jetpack Flight Control + Upgrade Depot)
-                    VStack(spacing: 12) {
-                        // Jetpack Flight Button
-                        Button(action: {
-                            let newVal = !(engine?.player.isJetpacking ?? false)
-                            engine?.inputManager.setJetpack(newVal)
-                        }) {
-                            ZStack {
-                                // Pulsing thrust aura when active
-                                if isJetpacking {
+                    // Tactical Navigation Radar & Flight Control Cluster (Bottom Right)
+                    VStack(alignment: .trailing, spacing: 14) {
+                        // 360° Circular Navigation Radar Console
+                        if let engine = engine {
+                            AAARadarConsoleView(
+                                playerPosition: engine.player.position,
+                                playerYaw: engine.player.yaw,
+                                cameraYaw: engine.camera.yaw,
+                                signals: engine.world.memoryFragmentSystem.fragments
+                            )
+                        }
+                        
+                        // Action Buttons: Jetpack Thrust & Upgrade Depot
+                        HStack(spacing: 14) {
+                            // Upgrade Depot Button
+                            Button(action: { showUpgradeShop = true }) {
+                                ZStack {
                                     Circle()
-                                        .stroke(Pastel.primary.opacity(0.3), lineWidth: 6)
-                                        .frame(width: 68, height: 68)
-                                        .scaleEffect(1.08)
-                                }
-                                
-                                Circle()
-                                    .fill(isJetpacking ? Pastel.primary.opacity(0.22) : Pastel.surface.opacity(0.8))
-                                    .frame(width: 58, height: 58)
-                                
-                                Circle()
-                                    .stroke(
-                                        isJetpacking ? Pastel.primary : Pastel.primary.opacity(0.3),
-                                        lineWidth: isJetpacking ? 2.2 : 1.2
-                                    )
-                                    .frame(width: 58, height: 58)
-                                    .shadow(color: isJetpacking ? Pastel.primary.opacity(0.8) : Color.clear, radius: 10)
-                                
-                                VStack(spacing: 2) {
-                                    Image(systemName: "flame.fill")
-                                        .font(.system(size: 20, weight: .black))
-                                        .foregroundStyle(isJetpacking ? Pastel.primary : Pastel.textSecondary)
+                                        .fill(Pastel.surface.opacity(0.85))
+                                        .frame(width: 50, height: 50)
                                     
-                                    Text("THRUST")
-                                        .font(.system(size: 7, weight: .black, design: .monospaced))
-                                        .foregroundStyle(isJetpacking ? Pastel.primary : Pastel.textMuted)
+                                    Circle()
+                                        .stroke(Pastel.gold.opacity(0.5), lineWidth: 1.2)
+                                        .frame(width: 50, height: 50)
+                                        .shadow(color: Pastel.gold.opacity(0.3), radius: 6)
+                                    
+                                    Image(systemName: "wrench.and.screwdriver.fill")
+                                        .font(.system(size: 17, weight: .bold))
+                                        .foregroundStyle(Pastel.gold)
                                 }
                             }
-                        }
-                        .simultaneousGesture(
-                            LongPressGesture(minimumDuration: 0.5)
-                                .onEnded { _ in
-                                    withAnimation(.spring(response: 0.3)) {
-                                        showJetpackPicker = true
+                            
+                            // Jetpack Flight Button
+                            VStack(spacing: 4) {
+                                Button(action: {
+                                    let newVal = !(engine?.player.isJetpacking ?? false)
+                                    engine?.inputManager.setJetpack(newVal)
+                                }) {
+                                    ZStack {
+                                        // Pulsing thrust aura when active
+                                        if isJetpacking {
+                                            Circle()
+                                                .stroke(Pastel.primary.opacity(0.3), lineWidth: 6)
+                                                .frame(width: 68, height: 68)
+                                                .scaleEffect(1.08)
+                                        }
+                                        
+                                        Circle()
+                                            .fill(isJetpacking ? Pastel.primary.opacity(0.22) : Pastel.surface.opacity(0.85))
+                                            .frame(width: 58, height: 58)
+                                        
+                                        Circle()
+                                            .stroke(
+                                                isJetpacking ? Pastel.primary : Pastel.primary.opacity(0.35),
+                                                lineWidth: isJetpacking ? 2.2 : 1.2
+                                            )
+                                            .frame(width: 58, height: 58)
+                                            .shadow(color: isJetpacking ? Pastel.primary.opacity(0.8) : Color.clear, radius: 10)
+                                        
+                                        VStack(spacing: 2) {
+                                            Image(systemName: "flame.fill")
+                                                .font(.system(size: 20, weight: .black))
+                                                .foregroundStyle(isJetpacking ? Pastel.primary : Pastel.textSecondary)
+                                            
+                                            Text("JET")
+                                                .font(.system(size: 7, weight: .black, design: .monospaced))
+                                                .foregroundStyle(isJetpacking ? Pastel.primary : Pastel.textMuted)
+                                        }
                                     }
                                 }
-                        )
-                        
-                        // Altitude Badge
-                        Text("ALT: \(Int(selectedJetpackHeight))M")
-                            .font(.system(size: 8, weight: .black, design: .monospaced))
-                            .foregroundColor(isJetpacking ? Pastel.primary : Pastel.textMuted)
-                            .padding(.horizontal, 6)
-                            .padding(.vertical, 2)
-                            .background(Pastel.surface.opacity(0.8))
-                            .cornerRadius(4)
-                        
-                        // Upgrade Depot Button
-                        Button(action: { showUpgradeShop = true }) {
-                            ZStack {
-                                AAAShape.ChamferedRectangle(chamferSize: 8)
-                                    .fill(Pastel.surface.opacity(0.85))
-                                    .frame(width: 48, height: 48)
+                                .simultaneousGesture(
+                                    LongPressGesture(minimumDuration: 0.5)
+                                        .onEnded { _ in
+                                            withAnimation(.spring(response: 0.3)) {
+                                                showJetpackPicker = true
+                                            }
+                                        }
+                                )
                                 
-                                AAAShape.ChamferedRectangle(chamferSize: 8)
-                                    .stroke(Pastel.gold.opacity(0.5), lineWidth: 1.2)
-                                    .frame(width: 48, height: 48)
-                                    .shadow(color: Pastel.gold.opacity(0.3), radius: 6)
-                                
-                                Image(systemName: "wrench.and.screwdriver.fill")
-                                    .font(.system(size: 16, weight: .bold))
-                                    .foregroundStyle(Pastel.gold)
+                                // Altitude Badge
+                                Text("\(Int(selectedJetpackHeight))m")
+                                    .font(.system(size: 8, weight: .bold, design: .monospaced))
+                                    .foregroundColor(isJetpacking ? Pastel.primary : Pastel.textMuted)
                             }
                         }
                     }
                     .padding(.trailing, 20)
-                    .padding(.bottom, 26)
                 }
             }
             
@@ -1209,5 +1178,140 @@ struct ScannerRingView: View {
                 lastHapticProgress = 0.0
             }
         }
+    }
+}
+
+// MARK: - AAA HUD Telemetry Progress Bar
+
+struct AAAHUDTelemetryBar: View {
+    let icon: String
+    let value: Float
+    let maxValue: Float
+    let color: Color
+    let lowWarning: Bool
+    
+    var body: some View {
+        HStack(spacing: 7) {
+            Image(systemName: icon)
+                .font(.system(size: 10, weight: .bold))
+                .foregroundColor(lowWarning ? Pastel.danger : color)
+                .frame(width: 14)
+            
+            // Segmented Pill Progress Bar
+            GeometryReader { geo in
+                ZStack(alignment: .leading) {
+                    Capsule()
+                        .fill(Color.white.opacity(0.12))
+                        .frame(height: 7)
+                    
+                    let pct = CGFloat(min(max(value / maxValue, 0), 1))
+                    Capsule()
+                        .fill(
+                            LinearGradient(
+                                colors: [color.opacity(0.85), color],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                        .frame(width: max(geo.size.width * pct, 6), height: 7)
+                        .shadow(color: color.opacity(lowWarning ? 0.8 : 0.4), radius: lowWarning ? 6 : 3)
+                }
+            }
+            .frame(width: 90, height: 7)
+            
+            Text("\(Int(value))")
+                .font(.system(size: 11, weight: .bold, design: .monospaced))
+                .foregroundColor(lowWarning ? Pastel.danger : Pastel.textPrimary)
+                .frame(width: 28, alignment: .trailing)
+        }
+    }
+}
+
+// MARK: - AAA Tactical Navigation Radar Console
+
+struct AAARadarConsoleView: View {
+    let playerPosition: SIMD3<Float>
+    let playerYaw: Float
+    let cameraYaw: Float
+    let signals: [MemoryFragment]
+    let mapRadius: Float = 150.0
+    private let size: CGFloat = 88
+    
+    var body: some View {
+        ZStack {
+            // Radar glass backing
+            Circle()
+                .fill(Color(red: 0.06, green: 0.08, blue: 0.14).opacity(0.88))
+                .frame(width: size, height: size)
+            
+            Circle()
+                .stroke(Pastel.primary.opacity(0.3), lineWidth: 1.2)
+                .frame(width: size, height: size)
+                .shadow(color: Pastel.primary.opacity(0.2), radius: 6)
+            
+            // Range rings
+            Circle()
+                .stroke(Color.white.opacity(0.08), lineWidth: 0.8)
+                .frame(width: size * 0.65, height: size * 0.65)
+            
+            Circle()
+                .stroke(Color.white.opacity(0.05), lineWidth: 0.8)
+                .frame(width: size * 0.35, height: size * 0.35)
+            
+            // Compass heading ticks
+            ForEach(0..<8, id: \.self) { i in
+                Rectangle()
+                    .fill(Color.white.opacity(i % 2 == 0 ? 0.35 : 0.15))
+                    .frame(width: 1, height: i % 2 == 0 ? 5 : 3)
+                    .offset(y: -size / 2 + 4)
+                    .rotationEffect(.degrees(Double(i) * 45))
+            }
+            
+            // North indicator (rotates by cameraYaw + .pi)
+            Text("N")
+                .font(.system(size: 7, weight: .black, design: .monospaced))
+                .foregroundColor(Pastel.primary)
+                .offset(y: -size / 2 + 8)
+                .rotationEffect(.radians(Double(cameraYaw + .pi)))
+            
+            // Real-time signal markers
+            ForEach(Array(signals.enumerated()), id: \.offset) { _, signal in
+                if !signal.isDiscovered {
+                    let relX = signal.worldPosition.x - playerPosition.x
+                    let relZ = signal.worldPosition.z - playerPosition.z
+                    
+                    let cosY = cos(cameraYaw)
+                    let sinY = sin(cameraYaw)
+                    let rotX = -relX * cosY + relZ * sinY
+                    let rotZ = relX * sinY + relZ * cosY
+                    
+                    let dist = sqrt(relX * relX + relZ * relZ)
+                    
+                    if dist < mapRadius * 1.5 {
+                        let normX = CGFloat(rotX / mapRadius) * (size / 2 - 8)
+                        let normZ = CGFloat(-rotZ / mapRadius) * (size / 2 - 8)
+                        
+                        let clampDist = min(sqrt(normX * normX + normZ * normZ), size / 2 - 6)
+                        let angle = atan2(normZ, normX)
+                        let finalX = cos(angle) * clampDist
+                        let finalZ = sin(angle) * clampDist
+                        
+                        Circle()
+                            .fill(Color(red: 0.98, green: 0.62, blue: 0.45))
+                            .frame(width: 4.5, height: 4.5)
+                            .shadow(color: Color(red: 0.98, green: 0.62, blue: 0.45).opacity(0.8), radius: 3)
+                            .offset(x: finalX, y: finalZ)
+                    }
+                }
+            }
+            
+            // Center Player indicator triangle
+            Triangle()
+                .fill(Pastel.primary)
+                .frame(width: 8, height: 10)
+                .shadow(color: Pastel.primary.opacity(0.6), radius: 4)
+                .rotationEffect(.radians(Double(cameraYaw - playerYaw)))
+        }
+        .frame(width: size, height: size)
     }
 }

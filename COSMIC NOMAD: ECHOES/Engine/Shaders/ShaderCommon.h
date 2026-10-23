@@ -89,6 +89,8 @@ struct TerrainParams {
     float heightScale;
     float textureScale;
     float2 _padding;
+    float4 terrainTintAndWeight;
+    float4 rockTintAndMood;
 };
 
 struct AtmosphereParams {
