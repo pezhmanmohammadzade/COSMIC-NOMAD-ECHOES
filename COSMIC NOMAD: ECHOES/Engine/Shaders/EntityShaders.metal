@@ -23,7 +23,52 @@ struct EntityVertexOut {
     float2 texCoord;
     float4 colorAndMaterial;
     float depth;
+    float3 objectPos;     // Local position scaled to real-world size (stable surface detail)
+    float3 objectNormal;  // Local-space normal
 };
+
+// MARK: - Character Material Helpers
+
+inline float valueNoise3D(float3 p) {
+    float3 i = floor(p);
+    float3 f = fract(p);
+    f = f * f * (3.0 - 2.0 * f);
+    float n000 = hash3D(i);
+    float n100 = hash3D(i + float3(1, 0, 0));
+    float n010 = hash3D(i + float3(0, 1, 0));
+    float n110 = hash3D(i + float3(1, 1, 0));
+    float n001 = hash3D(i + float3(0, 0, 1));
+    float n101 = hash3D(i + float3(1, 0, 1));
+    float n011 = hash3D(i + float3(0, 1, 1));
+    float n111 = hash3D(i + float3(1, 1, 1));
+    return mix(mix(mix(n000, n100, f.x), mix(n010, n110, f.x), f.y),
+               mix(mix(n001, n101, f.x), mix(n011, n111, f.x), f.y), f.z);
+}
+
+inline float fbm3D(float3 p) {
+    float v = 0.0, a = 0.5;
+    for (int i = 0; i < 4; i++) {
+        v += valueNoise3D(p) * a;
+        p = p * 2.03 + float3(17.1, 9.2, 3.7);
+        a *= 0.5;
+    }
+    return v;
+}
+
+/// Tangent-free bump mapping from a scalar height using screen-space derivatives
+/// (Mikkelsen, "Bump Mapping Unparametrized Surfaces on the GPU").
+inline float3 perturbNormal(float3 N, float3 worldPos, float height) {
+    float3 dpdx = dfdx(worldPos);
+    float3 dpdy = dfdy(worldPos);
+    float dhdx = dfdx(height);
+    float dhdy = dfdy(height);
+    float3 r1 = cross(dpdy, N);
+    float3 r2 = cross(N, dpdx);
+    float det = dot(dpdx, r1);
+    if (abs(det) < 1e-10) return N;
+    float3 grad = sign(det) * (dhdx * r1 + dhdy * r2);
+    return normalize(abs(det) * N - grad);
+}
 
 vertex EntityVertexOut entityVertexShader(
     EntityVertexIn in [[stage_in]],
@@ -148,13 +193,17 @@ vertex EntityVertexOut entityVertexShader(
     
     out.worldPosition = worldPos.xyz;
     
-    // Transform normal to world space
-    float3x3 normalMatrix = float3x3(
-        instanceData.modelMatrix[0].xyz,
-        instanceData.modelMatrix[1].xyz,
-        instanceData.modelMatrix[2].xyz
-    );
+    // Transform normal to world space using the cofactor matrix
+    // (proportional to the inverse-transpose; correct under non-uniform scale)
+    float3 c0 = instanceData.modelMatrix[0].xyz;
+    float3 c1 = instanceData.modelMatrix[1].xyz;
+    float3 c2 = instanceData.modelMatrix[2].xyz;
+    float3x3 normalMatrix = float3x3(cross(c1, c2), cross(c2, c0), cross(c0, c1));
     out.worldNormal = normalize(normalMatrix * localNormal);
+    
+    // Object-space coordinates in real-world units (for swim-free procedural detail)
+    out.objectPos = localPos * float3(length(c0), length(c1), length(c2));
+    out.objectNormal = localNormal;
     
     out.texCoord = in.texCoord;
     out.colorAndMaterial = instanceData.colorAndMaterial;
@@ -186,6 +235,8 @@ fragment GBufferOutput entityFragmentShader(
     float2 noiseUV = in.worldPosition.xz * 0.1;
     float surfaceNoise = fbm(noiseUV, 3, 2.0, 0.5);
     
+    float3 N = normalize(in.worldNormal);
+    
     if (materialType < 0.5) {
         // 0 = Metal (Cities)
         metallic = 0.9;
@@ -211,7 +262,7 @@ fragment GBufferOutput entityFragmentShader(
         // Pulse effect
         float pulse = (sin(uniforms.time * 2.0 + in.worldPosition.x) * 0.5 + 0.5);
         baseColor = mix(baseColor, float3(1.0, 1.0, 1.0), pulse * 0.5);
-    } else {
+    } else if (materialType < 5.5) {
         // 4.x = AAA Astronaut Suit (Layered composite armor with micro-panel detail)
         metallic = 0.12;
         
@@ -241,11 +292,116 @@ fragment GBufferOutput entityFragmentShader(
         
         // Soft edge glow for character readability
         emission = fresnel * 0.45;
+    } else {
+        // ================= REALISTIC EVA SUIT MATERIALS (6–10) =================
+        float matID = floor(materialType + 0.001);
+        float param = fract(materialType);
+        float3 op = in.objectPos;
+        float3 V = normalize(uniforms.cameraPosition - in.worldPosition);
+        
+        // Anti-aliasing factor for fine procedural detail
+        float pixelSize = length(fwidth(in.worldPosition));
+        float fineDetail = 1.0 - smoothstep(0.004, 0.02, pixelSize);
+        
+        if (matID < 6.5) {
+            // 6 = Ortho-fabric (Teflon/Nomex/Kevlar weave), fract = regolith dust
+            float dust = saturate(param / 0.9);
+            
+            // Soft cloth folds (low frequency) + creases (mid frequency)
+            float folds = fbm3D(op * float3(9.0, 4.0, 9.0));
+            float creases = 1.0 - abs(valueNoise3D(op * 22.0) * 2.0 - 1.0);
+            creases = pow(creases, 6.0);
+            
+            // Ripstop weave grid (faded with distance)
+            float2 weaveUV = (op.xy + op.zy) * 260.0;
+            float weave = (abs(sin(weaveUV.x)) * abs(sin(weaveUV.y)));
+            
+            float h = folds * 0.010 - creases * 0.0025 + weave * 0.0004 * fineDetail;
+            N = perturbNormal(N, in.worldPosition, h);
+            
+            ao = 0.78 + 0.22 * folds - creases * 0.10;
+            roughness = 0.88 - weave * 0.05 * fineDetail;
+            metallic = 0.0;
+            
+            // Subtle off-white variation
+            baseColor *= 0.94 + 0.08 * valueNoise3D(op * 6.0);
+            
+            // Regolith dust: accumulates in creases and lower surfaces
+            float dustMask = dust * smoothstep(0.35, 0.75, fbm3D(op * 14.0 + 3.1) + creases * 0.4);
+            baseColor = mix(baseColor, float3(0.46, 0.42, 0.38), dustMask * 0.75);
+            roughness = mix(roughness, 0.97, dustMask);
+            
+            // Cloth sheen (velvet-like rim, very subtle)
+            float NdotV = saturate(dot(N, V));
+            emission = pow(1.0 - NdotV, 5.0) * 0.06;
+        } else if (matID < 7.5) {
+            // 7 = Hard composite shell (helmet, PLSS, DCM, boots), fract = dust
+            float dust = saturate(param / 0.9);
+            
+            // Fine orange-peel clearcoat + micro scratches
+            float peel = valueNoise3D(op * 180.0);
+            float scratches = pow(1.0 - abs(valueNoise3D(op * float3(400.0, 6.0, 400.0)) * 2.0 - 1.0), 24.0);
+            N = perturbNormal(N, in.worldPosition, peel * 0.00012 * fineDetail);
+            
+            roughness = 0.28 + peel * 0.08 + scratches * 0.25 * fineDetail;
+            metallic = 0.0;
+            ao = 0.95;
+            baseColor *= 0.97 + 0.03 * peel;
+            
+            float dustMask = dust * smoothstep(0.40, 0.80, fbm3D(op * 10.0 + 7.3));
+            baseColor = mix(baseColor, float3(0.45, 0.41, 0.37), dustMask * 0.8);
+            roughness = mix(roughness, 0.92, dustMask);
+        } else if (matID < 8.5) {
+            // 8 = Gold-coated sun visor: highly reflective, mirrors sky & horizon
+            float3 R = reflect(-V, N);
+            float sky = saturate(R.y * 0.5 + 0.5);
+            float3 skyCol = mix(float3(0.10, 0.09, 0.08), float3(0.85, 0.80, 0.72), smoothstep(0.35, 0.95, sky));
+            // Sharp horizon line reflection
+            float horizon = exp(-pow((R.y - 0.02) * 18.0, 2.0));
+            skyCol += float3(1.0, 0.92, 0.75) * horizon * 0.6;
+            // Sun glint
+            float sunSpec = pow(saturate(dot(R, normalize(uniforms.sunDirection))), 600.0);
+            skyCol += float3(1.0, 0.95, 0.85) * sunSpec * 6.0;
+            
+            float NdotV = saturate(dot(N, V));
+            float fres = 0.55 + 0.45 * pow(1.0 - NdotV, 3.0);
+            
+            baseColor = baseColor * skyCol * fres;
+            metallic = 1.0;
+            roughness = 0.06;
+            ao = 1.0;
+            emission = 0.38;
+        } else if (matID < 9.75) {
+            // 9.0 = Rubber, 9.5 = ribbed convolute bellows / tread
+            bool ribbed = param > 0.25;
+            roughness = 0.82;
+            metallic = 0.0;
+            if (ribbed) {
+                // Ribs run around the joint / across the sole (object Y and Z)
+                float ribs = sin(op.y * 210.0 + op.z * 60.0);
+                float h = ribs * 0.0016;
+                N = perturbNormal(N, in.worldPosition, h);
+                ao = 0.80 + 0.20 * (ribs * 0.5 + 0.5);
+                roughness = 0.72 + 0.12 * (ribs * 0.5 + 0.5);
+            }
+            baseColor *= 0.96 + 0.06 * valueNoise3D(op * 40.0);
+        } else {
+            // 10 = Brushed / anodised aluminium (bearings, bottles, connectors)
+            float brushed = valueNoise3D(float3(op.x * 6.0, op.y * 900.0, op.z * 6.0));
+            metallic = 1.0;
+            roughness = 0.24 + brushed * 0.14 * fineDetail;
+            baseColor *= 0.92 + 0.08 * brushed;
+            ao = 0.9;
+            // Cheap environment glint so metal never reads as flat grey
+            float3 R = reflect(-V, N);
+            float env = saturate(R.y * 0.5 + 0.5);
+            emission = 0.06 + 0.10 * smoothstep(0.55, 1.0, env);
+        }
     }
     
     // Output to G-Buffer
     out.albedo = float4(baseColor, emission);
-    out.normal = float4(octEncode(normalize(in.worldNormal)), roughness, metallic);
+    out.normal = float4(octEncode(N), roughness, metallic);
     out.pbrParams = float4(ao, 0.0, 0.0, 0.0); // No velocity yet
     out.depth = in.depth;
     

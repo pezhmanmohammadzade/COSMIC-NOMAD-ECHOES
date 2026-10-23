@@ -2,9 +2,8 @@
 //  CodexView.swift
 //  COSMIC NOMAD: ECHOES
 //
-//  Full gallery of all memory fragments discovered across the journey.
-//  Organized by planet. Undiscovered fragments show as [CORRUPTED].
-//  Pastel matte color aesthetic.
+//  AAA Sci-Fi Archive & Memory Codex.
+//  Tactical telemetry display of all decrypted signals and corrupted transmissions.
 //
 
 import SwiftUI
@@ -17,71 +16,137 @@ struct CodexView: View {
     
     var body: some View {
         ZStack {
-            // Background
-            Pastel.overlay.opacity(0.98).ignoresSafeArea()
+            // Deep space tactical backdrop
+            Color(red: 0.02, green: 0.03, blue: 0.06).ignoresSafeArea()
+            
+            // Atmospheric scanline grid
+            AAAScanlineOverlay()
+                .opacity(0.35)
+                .ignoresSafeArea()
+            
+            // Subtle ambient energy glows
+            VStack {
+                HStack {
+                    Circle()
+                        .fill(Color.cyan.opacity(0.06))
+                        .frame(width: 320, height: 320)
+                        .blur(radius: 70)
+                        .offset(x: -80, y: -60)
+                    Spacer()
+                }
+                Spacer()
+            }
+            .ignoresSafeArea()
             
             VStack(spacing: 0) {
-                // Header
-                HStack {
+                // Header Bar
+                HStack(alignment: .center) {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("CODEX")
-                            .font(.system(size: 20, weight: .bold, design: .monospaced))
-                            .foregroundColor(Pastel.textPrimary)
-                            .tracking(6)
+                        HStack(spacing: 8) {
+                            Circle()
+                                .fill(Color.cyan)
+                                .frame(width: 6, height: 6)
+                                .shadow(color: Color.cyan, radius: 4)
+                            
+                            Text("TELEMETRY ARCHIVE // SYS_CODEX_04")
+                                .font(.system(size: 9, weight: .bold, design: .monospaced))
+                                .foregroundColor(.cyan.opacity(0.8))
+                                .tracking(2)
+                        }
                         
-                        Text("\(fragments.count) FRAGMENTS RECOVERED")
-                            .font(.system(size: 11, weight: .medium, design: .monospaced))
-                            .foregroundColor(Pastel.primary.opacity(0.6))
+                        Text("MEMORY FRAGMENTS")
+                            .font(.system(size: 20, weight: .heavy, design: .monospaced))
+                            .foregroundColor(.white)
+                            .tracking(3)
+                        
+                        HStack(spacing: 6) {
+                            Text("RECOVERED:")
+                                .font(.system(size: 10, weight: .semibold, design: .monospaced))
+                                .foregroundColor(.white.opacity(0.5))
+                            
+                            Text("\(fragments.count)")
+                                .font(.system(size: 11, weight: .bold, design: .monospaced))
+                                .foregroundColor(.cyan)
+                            
+                            Text("SECTORS MONITORED")
+                                .font(.system(size: 10, weight: .regular, design: .monospaced))
+                                .foregroundColor(.white.opacity(0.35))
+                        }
                     }
                     
                     Spacer()
                     
+                    // Tactical Close Button
                     Button(action: onClose) {
-                        Image(systemName: "xmark.circle.fill")
-                            .font(.system(size: 24))
-                            .foregroundColor(Pastel.textSecondary)
+                        ZStack {
+                            AAAShape.ChamferedRectangle(chamfer: 6)
+                                .fill(Color.white.opacity(0.05))
+                                .overlay(
+                                    AAAShape.ChamferedRectangle(chamfer: 6)
+                                        .stroke(Color.white.opacity(0.2), lineWidth: 1)
+                                )
+                                .frame(width: 38, height: 38)
+                            
+                            Image(systemName: "xmark")
+                                .font(.system(size: 14, weight: .bold))
+                                .foregroundColor(.white.opacity(0.85))
+                        }
                     }
                 }
-                .padding(.horizontal, 24)
-                .padding(.top, 60)
+                .padding(.horizontal, 28)
+                .padding(.top, 40)
                 .padding(.bottom, 16)
                 
-                // Planet filter tabs
+                // Planet Filter Tabs
                 ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 10) {
-                        PlanetTabButton(name: "ALL", isSelected: selectedPlanet == nil) {
+                    HStack(spacing: 8) {
+                        AAAPlanetTabButton(name: "ALL SECTORS", isSelected: selectedPlanet == nil) {
                             selectedPlanet = nil
                         }
                         
                         ForEach(planetNames, id: \.self) { planet in
-                            PlanetTabButton(name: planet, isSelected: selectedPlanet == planet) {
+                            AAAPlanetTabButton(name: planet, isSelected: selectedPlanet == planet) {
                                 selectedPlanet = planet
                             }
                         }
                     }
-                    .padding(.horizontal, 24)
+                    .padding(.horizontal, 28)
                 }
+                .padding(.bottom, 14)
+                
+                // Telemetry separating line with tech notch
+                HStack(spacing: 0) {
+                    Rectangle()
+                        .fill(Color.cyan.opacity(0.35))
+                        .frame(height: 1)
+                    
+                    Text("◆")
+                        .font(.system(size: 8))
+                        .foregroundColor(.cyan)
+                        .padding(.horizontal, 8)
+                    
+                    Rectangle()
+                        .fill(LinearGradient(colors: [Color.cyan.opacity(0.35), Color.clear], startPoint: .leading, endPoint: .trailing))
+                        .frame(height: 1)
+                }
+                .padding(.horizontal, 28)
                 .padding(.bottom, 12)
                 
-                // Divider
-                Rectangle()
-                    .fill(Pastel.primary.opacity(0.12))
-                    .frame(height: 1)
-                
-                // Fragment list
+                // Fragment Stream
                 ScrollView(showsIndicators: false) {
-                    LazyVStack(spacing: 12) {
+                    LazyVStack(spacing: 14) {
                         ForEach(filteredFragments, id: \.self) { frag in
-                            CodexFragmentCard(fragment: frag)
+                            AAACodexFragmentCard(fragment: frag)
                         }
                         
                         // Corrupted placeholders
-                        ForEach(0..<corruptedCount, id: \.self) { _ in
-                            CorruptedFragmentCard()
+                        ForEach(0..<corruptedCount, id: \.self) { idx in
+                            AAACorruptedFragmentCard(index: idx)
                         }
                     }
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 16)
+                    .padding(.horizontal, 28)
+                    .padding(.vertical, 12)
+                    .padding(.bottom, 40)
                 }
             }
         }
@@ -106,119 +171,196 @@ struct CodexView: View {
     }
     
     private var corruptedCount: Int {
-        // Show some corrupted placeholders to tease undiscovered content
         let total = (SaveManager.shared.getPlanetsCompleted() + 1) * 5
         return max(0, total - fragments.count)
     }
 }
 
-// MARK: - Planet Tab
+// MARK: - Tactical Planet Filter Tab
 
-struct PlanetTabButton: View {
+struct AAAPlanetTabButton: View {
     let name: String
     let isSelected: Bool
     let action: () -> Void
     
     var body: some View {
         Button(action: action) {
-            Text(name.uppercased())
-                .font(.system(size: 10, weight: .bold, design: .monospaced))
-                .foregroundColor(isSelected ? Pastel.bg : Pastel.textSecondary)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
-                .background(isSelected ? Pastel.primary : Pastel.cardFill)
-                .clipShape(Capsule())
+            HStack(spacing: 6) {
+                if isSelected {
+                    Circle()
+                        .fill(Color.cyan)
+                        .frame(width: 4, height: 4)
+                        .shadow(color: Color.cyan, radius: 3)
+                }
+                
+                Text(name.uppercased())
+                    .font(.system(size: 10, weight: isSelected ? .bold : .medium, design: .monospaced))
+                    .foregroundColor(isSelected ? .white : .white.opacity(0.55))
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 8)
+            .background(
+                AAAShape.ChamferedRectangle(chamfer: 6)
+                    .fill(isSelected ? Color.cyan.opacity(0.18) : Color.white.opacity(0.04))
+            )
+            .overlay(
+                AAAShape.ChamferedRectangle(chamfer: 6)
+                    .stroke(isSelected ? Color.cyan.opacity(0.7) : Color.white.opacity(0.1), lineWidth: 1)
+            )
         }
     }
 }
 
-// MARK: - Fragment Card
+// MARK: - AAA Codex Fragment Card
 
-struct CodexFragmentCard: View {
+struct AAACodexFragmentCard: View {
     let fragment: [String: String]
     @State private var isExpanded = false
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                // Type badge
-                Text((fragment["type"] ?? "UNKNOWN").uppercased())
-                    .font(.system(size: 8, weight: .bold, design: .monospaced))
-                    .foregroundColor(Pastel.secondary)
-                    .padding(.horizontal, 8)
+        AAAGlassPanel(accentColor: .cyan, cornerRadius: 8) {
+            VStack(alignment: .leading, spacing: 10) {
+                // Top telemetry bar
+                HStack(alignment: .center) {
+                    // Classification badge
+                    HStack(spacing: 5) {
+                        Image(systemName: "waveform.path.ecg")
+                            .font(.system(size: 9))
+                            .foregroundColor(.cyan)
+                        
+                        Text((fragment["type"] ?? "SIGNAL").uppercased())
+                            .font(.system(size: 8, weight: .heavy, design: .monospaced))
+                            .foregroundColor(.cyan)
+                    }
+                    .padding(.horizontal, 7)
                     .padding(.vertical, 3)
-                    .background(Pastel.secondary.opacity(0.10))
+                    .background(Color.cyan.opacity(0.12))
                     .clipShape(Capsule())
+                    
+                    Text("// SECTOR DECRYPTED")
+                        .font(.system(size: 8, weight: .medium, design: .monospaced))
+                        .foregroundColor(.white.opacity(0.3))
+                    
+                    Spacer()
+                    
+                    // Planet coordinates
+                    HStack(spacing: 4) {
+                        Image(systemName: "globe.americas.fill")
+                            .font(.system(size: 9))
+                            .foregroundColor(.white.opacity(0.5))
+                        
+                        Text(fragment["planet"] ?? "UNKNOWN")
+                            .font(.system(size: 9, weight: .bold, design: .monospaced))
+                            .foregroundColor(.white.opacity(0.75))
+                    }
+                }
                 
-                Spacer()
+                // Title
+                HStack {
+                    Text(fragment["title"] ?? "Unknown Signal")
+                        .font(.system(size: 14, weight: .bold, design: .monospaced))
+                        .foregroundColor(.white)
+                    
+                    Spacer()
+                    
+                    Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundColor(.cyan.opacity(0.7))
+                }
                 
-                // Planet name
-                Text(fragment["planet"] ?? "")
-                    .font(.system(size: 9, weight: .medium, design: .monospaced))
-                    .foregroundColor(Pastel.primary.opacity(0.5))
+                // Expanded Content
+                if isExpanded {
+                    VStack(alignment: .leading, spacing: 10) {
+                        Rectangle()
+                            .fill(Color.cyan.opacity(0.2))
+                            .frame(height: 1)
+                        
+                        Text(fragment["content"] ?? "")
+                            .font(.system(size: 12, weight: .regular, design: .monospaced))
+                            .foregroundColor(.white.opacity(0.85))
+                            .lineSpacing(5)
+                        
+                        // Holographic audio waveform visualizer
+                        HStack(spacing: 3) {
+                            Text("AUDIO CARRIER FREQ:")
+                                .font(.system(size: 8, weight: .bold, design: .monospaced))
+                                .foregroundColor(.cyan.opacity(0.6))
+                            
+                            AAAWaveformView(barCount: 16, accentColor: .cyan)
+                                .frame(height: 12)
+                            
+                            Spacer()
+                            
+                            Text("1420.405 MHz")
+                                .font(.system(size: 8, weight: .medium, design: .monospaced))
+                                .foregroundColor(.white.opacity(0.4))
+                        }
+                        .padding(.top, 4)
+                    }
+                    .transition(.opacity.combined(with: .move(edge: .top)))
+                }
             }
-            
-            Text(fragment["title"] ?? "Unknown Signal")
-                .font(.system(size: 13, weight: .bold, design: .monospaced))
-                .foregroundColor(Pastel.textPrimary)
-            
-            if isExpanded {
-                Text(fragment["content"] ?? "")
-                    .font(.system(size: 12, weight: .regular, design: .serif))
-                    .foregroundColor(Pastel.textPrimary.opacity(0.75))
-                    .lineSpacing(4)
-                    .transition(.opacity)
-            }
+            .padding(14)
         }
-        .padding(14)
-        .background(
-            RoundedRectangle(cornerRadius: 10)
-                .fill(Pastel.cardFill)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 10)
-                        .stroke(Pastel.primary.opacity(0.08), lineWidth: 1)
-                )
-        )
+        .contentShape(Rectangle())
         .onTapGesture {
-            withAnimation(.easeOut(duration: 0.2)) {
+            withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
                 isExpanded.toggle()
             }
         }
     }
 }
 
-// MARK: - Corrupted Fragment
+// MARK: - AAA Corrupted Fragment Card
 
-struct CorruptedFragmentCard: View {
+struct AAACorruptedFragmentCard: View {
+    let index: Int
     @State private var flicker = false
     
     var body: some View {
-        HStack {
-            Image(systemName: "exclamationmark.triangle")
-                .font(.system(size: 12))
-                .foregroundColor(Pastel.danger.opacity(0.4))
-            
-            Text("[CORRUPTED DATA]")
-                .font(.system(size: 11, weight: .bold, design: .monospaced))
-                .foregroundColor(Pastel.danger.opacity(0.3))
-            
-            Spacer()
-            
-            Text("SIGNAL LOST")
-                .font(.system(size: 8, weight: .medium, design: .monospaced))
-                .foregroundColor(Pastel.textMuted.opacity(0.5))
-        }
-        .padding(14)
-        .background(
-            RoundedRectangle(cornerRadius: 10)
-                .fill(Pastel.danger.opacity(flicker ? 0.03 : 0.015))
+        ZStack {
+            AAAShape.ChamferedRectangle(chamfer: 8)
+                .fill(Color(red: 0.12, green: 0.04, blue: 0.04).opacity(flicker ? 0.45 : 0.25))
                 .overlay(
-                    RoundedRectangle(cornerRadius: 10)
-                        .stroke(Pastel.danger.opacity(0.08), lineWidth: 1)
+                    AAAShape.ChamferedRectangle(chamfer: 8)
+                        .stroke(Color.red.opacity(flicker ? 0.35 : 0.15), lineWidth: 1)
                 )
-        )
+            
+            HStack(spacing: 12) {
+                ZStack {
+                    Circle()
+                        .fill(Color.red.opacity(0.12))
+                        .frame(width: 32, height: 32)
+                    
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .font(.system(size: 13))
+                        .foregroundColor(.red.opacity(0.8))
+                }
+                
+                VStack(alignment: .leading, spacing: 3) {
+                    Text("[ENCRYPTED // CORRUPTED TRANSMISSION]")
+                        .font(.system(size: 11, weight: .bold, design: .monospaced))
+                        .foregroundColor(.red.opacity(0.85))
+                    
+                    Text("CHECKSUM ERROR: 0x\(String(format: "%04X", 0x4A10 + index * 0x1F)) • SIGNAL CARRIER DEGRADED")
+                        .font(.system(size: 8, weight: .medium, design: .monospaced))
+                        .foregroundColor(.white.opacity(0.35))
+                }
+                
+                Spacer()
+                
+                Text("LOCKED")
+                    .font(.system(size: 8, weight: .bold, design: .monospaced))
+                    .foregroundColor(.red.opacity(0.5))
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 3)
+                    .background(Color.red.opacity(0.1))
+                    .clipShape(Capsule())
+            }
+            .padding(12)
+        }
         .onAppear {
-            withAnimation(.easeInOut(duration: 1.5).repeatForever(autoreverses: true)) {
+            withAnimation(.easeInOut(duration: 1.2).repeatForever(autoreverses: true)) {
                 flicker = true
             }
         }

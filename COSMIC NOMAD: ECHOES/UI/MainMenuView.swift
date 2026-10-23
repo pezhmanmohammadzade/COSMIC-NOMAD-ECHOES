@@ -75,37 +75,37 @@ struct MainMenuView: View {
                                 Spacer(minLength: 24)
                                 
                                 if hasSavedProgress {
-                                    MenuButton(title: "RESUME JOURNEY", icon: "play.fill", color: Pastel.primary) {
+                                    MenuButton(index: "01", title: "RESUME JOURNEY", icon: "play.fill", color: Pastel.primary, isHero: true) {
                                         startGame(reset: false)
                                     }
                                     
-                                    MenuButton(title: "NEW JOURNEY", icon: "plus.circle", color: Pastel.secondary) {
+                                    MenuButton(index: "02", title: "NEW EXPEDITION", icon: "plus.circle.fill", color: Pastel.secondary) {
                                         showWipeConfirm = true
                                     }
                                 } else {
-                                    MenuButton(title: "BEGIN JOURNEY", icon: "play.fill", color: Pastel.primary) {
+                                    MenuButton(index: "01", title: "BEGIN EXPEDITION", icon: "play.fill", color: Pastel.primary, isHero: true) {
                                         startGame(reset: true)
                                     }
                                 }
                                 
-                                MenuButton(title: "SETTINGS", icon: "gearshape", color: Pastel.textSecondary) {
-                                    withAnimation { showSettings = true }
-                                }
-                                
-                                MenuButton(title: "STAR CHART", icon: "globe.americas.fill", color: Pastel.tertiary) {
+                                MenuButton(index: "02", title: "STAR CHART", icon: "globe.americas.fill", color: Pastel.tertiary) {
                                     withAnimation { showPlanets = true }
                                 }
                                 
-                                MenuButton(title: "CODEX", icon: "book.closed.fill", color: Pastel.primary.opacity(0.7)) {
+                                MenuButton(index: "03", title: "ARCHIVE CODEX", icon: "book.closed.fill", color: Pastel.primary.opacity(0.85)) {
                                     withAnimation { showCodex = true }
                                 }
                                 
-                                MenuButton(title: "BESTIARY", icon: "pawprint.fill", color: Pastel.tertiary) {
+                                MenuButton(index: "04", title: "XENO BESTIARY", icon: "pawprint.fill", color: Pastel.tertiary) {
                                     withAnimation { showBestiary = true }
                                 }
                                 
-                                MenuButton(title: "STATISTICS", icon: "chart.bar.fill", color: Pastel.gold.opacity(0.8)) {
+                                MenuButton(index: "05", title: "FLIGHT TELEMETRY", icon: "chart.bar.fill", color: Pastel.gold) {
                                     withAnimation { showStatistics = true }
+                                }
+                                
+                                MenuButton(index: "06", title: "SUIT SETTINGS", icon: "gearshape.fill", color: Pastel.textSecondary) {
+                                    withAnimation { showSettings = true }
                                 }
                                 
                                 Spacer(minLength: 24)
@@ -142,39 +142,39 @@ struct MainMenuView: View {
                             .frame(maxHeight: 60)
                         
                         // Menu Buttons
-                        VStack(spacing: 14) {
+                        VStack(spacing: 12) {
                             if hasSavedProgress {
-                                MenuButton(title: "RESUME JOURNEY", icon: "play.fill", color: Pastel.primary) {
+                                MenuButton(index: "01", title: "RESUME JOURNEY", icon: "play.fill", color: Pastel.primary, isHero: true) {
                                     startGame(reset: false)
                                 }
                                 
-                                MenuButton(title: "NEW JOURNEY", icon: "plus.circle", color: Pastel.secondary) {
+                                MenuButton(index: "02", title: "NEW EXPEDITION", icon: "plus.circle.fill", color: Pastel.secondary) {
                                     showWipeConfirm = true
                                 }
                             } else {
-                                MenuButton(title: "BEGIN JOURNEY", icon: "play.fill", color: Pastel.primary) {
+                                MenuButton(index: "01", title: "BEGIN EXPEDITION", icon: "play.fill", color: Pastel.primary, isHero: true) {
                                     startGame(reset: true)
                                 }
                             }
                             
-                            MenuButton(title: "SETTINGS", icon: "gearshape", color: Pastel.textSecondary) {
-                                withAnimation { showSettings = true }
-                            }
-                            
-                            MenuButton(title: "STAR CHART", icon: "globe.americas.fill", color: Pastel.tertiary) {
+                            MenuButton(index: "02", title: "STAR CHART", icon: "globe.americas.fill", color: Pastel.tertiary) {
                                 withAnimation { showPlanets = true }
                             }
                             
-                            MenuButton(title: "CODEX", icon: "book.closed.fill", color: Pastel.primary.opacity(0.7)) {
+                            MenuButton(index: "03", title: "ARCHIVE CODEX", icon: "book.closed.fill", color: Pastel.primary.opacity(0.85)) {
                                 withAnimation { showCodex = true }
                             }
                             
-                            MenuButton(title: "BESTIARY", icon: "pawprint.fill", color: Pastel.tertiary) {
+                            MenuButton(index: "04", title: "XENO BESTIARY", icon: "pawprint.fill", color: Pastel.tertiary) {
                                 withAnimation { showBestiary = true }
                             }
                             
-                            MenuButton(title: "STATISTICS", icon: "chart.bar.fill", color: Pastel.gold.opacity(0.8)) {
+                            MenuButton(index: "05", title: "FLIGHT TELEMETRY", icon: "chart.bar.fill", color: Pastel.gold) {
                                 withAnimation { showStatistics = true }
+                            }
+                            
+                            MenuButton(index: "06", title: "SUIT SETTINGS", icon: "gearshape.fill", color: Pastel.textSecondary) {
+                                withAnimation { showSettings = true }
                             }
                         }
                         .opacity(buttonsOpacity)
@@ -328,31 +328,64 @@ struct MainMenuView: View {
     }
 }
 
-// MARK: - Menu Button
+// MARK: - AAA Aerospace Menu Button
 struct MenuButton: View {
+    var index: String = "01"
     let title: String
     let icon: String
     let color: Color
+    var isHero: Bool = false
     let action: () -> Void
     
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 10) {
+            HStack(spacing: 12) {
+                // Bracketed telemetry indicator
+                Text("[\(index)]")
+                    .font(.system(size: 9, weight: .black, design: .monospaced))
+                    .foregroundColor(color.opacity(0.7))
+                
                 Image(systemName: icon)
-                    .font(.system(size: 13))
+                    .font(.system(size: 13, weight: .bold))
+                    .foregroundColor(color)
+                    .frame(width: 18)
+                
                 Text(title)
-                    .font(.system(size: 12, weight: .bold, design: .monospaced))
-                    .tracking(2)
+                    .font(.system(size: 11, weight: .black, design: .monospaced))
+                    .tracking(2.5)
+                    .foregroundColor(Pastel.textPrimary)
+                
+                Spacer()
+                
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 9, weight: .bold))
+                    .foregroundColor(color.opacity(0.4))
             }
-            .foregroundColor(color)
-            .frame(width: 220)
-            .padding(.vertical, 14)
-            .background(color.opacity(0.08))
-            .overlay(
-                Capsule().stroke(color.opacity(0.2), lineWidth: 1)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 13)
+            .frame(width: 260)
+            .background(
+                ZStack {
+                    AAAShape.ChamferedRectangle(chamferSize: 8)
+                        .fill(isHero ? color.opacity(0.14) : Pastel.surface.opacity(0.82))
+                    
+                    AAAShape.ChamferedRectangle(chamferSize: 8)
+                        .stroke(
+                            LinearGradient(
+                                colors: [
+                                    color.opacity(isHero ? 0.7 : 0.35),
+                                    color.opacity(0.1)
+                                ],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: isHero ? 1.5 : 1.0
+                        )
+                }
+                .shadow(color: isHero ? color.opacity(0.25) : Color.clear, radius: 8)
             )
-            .clipShape(Capsule())
         }
+        .buttonStyle(PlainButtonStyle())
     }
 }
 

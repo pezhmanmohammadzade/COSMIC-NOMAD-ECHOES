@@ -2,11 +2,23 @@
 //  AstronautRenderer.swift
 //  COSMIC NOMAD: ECHOES
 //
-//  AAA-quality procedural astronaut built from shaped cube instances.
-//  Features anatomically proportioned body, detailed EVA suit with
-//  layered armor plating, rounded helmet with gold visor, life support
-//  backpack, articulated gloves, heavy-duty boots, and comm antenna.
-//  Smooth IK-style walk animation with natural arm/leg swing.
+//  Realistic procedural EVA astronaut (Artemis / xEMU-inspired).
+//
+//  • Built from smooth primitives (CharacterMeshLibrary) instead of cubes:
+//    capsule limbs, rounded fabric segments, bearing rings, bubble helmet
+//    with a true spherical gold visor, PLSS backpack, DCM chest unit,
+//    articulated gloves with thumb + finger block, treaded boots.
+//  • Physically-motivated materials (see EntityShaders.metal):
+//      6.x  Ortho-fabric (fract = regolith dust amount)
+//      7.x  Hard composite shell (fract = dust)
+//      8.0  Gold visor (metallic, fake sky reflection)
+//      9.0  Rubber / 9.5 ribbed convolute bellows
+//      10.0 Brushed aluminium
+//      1.0  Emissive LED / thruster plume
+//  • Biomechanical gait: pelvis bob + lateral sway, pelvis/shoulder
+//    counter-rotation, swing-phase knee flexion, foot levelling, elbow
+//    flex, forward lean, sprint posture, breathing idle, jetpack hover
+//    pose and landing crouch — all blended smoothly between states.
 //
 
 import Metal
@@ -16,201 +28,190 @@ import simd
 final class AstronautRenderer {
     let device: MTLDevice
     
-    // OBJ model mesh (nil if not loaded → falls back to procedural)
-    private var objMesh: OBJMesh?
-    private var useOBJModel: Bool = false
+    private let meshes: CharacterMeshLibrary
     
-    // Instance buffer for OBJ rendering
-    private var objInstanceBuffer: MTLBuffer?
+    // Triple-buffered instance storage (avoid CPU/GPU races)
+    private static let maxParts = 220
+    private var instanceBuffers: [MTLBuffer] = []
+    private var bufferCursor = 0
     
-    // --- AAA Procedural Astronaut ---
-    private let partCount = 72
-    private var instanceBuffer: MTLBuffer?
+    // Per-mesh batches, rebuilt each frame (capacity retained)
+    private var batches: [[EntityInstance]] = Array(repeating: [], count: CharacterMeshKind.allCases.count)
     
-    // Walk animation phase
-    private var walkPhase: Float = 0
+    /// Global body scale (authored in real-world metres, scaled slightly heroic for readability)
+    private let bodyScale: Float = 1.08
     
-    // OBJ model transform settings
-    private let modelScale: Float = 1.0
-    private let modelYOffset: Float = 0.5
-    private let targetHeight: Float = 2.5
+    // MARK: Animation state
     
-    // Breathing animation
+    enum AnimState { case idle, walking, sprinting, flying, landing }
+    private var currentState: AnimState = .idle
+    
+    private var gaitPhase: Float = 0
     private var breathPhase: Float = 0
-    
-    // Eye blink animation
-    private var blinkTimer: Float = 0
-    private var blinkCooldown: Float = 3.0
-    private var isBlinking: Bool = false
-    private var blinkDuration: Float = 0.12
+    private var clock: Float = 0
+    private var moveBlend: Float = 0
+    private var sprintBlend: Float = 0
+    private var flyBlend: Float = 0
+    private var landingImpulse: Float = 0
+    private var wasFlying = false
+    private var jetFlicker: Float = 1
     
     init(device: MTLDevice) {
         self.device = device
+        self.meshes = CharacterMeshLibrary(device: device)
         
-        // Try to load the OBJ model
-        if let mesh = OBJLoader.load(filename: "astronaut", device: device) {
-            self.objMesh = mesh
-            self.useOBJModel = true
-            
-            let centerX = (mesh.boundingBoxMin.x + mesh.boundingBoxMax.x) * 0.5
-            let centerZ = (mesh.boundingBoxMin.z + mesh.boundingBoxMax.z) * 0.5
-            let bottomY = mesh.boundingBoxMin.y
-            let height = mesh.boundingBoxMax.y - mesh.boundingBoxMin.y
-            let normalizeScale: Float = height > 0 ? 1.0 / height : 1.0
-            
-            let vertPtr = mesh.vertexBuffer.contents().bindMemory(to: EntityVertex.self, capacity: mesh.vertexCount)
-            for i in 0..<mesh.vertexCount {
-                vertPtr[i].position.x = (vertPtr[i].position.x - centerX) * normalizeScale
-                vertPtr[i].position.y = (vertPtr[i].position.y - bottomY) * normalizeScale
-                vertPtr[i].position.z = (vertPtr[i].position.z - centerZ) * normalizeScale
+        for i in 0..<ResourceManager.maxFramesInFlight {
+            if let buf = device.makeBuffer(length: MemoryLayout<EntityInstance>.stride * Self.maxParts,
+                                           options: .storageModeShared) {
+                buf.label = "Astronaut Instances \(i)"
+                instanceBuffers.append(buf)
             }
-            
-            self.objInstanceBuffer = device.makeBuffer(
-                length: MemoryLayout<EntityInstance>.stride,
-                options: .storageModeShared
-            )
-            objInstanceBuffer?.label = "Astronaut OBJ Instance Buffer"
-            
-            print("🧑‍🚀 AstronautRenderer: Using custom OBJ model (normalized to height=1.0)")
-            print("   Original bounds: \(mesh.boundingBoxMin) → \(mesh.boundingBoxMax)")
-        } else {
-            print("🧑‍🚀 AstronautRenderer: Using AAA procedural astronaut (\(partCount) parts)")
         }
-        
-        // Always prepare the procedural buffer
-        self.instanceBuffer = device.makeBuffer(
-            length: MemoryLayout<EntityInstance>.stride * partCount,
-            options: .storageModeShared
-        )
-        instanceBuffer?.label = "Astronaut Instance Buffer"
+        for k in 0..<batches.count { batches[k].reserveCapacity(64) }
+        print("🧑‍🚀 AstronautRenderer: realistic EVA suit (smooth primitives, PBR materials)")
     }
     
-    // Animation state
-    enum AnimState { case idle, walking, sprinting, flying, landing }
-    private var currentState: AnimState = .idle
-    private var stateBlend: Float = 0
-    private var landingTimer: Float = 0
+    // MARK: - Update
     
     func update(isMoving: Bool, deltaTime: Float, isFlying: Bool = false, isSprinting: Bool = false) {
-        let targetState: AnimState
-        if isFlying {
-            targetState = .flying
-        } else if isSprinting && isMoving {
-            targetState = .sprinting
-        } else if isMoving {
-            targetState = .walking
-        } else if currentState == .flying {
-            targetState = .landing
-            landingTimer = 0.5
-        } else {
-            targetState = .idle
-        }
+        let dt = min(deltaTime, 1.0 / 20.0)
+        clock += dt
         
-        if currentState == .landing {
-            landingTimer -= deltaTime
-            if landingTimer <= 0 {
-                currentState = .idle
-            }
-        }
+        // Discrete state (kept for external readability / debugging)
+        if isFlying { currentState = .flying }
+        else if landingImpulse > 0.05 { currentState = .landing }
+        else if isMoving { currentState = isSprinting ? .sprinting : .walking }
+        else { currentState = .idle }
         
-        if targetState != currentState && currentState != .landing {
-            currentState = targetState
-            stateBlend = 0
+        // Smooth blends
+        func approach(_ v: inout Float, _ target: Float, _ rate: Float) {
+            v += (target - v) * min(1, rate * dt)
         }
-        stateBlend = min(1.0, stateBlend + deltaTime * 4.0)
+        approach(&moveBlend, (isMoving && !isFlying) ? 1 : 0, 7)
+        approach(&sprintBlend, (isMoving && isSprinting && !isFlying) ? 1 : 0, 5)
+        approach(&flyBlend, isFlying ? 1 : 0, 4)
         
-        switch currentState {
-        case .idle:      walkPhase += deltaTime * 0.5
-        case .walking:   walkPhase += deltaTime * 9.0
-        case .sprinting: walkPhase += deltaTime * 14.0
-        case .flying:    walkPhase += deltaTime * 1.5
-        case .landing:   walkPhase += deltaTime * 2.0
-        }
+        // Landing crouch impulse
+        if wasFlying && !isFlying { landingImpulse = 1 }
+        wasFlying = isFlying
+        landingImpulse = max(0, landingImpulse - dt * 2.6)
         
-        breathPhase += deltaTime * 1.2
+        // Gait phase (rad/s): walk ≈ 1.1 Hz, sprint ≈ 1.6 Hz
+        let cadence = 7.0 + 3.6 * sprintBlend
+        gaitPhase += dt * cadence * max(moveBlend, 0.0001)
+        if gaitPhase > .pi * 200 { gaitPhase -= .pi * 200 }
         
-        // Eye blink animation
-        blinkTimer -= deltaTime
-        if blinkTimer <= 0 {
-            if isBlinking {
-                isBlinking = false
-                blinkCooldown = Float.random(in: 2.0...5.0)
-                blinkTimer = blinkCooldown
-            } else {
-                isBlinking = true
-                blinkTimer = blinkDuration
-            }
-        }
+        breathPhase += dt * (1.3 + 1.6 * sprintBlend)
+        jetFlicker = Float.random(in: 0.82...1.18)
     }
+    
+    // MARK: - Draw
     
     func draw(player: PlayerController, encoder: MTLRenderCommandEncoder, resources: ResourceManager, pipeline: RenderPipeline, time: Float, isMoving: Bool) {
-        drawCubeFallback(player: player, encoder: encoder, resources: resources, pipeline: pipeline, time: time, isMoving: isMoving)
-    }
-    
-    // MARK: - OBJ Model Rendering
-    
-    private func drawOBJModel(player: PlayerController, encoder: MTLRenderCommandEncoder, resources: ResourceManager, pipeline: RenderPipeline, time: Float, isMoving: Bool) {
-        guard let mesh = objMesh, let instanceBuf = objInstanceBuffer else { return }
+        guard !instanceBuffers.isEmpty else { return }
+        for k in 0..<batches.count { batches[k].removeAll(keepingCapacity: true) }
         
-        let p = player.position
-        let fwd = player.forward
+        buildPose(player: player)
         
-        let right = normalize(cross(fwd, SIMD3<Float>(0, 1, 0)))
-        let up = SIMD3<Float>(0, 1, 0)
+        // Upload batches into this frame's buffer
+        bufferCursor = (bufferCursor + 1) % instanceBuffers.count
+        let buffer = instanceBuffers[bufferCursor]
+        let base = buffer.contents().bindMemory(to: EntityInstance.self, capacity: Self.maxParts)
         
-        let rot = float4x4(
-            SIMD4<Float>(-right.x, -right.y, -right.z, 0),
-            SIMD4<Float>(up.x, up.y, up.z, 0),
-            SIMD4<Float>(fwd.x, fwd.y, fwd.z, 0),
-            SIMD4<Float>(0, 0, 0, 1)
-        )
-        
-        let finalScale = targetHeight * modelScale
-        let bodyBob: Float = isMoving ? abs(sin(walkPhase * 2)) * 0.06 : 0.0
-        
-        let feetY = player.groundHeight
-        let scaleMatrix = MatrixUtil.scale(finalScale)
-        let worldTranslation = MatrixUtil.translation(SIMD3<Float>(p.x, feetY + modelYOffset + bodyBob, p.z))
-        
-        let modelMatrix = worldTranslation * rot * scaleMatrix
-        
-        let armSwingValue: Float = isMoving ? sin(walkPhase) * 0.55 : sin(walkPhase) * 0.03
-        let normalizedSwing = (armSwingValue + 0.55) / 1.1
-        let materialType: Float = 4.0 + normalizedSwing * 0.99
-        
-        let suitColor = SIMD4<Float>(0.45, 0.78, 0.48, materialType)
-        
-        let pointer = instanceBuf.contents().bindMemory(to: EntityInstance.self, capacity: 1)
-        pointer[0] = EntityInstance(
-            modelMatrix: modelMatrix,
-            colorAndMaterial: suitColor
-        )
+        var cursor = 0
+        var ranges: [(CharacterMeshKind, Int, Int)] = []
+        for kind in CharacterMeshKind.allCases {
+            let batch = batches[kind.rawValue]
+            guard !batch.isEmpty else { continue }
+            let count = min(batch.count, Self.maxParts - cursor)
+            guard count > 0 else { break }
+            for i in 0..<count { base[cursor + i] = batch[i] }
+            ranges.append((kind, cursor, count))
+            cursor += count
+        }
         
         encoder.setRenderPipelineState(pipeline.entityPipeline)
-        encoder.setVertexBuffer(mesh.vertexBuffer, offset: 0, index: BufferIndex.vertices.rawValue)
-        encoder.setVertexBuffer(instanceBuf, offset: 0, index: BufferIndex.instanceData.rawValue)
+        encoder.setVertexBuffer(buffer, offset: 0, index: BufferIndex.instanceData.rawValue)
         
-        encoder.drawIndexedPrimitives(
-            type: .triangle,
-            indexCount: mesh.indexCount,
-            indexType: .uint32,
-            indexBuffer: mesh.indexBuffer,
-            indexBufferOffset: 0,
-            instanceCount: 1
-        )
+        let stride = MemoryLayout<EntityInstance>.stride
+        for (kind, start, count) in ranges {
+            guard let mesh = meshes[kind] else { continue }
+            encoder.setVertexBuffer(mesh.vertexBuffer, offset: 0, index: BufferIndex.vertices.rawValue)
+            encoder.setVertexBufferOffset(start * stride, index: BufferIndex.instanceData.rawValue)
+            encoder.drawIndexedPrimitives(
+                type: .triangle,
+                indexCount: mesh.indexCount,
+                indexType: .uint16,
+                indexBuffer: mesh.indexBuffer,
+                indexBufferOffset: 0,
+                instanceCount: count
+            )
+        }
     }
     
-    // MARK: - AAA Procedural Astronaut (62 parts)
+    // MARK: - Matrix helpers
     
-    private func drawCubeFallback(player: PlayerController, encoder: MTLRenderCommandEncoder, resources: ResourceManager, pipeline: RenderPipeline, time: Float, isMoving: Bool) {
-        guard let instanceBuffer = instanceBuffer else { return }
-        
-        let p = player.position
+    @inline(__always) private func T(_ x: Float, _ y: Float, _ z: Float) -> float4x4 {
+        MatrixUtil.translation(SIMD3<Float>(x, y, z))
+    }
+    /// Pitch about X. For a limb hanging down (−Y), positive = swings forward (−Z).
+    @inline(__always) private func RX(_ a: Float) -> float4x4 {
+        MatrixUtil.rotation(pitch: a, yaw: 0, roll: 0)
+    }
+    @inline(__always) private func RY(_ a: Float) -> float4x4 {
+        MatrixUtil.rotation(pitch: 0, yaw: a, roll: 0)
+    }
+    /// Roll about Z. For a limb hanging down, positive = swings toward +X (character's right).
+    @inline(__always) private func RZ(_ a: Float) -> float4x4 {
+        MatrixUtil.rotation(pitch: 0, yaw: 0, roll: a)
+    }
+    
+    @inline(__always) private func part(_ kind: CharacterMeshKind,
+                                        _ pivot: float4x4,
+                                        _ offset: SIMD3<Float>,
+                                        _ scale: SIMD3<Float>,
+                                        _ color: SIMD4<Float>,
+                                        rot: float4x4? = nil) {
+        var m = pivot * MatrixUtil.translation(offset)
+        if let r = rot { m = m * r }
+        m = m * MatrixUtil.scale(scale)
+        batches[kind.rawValue].append(EntityInstance(modelMatrix: m, colorAndMaterial: color))
+    }
+    
+    // MARK: - Materials
+    
+    private func fabric(_ rgb: SIMD3<Float>, dust: Float = 0.05) -> SIMD4<Float> {
+        SIMD4<Float>(rgb, 6.0 + min(max(dust, 0), 1) * 0.9)
+    }
+    private func shell(_ rgb: SIMD3<Float>, dust: Float = 0.05) -> SIMD4<Float> {
+        SIMD4<Float>(rgb, 7.0 + min(max(dust, 0), 1) * 0.9)
+    }
+    private func rubber(_ rgb: SIMD3<Float>, ribbed: Bool = false) -> SIMD4<Float> {
+        SIMD4<Float>(rgb, ribbed ? 9.5 : 9.0)
+    }
+    private func metal(_ rgb: SIMD3<Float>) -> SIMD4<Float> { SIMD4<Float>(rgb, 10.0) }
+    private func emissive(_ rgb: SIMD3<Float>) -> SIMD4<Float> { SIMD4<Float>(rgb, 1.0) }
+    
+    // Palette (linear-ish albedo values, realistic EVA suit)
+    private let cSuit       = SIMD3<Float>(0.84, 0.84, 0.81)   // Ortho-fabric off-white
+    private let cSuitShade  = SIMD3<Float>(0.68, 0.69, 0.68)   // TMG panels / pockets
+    private let cShell      = SIMD3<Float>(0.90, 0.90, 0.88)   // Hard composite white
+    private let cShellGray  = SIMD3<Float>(0.52, 0.54, 0.56)
+    private let cMetal      = SIMD3<Float>(0.80, 0.81, 0.83)   // Anodised aluminium
+    private let cDarkMetal  = SIMD3<Float>(0.32, 0.33, 0.35)
+    private let cRubber     = SIMD3<Float>(0.06, 0.06, 0.065)
+    private let cHose       = SIMD3<Float>(0.18, 0.19, 0.21)
+    private let cGlove      = SIMD3<Float>(0.78, 0.78, 0.76)
+    private let cRed        = SIMD3<Float>(0.62, 0.06, 0.05)   // Commander stripes / right glove ring
+    private let cBlue       = SIMD3<Float>(0.06, 0.18, 0.52)   // Left glove ring / patch
+    private let cVisorGold  = SIMD3<Float>(1.00, 0.77, 0.34)
+    
+    // MARK: - Pose & Assembly
+    
+    private func buildPose(player: PlayerController) {
         let fwd = player.forward
-        
         let right = normalize(cross(fwd, SIMD3<Float>(0, 1, 0)))
         let up = SIMD3<Float>(0, 1, 0)
-        
         let rot = float4x4(
             SIMD4<Float>(right.x, right.y, right.z, 0),
             SIMD4<Float>(up.x, up.y, up.z, 0),
@@ -218,285 +219,211 @@ final class AstronautRenderer {
             SIMD4<Float>(0, 0, 0, 1)
         )
         
-        // === PASTEL MATTE SUIT COLORS ===
-        // Primary suit — soft powder blue with slight warmth
-        let suitPrimary      = SIMD4<Float>(0.72, 0.82, 0.92, 4.0)
-        // Secondary suit — warm cream panels
-        let suitSecondary    = SIMD4<Float>(0.90, 0.88, 0.82, 4.0)
-        // Joints/flex areas — soft charcoal with blue tint
-        let jointColor       = SIMD4<Float>(0.28, 0.30, 0.35, 4.0)
-        // Armor plates — slightly darker blue-gray
-        let armorPlate       = SIMD4<Float>(0.62, 0.68, 0.76, 4.0)
-        // Helmet shell — clean white with slight blue
-        let helmetShell      = SIMD4<Float>(0.88, 0.90, 0.94, 4.0)
-        // Visor — warm amber-gold reflective
-        let visorGold        = SIMD4<Float>(0.95, 0.78, 0.35, 1.0)
-        // Visor frame — dark border
-        let visorFrame       = SIMD4<Float>(0.15, 0.16, 0.20, 4.0)
-        // Backpack — matte dark with subtle color
-        let backpackColor    = SIMD4<Float>(0.22, 0.25, 0.30, 4.0)
-        // Metallic accents — brushed silver
-        let metallicAccent   = SIMD4<Float>(0.65, 0.68, 0.72, 0.0)
-        // Life support glow — soft periwinkle
-        let lifeSupportGlow  = SIMD4<Float>(0.55, 0.65, 0.92, 1.0)
-        // Chest display — soft warm peach HUD light
-        let chestDisplay     = SIMD4<Float>(0.92, 0.72, 0.55, 1.0)
-        // Boot sole — dark rubber
-        let bootSole         = SIMD4<Float>(0.12, 0.12, 0.15, 4.0)
-        // Glove palm — grippy dark material
-        let glovePalm        = SIMD4<Float>(0.18, 0.20, 0.22, 4.0)
-        // Stripe accent — soft coral/peach stripe
-        let stripeAccent     = SIMD4<Float>(0.92, 0.68, 0.62, 4.0)
-        // Antenna — metallic thin rod
-        let antennaColor     = SIMD4<Float>(0.72, 0.74, 0.78, 0.0)
-        // Antenna tip — glowing indicator
-        let antennaTip       = SIMD4<Float>(0.55, 0.88, 0.72, 1.0)
+        // ===== Gait parameters =====
+        let φ = gaitPhase
+        let s = sin(φ), c = cos(φ)
+        let mv = moveBlend, sp = sprintBlend, fl = flyBlend
+        let idle = max(0, 1 - mv - fl)
+        let land = landingImpulse * landingImpulse
         
-        // === ANIMATION ===
-        let armSwing: Float = isMoving ? sin(walkPhase) * 0.55 : sin(walkPhase) * 0.04
-        let legSwing: Float = isMoving ? sin(walkPhase) * 0.45 : 0.0
-        let bodyBob: Float  = isMoving ? abs(sin(walkPhase * 2)) * 0.06 : 0.0
-        let headTilt: Float = isMoving ? sin(walkPhase * 0.5) * 0.03 : 0.0
-        let breathScale: Float = 1.0 + sin(breathPhase) * 0.008
-        let shoulderRoll: Float = isMoving ? sin(walkPhase) * 0.06 : 0.0
+        let hipAmp   = mv * (0.40 + 0.20 * sp)
+        let kneeAmp  = mv * (0.70 + 0.55 * sp)
+        let armAmp   = mv * (0.32 + 0.38 * sp)
         
-        // Face colors
-        let skinTone        = SIMD4<Float>(0.85, 0.72, 0.60, 4.0)  // Warm skin behind visor
-        let eyeWhite        = SIMD4<Float>(0.95, 0.95, 0.97, 4.0)
-        let eyePupil        = SIMD4<Float>(0.15, 0.25, 0.45, 1.0)  // Deep blue iris, slight glow
-        let mouthColor      = SIMD4<Float>(0.70, 0.45, 0.42, 4.0)
-        _     = SIMD4<Float>(0.75, 0.62, 0.52, 4.0)  // Slightly darker for eyelids
+        let bob      = mv * (0.030 + 0.030 * sp) * (0.5 + 0.5 * cos(2 * φ))
+                     - 0.035 * sp - 0.10 * land
+                     + fl * sin(clock * 2.3) * 0.035
+        let sway     = mv * 0.022 * c * (1 - 0.5 * sp) + idle * 0.012 * sin(clock * 0.45)
+        let lean     = -(mv * 0.07 + sp * 0.17 + fl * 0.20) - land * 0.18
+        let pelvisYaw = -0.09 * mv * s
+        let torsoYaw  =  0.17 * mv * s
+        let breath    = sin(breathPhase)
         
-        let pointer = instanceBuffer.contents().bindMemory(to: EntityInstance.self, capacity: partCount)
+        // Legs (pelvis lean is cancelled so feet stay under the body)
+        let legLeanFix = -lean * 0.35
+        let lHip  =  hipAmp * s + land * 0.35 - fl * 0.10 + fl * 0.05 * sin(clock * 1.7) + legLeanFix
+        let rHip  = -hipAmp * s + land * 0.35 - fl * 0.18 + fl * 0.05 * sin(clock * 1.7 + 1.3) + legLeanFix
+        let lKnee = 0.05 + kneeAmp * pow(max(0, c), 1.4) + land * 0.75 + fl * 0.30 + 0.06 * sp
+        let rKnee = 0.05 + kneeAmp * pow(max(0, -c), 1.4) + land * 0.75 + fl * 0.42 + 0.06 * sp
+        let lAnkle = -(lHip - lKnee) * 0.80 - fl * 0.25
+        let rAnkle = -(rHip - rKnee) * 0.80 - fl * 0.25
         
+        // Arms
+        let lArm = -armAmp * s + fl * 0.12 + idle * 0.02 * breath
+        let rArm =  armAmp * s + fl * 0.12 + idle * 0.02 * breath
+        let elbowBase: Float = 0.22 + 0.10 * mv + 0.95 * sp + 0.25 * fl
+        let lElbow = elbowBase + max(0, lArm) * 0.55
+        let rElbow = elbowBase + max(0, rArm) * 0.55
+        let armOut: Float = 0.16 + 0.22 * fl + 0.06 * land
+        
+        // Head stabilisation + idle look-around
+        let headPitch = -lean * 0.55 + idle * 0.05 * sin(clock * 0.31)
+        let headYaw   = -(pelvisYaw + torsoYaw) * 0.8 + idle * 0.28 * sin(clock * 0.23)
+        
+        // ===== Skeleton =====
         let feetY = player.position.y - player.playerHeight
-        let bodyMatrix = MatrixUtil.translation(SIMD3<Float>(p.x, feetY + bodyBob, p.z)) * rot
+        let world = MatrixUtil.translation(SIMD3<Float>(player.position.x, feetY, player.position.z))
+                  * rot * MatrixUtil.scale(bodyScale)
         
-        // === JOINT PIVOTS ===
-        let headPivot = bodyMatrix * MatrixUtil.translation(SIMD3<Float>(0, 1.68, 0)) * MatrixUtil.rotation(pitch: headTilt, yaw: 0, roll: 0)
+        let hipY: Float = 0.98
+        let pelvis = world * T(sway, hipY + bob, 0) * RY(pelvisYaw) * RX(lean * 0.35)
+        let torso  = pelvis * T(0, 0.12, 0) * RY(torsoYaw) * RX(lean * 0.65)
+        let head   = torso * T(0, 0.56, 0.0) * RX(headPitch) * RY(headYaw)
         
-        // NOTE: User wants arm movement 180 degrees different
-        let lShoulderPivot = bodyMatrix * MatrixUtil.translation(SIMD3<Float>(-0.42, 1.55, 0)) * MatrixUtil.rotation(pitch: armSwing, yaw: 0, roll: shoulderRoll)
-        let rShoulderPivot = bodyMatrix * MatrixUtil.translation(SIMD3<Float>(0.42, 1.55, 0)) * MatrixUtil.rotation(pitch: -armSwing, yaw: 0, roll: -shoulderRoll)
+        // ===================== PELVIS =====================
+        part(.softBox, pelvis, [0, 0.03, 0.01], [0.40, 0.25, 0.28], fabric(cSuit, dust: 0.12))      // Brief
+        part(.softBox, pelvis, [0, -0.09, 0.01], [0.22, 0.14, 0.21], fabric(cSuit, dust: 0.15))     // Crotch
+        part(.torus,   pelvis, [0, 0.145, 0.0], [0.37, 0.28, 0.29], metal(cMetal))                    // Waist bearing
+        part(.softBox, pelvis, [0, 0.07, -0.135], [0.16, 0.07, 0.02], shell(cShellGray))              // Waist buckle plate
         
-        // Elbow IK: bend more when arm swings forward, straighten when swinging back
-        // Left arm is forward when armSwing < 0 (pitch: armSwing < 0 = forward)
-        // Right arm is forward when armSwing > 0 (pitch: -armSwing < 0 = forward)
-        let lElbowBend: Float = isMoving ? 0.20 + max(0, -armSwing) * 0.6 : 0.10
-        let rElbowBend: Float = isMoving ? 0.20 + max(0, armSwing) * 0.6 : 0.10
-        // Negative pitch on elbow = forearm curls forward (natural arm bend)
-        let lElbowPivot = lShoulderPivot * MatrixUtil.translation(SIMD3<Float>(0, -0.38, 0)) * MatrixUtil.rotation(pitch: -lElbowBend, yaw: 0, roll: 0)
-        let rElbowPivot = rShoulderPivot * MatrixUtil.translation(SIMD3<Float>(0, -0.38, 0)) * MatrixUtil.rotation(pitch: -rElbowBend, yaw: 0, roll: 0)
+        // ===================== TORSO =====================
+        let chestScaleY: Float = 1 + 0.012 * breath
+        part(.softBox, torso, [0, 0.10, 0.01], [0.38, 0.18, 0.27], rubber(cSuit, ribbed: true))       // Abdomen convolute
+        part(.softBox, torso, [0, 0.31, 0.02], [0.50, 0.34 * chestScaleY, 0.32], fabric(cSuit))       // HUT / chest
+        part(.capsule, torso, [0, 0.43, 0.03], [0.20, 0.56, 0.26], fabric(cSuit), rot: RZ(.pi / 2))   // Shoulder yoke
+        part(.softBox, torso, [0, 0.36, -0.15], [0.40, 0.16, 0.04], fabric(cSuitShade))               // Upper chest TMG panel
         
-        let lWristPivot = lElbowPivot * MatrixUtil.translation(SIMD3<Float>(0, -0.32, 0))
-        let rWristPivot = rElbowPivot * MatrixUtil.translation(SIMD3<Float>(0, -0.32, 0))
+        // DCM — Display & Control Module
+        part(.hardBox,  torso, [0, 0.23, -0.19], [0.25, 0.13, 0.08], shell(cShell))
+        part(.hardBox,  torso, [0, 0.27, -0.232], [0.10, 0.03, 0.01], emissive(SIMD3<Float>(0.30, 0.95, 0.70)))
+        part(.cylinder, torso, [-0.075, 0.21, -0.235], [0.04, 0.025, 0.04], metal(cDarkMetal), rot: RX(.pi / 2))
+        part(.cylinder, torso, [ 0.075, 0.21, -0.235], [0.04, 0.025, 0.04], metal(cDarkMetal), rot: RX(.pi / 2))
+        part(.cylinder, torso, [0, 0.195, -0.232], [0.03, 0.02, 0.03], shell(cRed), rot: RX(.pi / 2))
+        // Umbilical hoses DCM → waist/PLSS
+        part(.capsule, torso, [-0.15, 0.15, -0.14], [0.036, 0.22, 0.036], rubber(cHose), rot: RZ(-0.55) * RX(0.25))
+        part(.capsule, torso, [ 0.15, 0.15, -0.14], [0.036, 0.22, 0.036], rubber(cHose), rot: RZ( 0.55) * RX(0.25))
+        part(.cylinder, torso, [-0.205, 0.07, -0.10], [0.05, 0.03, 0.05], metal(cMetal), rot: RZ(-0.55))
+        part(.cylinder, torso, [ 0.205, 0.07, -0.10], [0.05, 0.03, 0.05], metal(cMetal), rot: RZ( 0.55))
         
-        // Cross-body: right leg forward when left arm forward
-        let lHipPivot = bodyMatrix * MatrixUtil.translation(SIMD3<Float>(-0.20, 0.72, 0)) * MatrixUtil.rotation(pitch: legSwing, yaw: 0, roll: 0)
-        let rHipPivot = bodyMatrix * MatrixUtil.translation(SIMD3<Float>(0.20, 0.72, 0)) * MatrixUtil.rotation(pitch: -legSwing, yaw: 0, roll: 0)
+        // Neck ring
+        part(.torus, torso, [0, 0.545, 0.0], [0.31, 0.24, 0.29], metal(cMetal))
+        part(.torus, torso, [0, 0.515, 0.0], [0.34, 0.20, 0.32], shell(cShell))
         
-        // Knee IK: User wants knees to bend FORWARD, not backward
-        // Negative pitch = rotates toward -Z (forward)
-        let kneeBendL: Float = isMoving ? max(0, -legSwing) * 1.4 + 0.1 : 0.05   // Left bends when going FORWARD (legSwing < 0)
-        let kneeBendR: Float = isMoving ? max(0, legSwing) * 1.4 + 0.1 : 0.05    // Right bends when going FORWARD (legSwing > 0)
-        let lKneePivot = lHipPivot * MatrixUtil.translation(SIMD3<Float>(0, -0.38, 0)) * MatrixUtil.rotation(pitch: -kneeBendL, yaw: 0, roll: 0)
-        let rKneePivot = rHipPivot * MatrixUtil.translation(SIMD3<Float>(0, -0.38, 0)) * MatrixUtil.rotation(pitch: -kneeBendR, yaw: 0, roll: 0)
+        // ===================== PLSS (backpack + jetpack) =====================
+        part(.hardBox, torso, [0, 0.28, 0.28], [0.46, 0.58, 0.20], shell(cShell))                     // Main housing
+        part(.hardBox, torso, [0, 0.30, 0.385], [0.36, 0.44, 0.03], shell(SIMD3<Float>(0.80, 0.80, 0.78)))  // Rear access panel
+        part(.hardBox, torso, [0, 0.585, 0.27], [0.40, 0.05, 0.18], shell(cShellGray))                // Top cap
+        part(.hardBox, torso, [-0.235, 0.28, 0.28], [0.02, 0.40, 0.13], rubber(cRubber, ribbed: true))// Side vents
+        part(.hardBox, torso, [ 0.235, 0.28, 0.28], [0.02, 0.40, 0.13], rubber(cRubber, ribbed: true))
+        part(.capsule, torso, [-0.12, 0.30, 0.405], [0.07, 0.30, 0.07], metal(cMetal))               // O₂ bottles
+        part(.capsule, torso, [ 0.12, 0.30, 0.405], [0.07, 0.30, 0.07], metal(cMetal))
+        part(.hardBox, torso, [0, -0.005, 0.29], [0.40, 0.06, 0.16], shell(cShellGray))              // Thruster module
+        part(.bell,    torso, [-0.13, -0.075, 0.30], [0.085, 0.09, 0.085], metal(cDarkMetal))
+        part(.bell,    torso, [ 0.13, -0.075, 0.30], [0.085, 0.09, 0.085], metal(cDarkMetal))
         
-        // Foot toe-off: trailing foot tilts slightly for push-off effect
-        // Left foot is trailing when legSwing > 0, right foot when legSwing < 0
-        let toeOffL: Float = isMoving ? max(0, legSwing) * 0.2 : 0.0
-        let toeOffR: Float = isMoving ? max(0, -legSwing) * 0.2 : 0.0
-        let lAnklePivot = lKneePivot * MatrixUtil.translation(SIMD3<Float>(0, -0.35, 0)) * MatrixUtil.rotation(pitch: -toeOffL, yaw: 0, roll: 0)
-        let rAnklePivot = rKneePivot * MatrixUtil.translation(SIMD3<Float>(0, -0.35, 0)) * MatrixUtil.rotation(pitch: -toeOffR, yaw: 0, roll: 0)
+        // Status LED (slow blink) + antenna
+        let ledOn: Float = fmod(clock, 2.0) < 1.7 ? 1 : 0.15
+        part(.sphere,  torso, [0.17, 0.52, 0.385], [0.022, 0.022, 0.022], emissive(SIMD3<Float>(0.2, 1.0, 0.45) * ledOn))
+        part(.capsule, torso, [0.16, 0.73, 0.30], [0.012, 0.24, 0.012], metal(cMetal))
+        part(.sphere,  torso, [0.16, 0.855, 0.30], [0.022, 0.022, 0.022],
+             emissive(SIMD3<Float>(1.0, 0.25, 0.18) * (fmod(clock, 1.2) < 0.15 ? 1.0 : 0.2)))
         
-        // Helper
-        func makePart(_ index: Int, _ pivot: float4x4, _ offset: SIMD3<Float>, _ scale: SIMD3<Float>, _ color: SIMD4<Float>) {
-            let mat = pivot * MatrixUtil.translation(offset) * MatrixUtil.scale(scale)
-            pointer[index] = EntityInstance(modelMatrix: mat, colorAndMaterial: color)
+        // Jetpack plume
+        if fl > 0.05 {
+            let L = (0.22 + 0.14 * fl) * jetFlicker * fl
+            let plume = SIMD3<Float>(0.55, 0.78, 1.0) * (0.8 + 0.4 * fl)
+            part(.capsule, torso, [-0.13, -0.12 - L * 0.5, 0.30], [0.065, L, 0.065], emissive(plume))
+            part(.capsule, torso, [ 0.13, -0.12 - L * 0.5, 0.30], [0.065, L, 0.065], emissive(plume))
+            part(.sphere,  torso, [-0.13, -0.125, 0.30], [0.07, 0.04, 0.07], emissive(SIMD3<Float>(1.0, 0.95, 0.85)))
+            part(.sphere,  torso, [ 0.13, -0.125, 0.30], [0.07, 0.04, 0.07], emissive(SIMD3<Float>(1.0, 0.95, 0.85)))
         }
         
-        var idx = 0
+        // ===================== HELMET =====================
+        let helmetC = SIMD3<Float>(0, 0.20, 0.0)
+        let helmetD: Float = 0.40
+        let visorD: Float = helmetD * 1.045
+        part(.sphere,   head, helmetC, [helmetD, helmetD, helmetD], shell(cShell))
+        part(.visorCap, head, helmetC, [visorD, visorD, visorD], SIMD4<Float>(cVisorGold, 8.0))
+        // Visor rim — placed exactly on the cap edge
+        let α = CharacterMeshLibrary.visorHalfAngle
+        let rimR = 0.5 * sin(α) * visorD
+        let rimZ = -0.5 * cos(α) * visorD
+        let rimS = rimR / 0.46
+        part(.ring, head, helmetC + SIMD3<Float>(0, 0, rimZ), [rimS, rimS * 1.2, rimS], shell(cShellGray), rot: RX(.pi / 2))
+        // Visor hinge pivots
+        part(.cylinder, head, helmetC + SIMD3<Float>(-0.205, 0.0, 0.0), [0.05, 0.02, 0.05], metal(cMetal), rot: RZ(.pi / 2))
+        part(.cylinder, head, helmetC + SIMD3<Float>( 0.205, 0.0, 0.0), [0.05, 0.02, 0.05], metal(cMetal), rot: RZ(.pi / 2))
+        // Helmet lights & camera (HECA)
+        for side: Float in [-1, 1] {
+            part(.hardBox, head, helmetC + SIMD3<Float>(side * 0.205, 0.06, 0.0), [0.045, 0.07, 0.15], shell(cShellGray))
+            part(.hardBox, head, helmetC + SIMD3<Float>(side * 0.205, 0.06, -0.076), [0.034, 0.05, 0.008],
+                 emissive(SIMD3<Float>(1.0, 0.94, 0.82)))
+        }
+        part(.cylinder, head, helmetC + SIMD3<Float>(-0.205, 0.115, -0.03), [0.03, 0.06, 0.03], metal(cDarkMetal), rot: RX(.pi / 2))
+        // Top ridge
+        part(.hardBox, head, helmetC + SIMD3<Float>(0, 0.195, 0.03), [0.05, 0.025, 0.20], shell(cShell), rot: RX(-0.12))
         
-        // ===== TORSO (8 parts) =====
-        // Upper chest — broad, heroic proportions
-        let chestBreath = SIMD3<Float>(0.58 * breathScale, 0.30, 0.38 * breathScale)
-        makePart(idx, bodyMatrix, SIMD3<Float>(0, 1.40, 0), chestBreath, suitPrimary); idx += 1
-        // Upper chest armor plate
-        makePart(idx, bodyMatrix, SIMD3<Float>(0, 1.42, -0.20), SIMD3<Float>(0.48, 0.24, 0.05), armorPlate); idx += 1
-        // Chest center stripe
-        makePart(idx, bodyMatrix, SIMD3<Float>(0, 1.40, -0.21), SIMD3<Float>(0.08, 0.22, 0.02), stripeAccent); idx += 1
-        // Chest display/HUD panel
-        makePart(idx, bodyMatrix, SIMD3<Float>(0.12, 1.44, -0.22), SIMD3<Float>(0.10, 0.06, 0.02), chestDisplay); idx += 1
-        // Mid torso — slight taper
-        makePart(idx, bodyMatrix, SIMD3<Float>(0, 1.12, 0), SIMD3<Float>(0.50, 0.20, 0.34), suitSecondary); idx += 1
-        // Abdomen flex segment
-        makePart(idx, bodyMatrix, SIMD3<Float>(0, 0.98, 0), SIMD3<Float>(0.46, 0.14, 0.32), jointColor); idx += 1
-        // Pelvis/hip plate
-        makePart(idx, bodyMatrix, SIMD3<Float>(0, 0.82, 0), SIMD3<Float>(0.52, 0.16, 0.34), suitPrimary); idx += 1
-        // Belt
-        makePart(idx, bodyMatrix, SIMD3<Float>(0, 0.76, 0), SIMD3<Float>(0.54, 0.06, 0.36), armorPlate); idx += 1
+        // ===================== ARMS =====================
+        for side: Float in [-1, 1] {
+            let isLeft = side < 0
+            let swing = isLeft ? lArm : rArm
+            let elbowFlex = isLeft ? lElbow : rElbow
+            
+            let shoulder = torso * T(side * 0.265, 0.43, 0.02) * RZ(side * armOut) * RX(swing)
+            part(.torus,   shoulder, [side * 0.035, 0, 0], [0.22, 0.32, 0.22], metal(cMetal), rot: RZ(.pi / 2))   // Scye bearing
+            part(.sphere,  shoulder, [side * 0.01, -0.03, 0], [0.205, 0.20, 0.21], fabric(cSuit))                // Shoulder bulb
+            part(.capsule, shoulder, [0, -0.17, 0], [0.14, 0.30, 0.145], fabric(cSuit))                         // Upper arm
+            part(.capsule, shoulder, [0, -0.215, 0], [0.148, 0.045, 0.152], fabric(cRed))                        // Commander band
+            if isLeft {
+                // Mission patch
+                part(.cylinder, shoulder, [-0.071, -0.11, 0], [0.075, 0.008, 0.075], shell(cBlue), rot: RZ(.pi / 2))
+                part(.cylinder, shoulder, [-0.0745, -0.11, 0], [0.042, 0.006, 0.042], shell(cShell), rot: RZ(.pi / 2))
+                part(.hardBox,  shoulder, [-0.077, -0.11, 0], [0.004, 0.008, 0.05], shell(cRed), rot: RX(0.5))
+            } else {
+                // Flag
+                part(.hardBox, shoulder, [0.071, -0.11, 0], [0.008, 0.05, 0.08], shell(cRed))
+                part(.hardBox, shoulder, [0.0745, -0.11, 0.0], [0.004, 0.012, 0.078], shell(cShell))
+                part(.hardBox, shoulder, [0.0755, -0.096, -0.021], [0.004, 0.024, 0.036], shell(cBlue))
+            }
+            part(.torus,   shoulder, [0, -0.265, 0], [0.15, 0.22, 0.15], metal(cMetal))                          // Arm bearing
+            
+            let elbow = shoulder * T(0, -0.31, 0) * RX(elbowFlex)
+            part(.capsule, elbow, [0, 0, 0], [0.13, 0.13, 0.135], rubber(cSuit, ribbed: true))                  // Elbow convolute
+            part(.capsule, elbow, [0, -0.15, 0], [0.122, 0.26, 0.128], fabric(cSuit))                           // Forearm
+            if isLeft {
+                part(.softBox, elbow, [0, -0.13, -0.065], [0.08, 0.10, 0.02], fabric(cSuitShade))                // Cuff checklist
+            }
+            part(.torus,   elbow, [0, -0.285, 0], [0.135, 0.30, 0.135], metal(cMetal))                           // Wrist bearing
+            part(.torus,   elbow, [0, -0.305, 0], [0.125, 0.22, 0.125], shell(isLeft ? cBlue : cRed))            // Colour-coded disconnect
+            
+            let wrist = elbow * T(0, -0.33, 0) * RX(0.08 + 0.1 * sp) * RZ(-side * 0.06)
+            part(.capsule, wrist, [0, 0.0, 0], [0.105, 0.07, 0.105], fabric(cGlove))                             // Gauntlet
+            part(.softBox, wrist, [0, -0.08, -0.005], [0.055, 0.11, 0.095], fabric(cGlove))                      // Hand
+            part(.softBox, wrist, [-side * 0.026, -0.085, -0.005], [0.012, 0.085, 0.08], rubber(cRubber))        // Palm grip
+            let knuckle = wrist * T(0, -0.13, -0.005) * RZ(-side * (0.35 + 0.3 * sp))
+            part(.capsule, knuckle, [0, -0.04, 0], [0.045, 0.09, 0.088], fabric(cGlove))                         // Finger block
+            part(.capsule, knuckle, [-side * 0.016, -0.045, 0], [0.018, 0.075, 0.08], rubber(cRubber))           // Fingertip grip
+            part(.capsule, wrist, [-side * 0.02, -0.07, -0.05], [0.03, 0.07, 0.03], fabric(cGlove),
+                 rot: RX(0.55) * RZ(-side * 0.35))                                                               // Thumb
+        }
         
-        // ===== COLLAR & NECK (3 parts) =====
-        // Neck ring / collar
-        makePart(idx, bodyMatrix, SIMD3<Float>(0, 1.58, 0), SIMD3<Float>(0.38, 0.08, 0.32), jointColor); idx += 1
-        // Collar flange (connects helmet to suit)
-        makePart(idx, bodyMatrix, SIMD3<Float>(0, 1.62, 0), SIMD3<Float>(0.44, 0.04, 0.36), metallicAccent); idx += 1
-        // Back collar support
-        makePart(idx, bodyMatrix, SIMD3<Float>(0, 1.60, 0.12), SIMD3<Float>(0.30, 0.10, 0.10), armorPlate); idx += 1
-        
-        // ===== HELMET (6 parts) =====
-        // Main helmet dome
-        makePart(idx, headPivot, SIMD3<Float>(0, 0.26, 0), SIMD3<Float>(0.52, 0.52, 0.52), helmetShell); idx += 1
-        // Helmet top crest
-        makePart(idx, headPivot, SIMD3<Float>(0, 0.48, 0), SIMD3<Float>(0.20, 0.08, 0.20), armorPlate); idx += 1
-        // Visor (gold reflective, recessed)
-        makePart(idx, headPivot, SIMD3<Float>(0, 0.28, -0.22), SIMD3<Float>(0.42, 0.32, 0.12), visorGold); idx += 1
-        // Visor border frame
-        makePart(idx, headPivot, SIMD3<Float>(0, 0.28, -0.24), SIMD3<Float>(0.46, 0.36, 0.04), visorFrame); idx += 1
-        // Left cheek vent
-        makePart(idx, headPivot, SIMD3<Float>(-0.25, 0.20, -0.08), SIMD3<Float>(0.06, 0.12, 0.10), metallicAccent); idx += 1
-        // Right cheek vent
-        makePart(idx, headPivot, SIMD3<Float>(0.25, 0.20, -0.08), SIMD3<Float>(0.06, 0.12, 0.10), metallicAccent); idx += 1
-        
-        // ===== LEFT ARM (8 parts) =====
-        // Shoulder pad (rounded armor)
-        makePart(idx, lShoulderPivot, SIMD3<Float>(-0.04, 0.04, 0), SIMD3<Float>(0.24, 0.18, 0.24), armorPlate); idx += 1
-        // Shoulder joint ball
-        makePart(idx, lShoulderPivot, SIMD3<Float>(0, 0, 0), SIMD3<Float>(0.16, 0.16, 0.16), jointColor); idx += 1
-        // Upper arm
-        makePart(idx, lShoulderPivot, SIMD3<Float>(0, -0.20, 0), SIMD3<Float>(0.16, 0.36, 0.16), suitPrimary); idx += 1
-        // Upper arm stripe
-        makePart(idx, lShoulderPivot, SIMD3<Float>(0, -0.14, -0.09), SIMD3<Float>(0.04, 0.08, 0.02), stripeAccent); idx += 1
-        // Elbow joint
-        makePart(idx, lElbowPivot, SIMD3<Float>(0, 0, 0), SIMD3<Float>(0.14, 0.14, 0.14), jointColor); idx += 1
-        // Forearm
-        makePart(idx, lElbowPivot, SIMD3<Float>(0, -0.18, 0), SIMD3<Float>(0.14, 0.30, 0.14), suitSecondary); idx += 1
-        // Wrist cuff
-        makePart(idx, lWristPivot, SIMD3<Float>(0, 0, 0), SIMD3<Float>(0.16, 0.06, 0.16), metallicAccent); idx += 1
-        // Glove
-        makePart(idx, lWristPivot, SIMD3<Float>(0, -0.08, -0.02), SIMD3<Float>(0.15, 0.14, 0.18), glovePalm); idx += 1
-        
-        // ===== RIGHT ARM (8 parts) =====
-        // Shoulder pad
-        makePart(idx, rShoulderPivot, SIMD3<Float>(0.04, 0.04, 0), SIMD3<Float>(0.24, 0.18, 0.24), armorPlate); idx += 1
-        // Shoulder joint ball
-        makePart(idx, rShoulderPivot, SIMD3<Float>(0, 0, 0), SIMD3<Float>(0.16, 0.16, 0.16), jointColor); idx += 1
-        // Upper arm
-        makePart(idx, rShoulderPivot, SIMD3<Float>(0, -0.20, 0), SIMD3<Float>(0.16, 0.36, 0.16), suitPrimary); idx += 1
-        // Upper arm stripe
-        makePart(idx, rShoulderPivot, SIMD3<Float>(0, -0.14, -0.09), SIMD3<Float>(0.04, 0.08, 0.02), stripeAccent); idx += 1
-        // Elbow joint
-        makePart(idx, rElbowPivot, SIMD3<Float>(0, 0, 0), SIMD3<Float>(0.14, 0.14, 0.14), jointColor); idx += 1
-        // Forearm
-        makePart(idx, rElbowPivot, SIMD3<Float>(0, -0.18, 0), SIMD3<Float>(0.14, 0.30, 0.14), suitSecondary); idx += 1
-        // Wrist cuff
-        makePart(idx, rWristPivot, SIMD3<Float>(0, 0, 0), SIMD3<Float>(0.16, 0.06, 0.16), metallicAccent); idx += 1
-        // Glove
-        makePart(idx, rWristPivot, SIMD3<Float>(0, -0.08, -0.02), SIMD3<Float>(0.15, 0.14, 0.18), glovePalm); idx += 1
-        
-        // ===== LEFT LEG (8 parts) =====
-        // Hip joint
-        makePart(idx, lHipPivot, SIMD3<Float>(0, 0, 0), SIMD3<Float>(0.18, 0.16, 0.18), jointColor); idx += 1
-        // Upper thigh (muscular)
-        makePart(idx, lHipPivot, SIMD3<Float>(0, -0.12, 0), SIMD3<Float>(0.22, 0.22, 0.22), suitPrimary); idx += 1
-        // Lower thigh
-        makePart(idx, lHipPivot, SIMD3<Float>(0, -0.28, 0), SIMD3<Float>(0.20, 0.18, 0.20), suitPrimary); idx += 1
-        // Knee pad
-        makePart(idx, lKneePivot, SIMD3<Float>(0, 0, -0.04), SIMD3<Float>(0.18, 0.12, 0.18), armorPlate); idx += 1
-        // Knee joint
-        makePart(idx, lKneePivot, SIMD3<Float>(0, 0, 0), SIMD3<Float>(0.16, 0.14, 0.16), jointColor); idx += 1
-        // Shin
-        makePart(idx, lKneePivot, SIMD3<Float>(0, -0.18, 0), SIMD3<Float>(0.18, 0.30, 0.18), suitSecondary); idx += 1
-        // Boot upper
-        makePart(idx, lAnklePivot, SIMD3<Float>(0, -0.02, -0.02), SIMD3<Float>(0.22, 0.14, 0.26), armorPlate); idx += 1
-        // Boot sole (thick treaded sole)
-        makePart(idx, lAnklePivot, SIMD3<Float>(0, -0.10, -0.02), SIMD3<Float>(0.24, 0.06, 0.30), bootSole); idx += 1
-        
-        // ===== RIGHT LEG (8 parts) =====
-        // Hip joint
-        makePart(idx, rHipPivot, SIMD3<Float>(0, 0, 0), SIMD3<Float>(0.18, 0.16, 0.18), jointColor); idx += 1
-        // Upper thigh
-        makePart(idx, rHipPivot, SIMD3<Float>(0, -0.12, 0), SIMD3<Float>(0.22, 0.22, 0.22), suitPrimary); idx += 1
-        // Lower thigh
-        makePart(idx, rHipPivot, SIMD3<Float>(0, -0.28, 0), SIMD3<Float>(0.20, 0.18, 0.20), suitPrimary); idx += 1
-        // Knee pad
-        makePart(idx, rKneePivot, SIMD3<Float>(0, 0, -0.04), SIMD3<Float>(0.18, 0.12, 0.18), armorPlate); idx += 1
-        // Knee joint
-        makePart(idx, rKneePivot, SIMD3<Float>(0, 0, 0), SIMD3<Float>(0.16, 0.14, 0.16), jointColor); idx += 1
-        // Shin
-        makePart(idx, rKneePivot, SIMD3<Float>(0, -0.18, 0), SIMD3<Float>(0.18, 0.30, 0.18), suitSecondary); idx += 1
-        // Boot upper
-        makePart(idx, rAnklePivot, SIMD3<Float>(0, -0.02, -0.02), SIMD3<Float>(0.22, 0.14, 0.26), armorPlate); idx += 1
-        // Boot sole
-        makePart(idx, rAnklePivot, SIMD3<Float>(0, -0.10, -0.02), SIMD3<Float>(0.24, 0.06, 0.30), bootSole); idx += 1
-        
-        // ===== BACKPACK / LIFE SUPPORT (7 parts) =====
-        // Main pack body
-        makePart(idx, bodyMatrix, SIMD3<Float>(0, 1.28, 0.24), SIMD3<Float>(0.44, 0.52, 0.22), backpackColor); idx += 1
-        // Pack top cap
-        makePart(idx, bodyMatrix, SIMD3<Float>(0, 1.56, 0.24), SIMD3<Float>(0.38, 0.04, 0.18), metallicAccent); idx += 1
-        // Left oxygen tank
-        makePart(idx, bodyMatrix, SIMD3<Float>(-0.16, 1.30, 0.38), SIMD3<Float>(0.10, 0.44, 0.10), metallicAccent); idx += 1
-        // Right oxygen tank
-        makePart(idx, bodyMatrix, SIMD3<Float>(0.16, 1.30, 0.38), SIMD3<Float>(0.10, 0.44, 0.10), metallicAccent); idx += 1
-        // Life support indicator (center glow)
-        makePart(idx, bodyMatrix, SIMD3<Float>(0, 1.38, 0.36), SIMD3<Float>(0.08, 0.08, 0.04), lifeSupportGlow); idx += 1
-        
-        // Jetpack thruster nozzles
-        let jetPhase = player.isJetpacking ? Float.random(in: 0.8...1.2) : 0.0
-        let jetFlame = SIMD4<Float>(0.55 * jetPhase, 0.72 * jetPhase, 0.95 * jetPhase, jetPhase > 0 ? 1.0 : 0.0)
-        makePart(idx, bodyMatrix, SIMD3<Float>(-0.14, 0.98, 0.36), SIMD3<Float>(0.08, 0.06, 0.08), jetFlame); idx += 1
-        makePart(idx, bodyMatrix, SIMD3<Float>(0.14, 0.98, 0.36), SIMD3<Float>(0.08, 0.06, 0.08), jetFlame); idx += 1
-        
-        // ===== FACE (behind visor) (10 parts) =====
-        let eyebrowColor = SIMD4<Float>(0.15, 0.12, 0.10, 4.0)
-        let cheekColor = SIMD4<Float>(0.95, 0.60, 0.55, 4.0)
-        
-        // Left eye white
-        let eyeScale: SIMD3<Float> = isBlinking ? SIMD3<Float>(0.06, 0.01, 0.04) : SIMD3<Float>(0.06, 0.05, 0.04)
-        makePart(idx, headPivot, SIMD3<Float>(-0.08, 0.30, -0.18), eyeScale, eyeWhite); idx += 1
-        // Right eye white
-        makePart(idx, headPivot, SIMD3<Float>(0.08, 0.30, -0.18), eyeScale, eyeWhite); idx += 1
-        
-        // Left pupil (emissive blue)
-        let pupilScale: SIMD3<Float> = isBlinking ? SIMD3<Float>(0.03, 0.005, 0.02) : SIMD3<Float>(0.03, 0.03, 0.02)
-        makePart(idx, headPivot, SIMD3<Float>(-0.08, 0.30, -0.20), pupilScale, eyePupil); idx += 1
-        // Right pupil
-        makePart(idx, headPivot, SIMD3<Float>(0.08, 0.30, -0.20), pupilScale, eyePupil); idx += 1
-        
-        // Left eyebrow
-        makePart(idx, headPivot, SIMD3<Float>(-0.09, 0.36, -0.19), SIMD3<Float>(0.05, 0.015, 0.02), eyebrowColor); idx += 1
-        // Right eyebrow
-        makePart(idx, headPivot, SIMD3<Float>(0.09, 0.36, -0.19), SIMD3<Float>(0.05, 0.015, 0.02), eyebrowColor); idx += 1
-        
-        // Left cheek (rosy)
-        makePart(idx, headPivot, SIMD3<Float>(-0.12, 0.24, -0.17), SIMD3<Float>(0.04, 0.03, 0.02), cheekColor); idx += 1
-        // Right cheek (rosy)
-        makePart(idx, headPivot, SIMD3<Float>(0.12, 0.24, -0.17), SIMD3<Float>(0.04, 0.03, 0.02), cheekColor); idx += 1
-        
-        // Nose bridge (subtle)
-        makePart(idx, headPivot, SIMD3<Float>(0, 0.24, -0.19), SIMD3<Float>(0.03, 0.06, 0.03), skinTone); idx += 1
-        // Mouth (small subtle line)
-        makePart(idx, headPivot, SIMD3<Float>(0, 0.18, -0.19), SIMD3<Float>(0.07, 0.015, 0.02), mouthColor); idx += 1
-        
-        // ===== ANTENNA (2 parts) =====
-        // Antenna rod
-        makePart(idx, headPivot, SIMD3<Float>(0.22, 0.50, 0.08), SIMD3<Float>(0.02, 0.20, 0.02), antennaColor); idx += 1
-        // Antenna tip (glowing)
-        makePart(idx, headPivot, SIMD3<Float>(0.22, 0.62, 0.08), SIMD3<Float>(0.04, 0.04, 0.04), antennaTip); idx += 1
-        
-        // ===== DRAW =====
-        encoder.setRenderPipelineState(pipeline.entityPipeline)
-        encoder.setVertexBuffer(resources.cubeVertexBuffer, offset: 0, index: BufferIndex.vertices.rawValue)
-        encoder.setVertexBuffer(instanceBuffer, offset: 0, index: BufferIndex.instanceData.rawValue)
-        
-        encoder.drawIndexedPrimitives(
-            type: .triangle,
-            indexCount: resources.cubeIndexCount,
-            indexType: .uint16,
-            indexBuffer: resources.cubeIndexBuffer,
-            indexBufferOffset: 0,
-            instanceCount: partCount
-        )
+        // ===================== LEGS =====================
+        for side: Float in [-1, 1] {
+            let isLeft = side < 0
+            let hipPitch = isLeft ? lHip : rHip
+            let kneeFlex = isLeft ? lKnee : rKnee
+            let anklePitch = isLeft ? lAnkle : rAnkle
+            
+            let hip = pelvis * T(side * 0.11, -0.02, 0.0) * RZ(side * 0.035) * RX(hipPitch)
+            part(.torus,   hip, [0, 0.0, 0], [0.20, 0.30, 0.20], metal(cMetal))                                  // Hip bearing
+            part(.capsule, hip, [0, -0.215, 0], [0.18, 0.42, 0.185], fabric(cSuit, dust: 0.18))                  // Thigh
+            part(.capsule, hip, [0, -0.15, 0], [0.188, 0.05, 0.193], fabric(cRed, dust: 0.15))                   // Commander band
+            part(.softBox, hip, [side * 0.092, -0.24, 0.0], [0.035, 0.13, 0.11], fabric(cSuitShade, dust: 0.2)) // Cargo pocket
+            part(.torus,   hip, [0, -0.40, 0], [0.18, 0.24, 0.18], metal(cMetal))                                // Thigh bearing
+            
+            let knee = hip * T(0, -0.44, 0) * RX(-kneeFlex)
+            part(.capsule, knee, [0, 0.0, 0], [0.165, 0.15, 0.17], rubber(SIMD3<Float>(0.80, 0.80, 0.77), ribbed: true)) // Knee convolute
+            part(.softBox, knee, [0, 0.005, -0.075], [0.12, 0.13, 0.05], shell(cShell, dust: 0.45))              // Knee guard
+            part(.capsule, knee, [0, -0.21, 0], [0.155, 0.40, 0.165], fabric(cSuit, dust: 0.5))                  // Shin
+            part(.softBox, knee, [0, -0.17, -0.075], [0.09, 0.20, 0.03], shell(cShell, dust: 0.55))              // Shin plate
+            
+            let ankle = knee * T(0, -0.43, 0) * RX(anklePitch)
+            part(.torus,   ankle, [0, 0.055, 0], [0.16, 0.30, 0.16], metal(cMetal))                              // Ankle bearing
+            part(.softBox, ankle, [0, -0.015, -0.02], [0.155, 0.15, 0.21], shell(cShell, dust: 0.8))             // Boot upper
+            part(.softBox, ankle, [0, -0.055, -0.125], [0.145, 0.085, 0.13], shell(cShell, dust: 0.85))          // Toe box
+            part(.hardBox, ankle, [0, -0.012, -0.12], [0.11, 0.02, 0.06], shell(cShellGray, dust: 0.6))          // Lacing / strap
+            part(.hardBox, ankle, [0, -0.095, -0.045], [0.165, 0.042, 0.33], rubber(cRubber, ribbed: true))      // Treaded sole
+            part(.hardBox, ankle, [0, -0.07, 0.085], [0.14, 0.04, 0.07], rubber(cRubber))                        // Heel counter
+        }
     }
 }

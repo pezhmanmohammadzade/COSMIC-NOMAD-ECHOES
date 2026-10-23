@@ -98,41 +98,45 @@ struct UpgradeCardView: View {
         let nextCost = maxed ? 0 : type.cost(forTier: tier + 1)
         
         HStack(spacing: 16) {
-            // Icon
+            // Icon in chamfered tech container
             ZStack {
-                Circle()
-                    .fill(maxed ? Pastel.primary.opacity(0.15) : Pastel.cardFill)
-                    .frame(width: 50, height: 50)
+                AAAShape.ChamferedRectangle(chamferSize: 8)
+                    .fill(maxed ? Pastel.primary.opacity(0.18) : Pastel.surface.opacity(0.85))
+                    .frame(width: 48, height: 48)
+                
+                AAAShape.ChamferedRectangle(chamferSize: 8)
+                    .stroke(maxed ? Pastel.primary.opacity(0.6) : Pastel.cardStroke, lineWidth: 1)
+                    .frame(width: 48, height: 48)
                 
                 Image(systemName: type.icon)
-                    .font(.system(size: 20))
+                    .font(.system(size: 18, weight: .bold))
                     .foregroundColor(maxed ? Pastel.primary : Pastel.textSecondary)
+                    .shadow(color: maxed ? Pastel.primary.opacity(0.5) : Color.clear, radius: 4)
             }
             
             // Info
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: 5) {
                 Text(type.rawValue.uppercased())
-                    .font(.system(size: 12, weight: .bold, design: .monospaced))
+                    .font(.system(size: 12, weight: .black, design: .monospaced))
+                    .tracking(1.5)
                     .foregroundColor(Pastel.textPrimary)
                 
                 Text(type.description)
-                    .font(.system(size: 10, weight: .regular, design: .monospaced))
+                    .font(.system(size: 10, weight: .medium, design: .monospaced))
                     .foregroundColor(Pastel.textSecondary)
                 
-                // Tier dots
+                // Tier telemetry dots
                 HStack(spacing: 6) {
                     ForEach(0..<UpgradeSystem.UpgradeType.maxTier, id: \.self) { i in
-                        Circle()
+                        RoundedRectangle(cornerRadius: 1.5)
                             .fill(i < tier ? Pastel.primary : Pastel.cardStroke)
-                            .frame(width: 8, height: 8)
-                            .overlay(
-                                Circle().stroke(Pastel.cardStroke, lineWidth: 0.5)
-                            )
+                            .frame(width: 14, height: 4)
+                            .shadow(color: i < tier ? Pastel.primary.opacity(0.7) : Color.clear, radius: 2)
                     }
                     
                     Text("TIER \(tier)/\(UpgradeSystem.UpgradeType.maxTier)")
-                        .font(.system(size: 9, weight: .medium, design: .monospaced))
-                        .foregroundColor(Pastel.textMuted)
+                        .font(.system(size: 8, weight: .bold, design: .monospaced))
+                        .foregroundColor(maxed ? Pastel.primary : Pastel.textMuted)
                 }
             }
             
@@ -140,38 +144,53 @@ struct UpgradeCardView: View {
             
             // Buy button
             if maxed {
-                Text("MAX")
-                    .font(.system(size: 11, weight: .bold, design: .monospaced))
-                    .foregroundColor(Pastel.primary)
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 8)
-                    .background(Pastel.primary.opacity(0.10))
-                    .clipShape(Capsule())
+                HStack(spacing: 4) {
+                    Image(systemName: "checkmark.seal.fill")
+                        .font(.system(size: 10, weight: .bold))
+                    Text("MAXED")
+                        .font(.system(size: 10, weight: .black, design: .monospaced))
+                        .tracking(1)
+                }
+                .foregroundColor(Pastel.primary)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+                .background(Pastel.primary.opacity(0.12))
+                .overlay(Capsule().stroke(Pastel.primary.opacity(0.3), lineWidth: 1))
+                .clipShape(Capsule())
             } else {
                 Button(action: onPurchase) {
-                    HStack(spacing: 4) {
+                    HStack(spacing: 5) {
                         Image(systemName: "diamond.fill")
-                            .font(.system(size: 9))
+                            .font(.system(size: 10, weight: .bold))
                         Text("\(nextCost)")
-                            .font(.system(size: 12, weight: .bold, design: .monospaced))
+                            .font(.system(size: 12, weight: .black, design: .monospaced))
                     }
                     .foregroundColor(canBuy ? Pastel.bg : Pastel.textMuted)
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 8)
-                    .background(canBuy ? Pastel.gold : Pastel.cardFill)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 9)
+                    .background(
+                        canBuy ?
+                            LinearGradient(colors: [Pastel.gold, Color(red: 0.95, green: 0.75, blue: 0.40)], startPoint: .top, endPoint: .bottom)
+                            : LinearGradient(colors: [Pastel.cardFill, Pastel.cardFill], startPoint: .top, endPoint: .bottom)
+                    )
                     .clipShape(Capsule())
+                    .shadow(color: canBuy ? Pastel.gold.opacity(0.4) : Color.clear, radius: 6)
                 }
                 .disabled(!canBuy)
             }
         }
         .padding(16)
         .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(isFlashing ? Pastel.primary.opacity(0.10) : Pastel.cardFill)
+            AAAShape.ChamferedRectangle(chamferSize: 10)
+                .fill(isFlashing ? Pastel.primary.opacity(0.16) : Pastel.surface.opacity(0.85))
                 .overlay(
-                    RoundedRectangle(cornerRadius: 12)
-                        .stroke(isFlashing ? Pastel.primary.opacity(0.4) : Pastel.cardStroke, lineWidth: 1)
+                    AAAShape.ChamferedRectangle(chamferSize: 10)
+                        .stroke(
+                            isFlashing ? Pastel.primary : (maxed ? Pastel.primary.opacity(0.3) : Pastel.cardStroke),
+                            lineWidth: isFlashing ? 1.5 : 1.0
+                        )
                 )
         )
+        .overlay(AAAHUDCornerBrackets(color: (maxed ? Pastel.primary : Pastel.cardStroke).opacity(0.4), length: 6))
     }
 }

@@ -490,30 +490,34 @@ struct PlanetDetailPanel: View {
                 Button(action: onTravel) {
                     VStack(spacing: 4) {
                         Image(systemName: "paperplane.fill")
-                            .font(.system(size: 16))
+                            .font(.system(size: 15, weight: .bold))
                         Text("TRAVEL")
-                            .font(.system(size: 7, weight: .bold, design: .monospaced))
+                            .font(.system(size: 8, weight: .black, design: .monospaced))
+                            .tracking(1)
                     }
                     .foregroundColor(Pastel.primary)
-                    .frame(width: 50, height: 50)
-                    .background(Pastel.primary.opacity(0.08))
-                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                    .frame(width: 58, height: 50)
+                    .background(Pastel.primary.opacity(0.12))
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
                     .overlay(
-                        RoundedRectangle(cornerRadius: 10)
-                            .stroke(Pastel.primary.opacity(0.2), lineWidth: 1)
+                        RoundedRectangle(cornerRadius: 8)
+                            .stroke(Pastel.primary.opacity(0.4), lineWidth: 1)
                     )
+                    .shadow(color: Pastel.primary.opacity(0.2), radius: 6)
                 }
             }
         }
         .padding(14)
         .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(Pastel.surface.opacity(0.9))
+            AAAShape.ChamferedRectangle(chamferSize: 10)
+                .fill(Pastel.surface.opacity(0.92))
                 .overlay(
-                    RoundedRectangle(cornerRadius: 12)
-                        .stroke(planet.accentColor.opacity(0.2), lineWidth: 1)
+                    AAAShape.ChamferedRectangle(chamferSize: 10)
+                        .stroke(planet.accentColor.opacity(0.4), lineWidth: 1)
                 )
+                .shadow(color: planet.accentColor.opacity(0.15), radius: 10)
         )
+        .overlay(AAAHUDCornerBrackets(color: planet.accentColor.opacity(0.5), length: 6))
     }
 }
 
